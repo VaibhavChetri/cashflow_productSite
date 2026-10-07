@@ -1,0 +1,139 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+---
+
+<Layout title="AI and your data" description={`How ${site.name} uses AI, what it never does on its own, and how your financial data is handled.`}>
+  <section class="wrap page-head">
+    <h1>AI reads. Rules reconcile. You decide.</h1>
+    <p class="lede">
+      Finance teams are right to be careful about AI near money. Here is exactly where {site.name} uses it, where it doesn't, and what happens to
+      your data.
+    </p>
+  </section>
+
+  <section class="section band" aria-labelledby="does-title">
+    <div class="wrap two-col">
+      <div>
+        <h2 id="does-title">What the AI does</h2>
+        <ul class="ticks">
+          <li>Reads emails and attachments, whatever the layout</li>
+          <li>Pulls out invoice details and gives each field a confidence score</li>
+          <li>Sorts mail into vendor, payment, quote, reimbursement, escalation or internal</li>
+          <li>Reads long email threads to work out what was promised, disputed or proven</li>
+          <li>Suggests a next action for each exception</li>
+        </ul>
+      </div>
+      <div>
+        <h2>What it never does on its own</h2>
+        {/* CONFIRM each line with Shreyas & Varun before launch */}
+        <ul class="nevers">
+          <li>Post anything to your ledger without a confirmed match</li>
+          <li>Make or release a payment</li>
+          <li>Change data in your source systems</li>
+          <li>Act on an extraction it isn't confident about. Those go to a person.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="data-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="data-title">Your data</h2>
+      </div>
+      {/* CONFIRM: model tier and terms, hosting regions, retention period, encryption details. Do not publish until each is true. */}
+      <ul class="ledger-list">
+        <li>
+          <strong>The AI model</strong>
+          <p>Extraction and reading use Google's Gemini models through Google Cloud, under enterprise terms that don't allow your data to be used to train Google's models.</p>
+        </li>
+        <li>
+          <strong>Where it's stored</strong>
+          <p>Your records live in our own database, not inside the AI model. We'll confirm the hosting region with you before you sign.</p>
+        </li>
+        <li>
+          <strong>Who can see it</strong>
+          <p>Access is limited to the people you authorise and the engineers supporting your account.</p>
+        </li>
+        <li>
+          <strong>Keeping and deleting</strong>
+          <p>We keep your data while you're a customer. When you leave, we delete it and confirm in writing.</p>
+        </li>
+        <li>
+          <strong>Your rights</strong>
+          <p>We handle personal data under UK GDPR and India's Digital Personal Data Protection Act, and sign a data processing agreement with every customer.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section band" aria-labelledby="audit-title">
+    <div class="wrap split split--text-wide">
+      <div class="section-head">
+        <h2 id="audit-title">A trail your auditors will like</h2>
+        <p class="lede">
+          Every invoice can be traced from the email it arrived in, through each approval, to the ledger entry and the bank line. Every decision on
+          an exception records who made it and when.
+        </p>
+      </div>
+      <div class="section-head">
+        <h2>Built by governance people</h2>
+        <p>
+          {site.legalName} works alongside Beam Global Services, our managed IT and governance, risk and compliance practice. Segregation of duties
+          and audit trails are where we started, not features we added later.
+        </p>
+        <p>Have a security questionnaire? <a href={`mailto:${site.email}?subject=Security%20questionnaire`}>Send it to us</a> and we'll answer every question.</p>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Layout>
+
+<style>
+  .two-col {
+    display: grid;
+    gap: 48px;
+  }
+
+  @media (min-width: 860px) {
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+    }
+  }
+
+  .two-col h2 {
+    font-size: var(--step-3);
+    margin-bottom: 24px;
+  }
+
+  .nevers {
+    list-style: none;
+    display: grid;
+    gap: 12px;
+  }
+
+  .nevers li {
+    position: relative;
+    padding-left: 30px;
+  }
+
+  .nevers li::before,
+  .nevers li::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0.75em;
+    width: 14px;
+    height: 2.5px;
+    background: var(--audit);
+    transform: rotate(45deg);
+  }
+
+  .nevers li::after {
+    transform: rotate(-45deg);
+  }
+</style>

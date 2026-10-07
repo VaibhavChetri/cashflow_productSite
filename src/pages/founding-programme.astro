@@ -1,0 +1,254 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { site } from '../data/site';
+
+// Netlify Forms works with no setup when formEndpoint is empty. Any other host needs formEndpoint set.
+const action = site.formEndpoint || '/thanks';
+---
+
+<Layout title="Founding programme" description={`Apply for one of ${site.foundingPlaces} founding places: a leakage audit on your own inbox and books, a founding price, and a direct line to the team building ${site.name}.`}>
+  <section class="wrap page-head">
+    <h1>{site.foundingPlaces} founding places. Real numbers from your own inbox.</h1>
+    <p class="lede">
+      We're onboarding a small group of finance teams and accounting firms by hand. Each one starts with a leakage audit, so you see what{' '}
+      {site.name} finds before you commit to anything.
+    </p>
+  </section>
+
+  <section class="section band" aria-labelledby="get-title">
+    <div class="wrap three">
+      <div>
+        <h2 id="get-title">What you get</h2>
+        <ul class="ticks">
+          <li>A leakage audit on your own inbox and books</li>
+          <li>A founding price, agreed up front</li>
+          <li>Onboarding done with you, not handed over</li>
+          <li>A direct line to the people building the product</li>
+        </ul>
+      </div>
+      <div>
+        <h2>What we ask</h2>
+        <ul class="ticks">
+          <li>About an hour of feedback a month</li>
+          <li>Permission to share your results, only if you're happy with them</li>
+          <li>Occasionally, a call with a business considering {site.name}</li>
+        </ul>
+      </div>
+      <div>
+        <h2>How the audit works</h2>
+        {/* CONFIRM: audit length and access model */}
+        <ol class="audit-steps">
+          <li>A 20-minute call about how your finance team works</li>
+          <li>We connect to your finance inbox and ledger</li>
+          <li>{site.name} runs on your real data for two weeks</li>
+          <li>You get a report of what it found, in money</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="apply" aria-labelledby="apply-title">
+    <div class="wrap apply">
+      <div class="section-head">
+        <h2 id="apply-title">Apply for a founding place</h2>
+        <p class="lede">Tell us a little about your finance team. We'll reply within two working days to book the first call.</p>
+        <p>Prefer email? Write to <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+      </div>
+
+      <form class="form" name="founding" method="POST" action={action} data-netlify="true" netlify-honeypot="company_website">
+        <input type="hidden" name="form-name" value="founding" />
+        <p class="sr-only"><label>Leave this empty <input name="company_website" tabindex="-1" autocomplete="off" /></label></p>
+
+        <fieldset class="field type">
+          <legend>I'm applying as</legend>
+          <label><input type="radio" name="applicant_type" value="business" checked /> A business with its own finance team</label>
+          <label><input type="radio" name="applicant_type" value="firm" /> An accounting or CA firm</label>
+        </fieldset>
+
+        <div class="row">
+          <div class="field">
+            <label for="name">Your name</label>
+            <input id="name" name="name" autocomplete="name" required />
+          </div>
+          <div class="field">
+            <label for="email">Work email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="company">Company</label>
+            <input id="company" name="company" autocomplete="organization" required />
+          </div>
+          <div class="field">
+            <label for="role">Your role</label>
+            <input id="role" name="role" autocomplete="organization-title" placeholder="e.g. Finance Director" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="country">Country</label>
+            <select id="country" name="country">
+              <option>United Kingdom</option>
+              <option>India</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ledger">Accounting system</label>
+            <select id="ledger" name="ledger">
+              <option>Xero</option>
+              <option>Zoho Books</option>
+              <option>Tally</option>
+              <option>SAP</option>
+              <option>QuickBooks</option>
+              <option>Sage</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="volume">Supplier invoices per month</label>
+          <select id="volume" name="volume">
+            <option>Under 100</option>
+            <option selected>100 to 500</option>
+            <option>500 to 2,000</option>
+            <option>More than 2,000</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="message">What's the biggest headache in your finance inbox? <span class="optional">(optional)</span></label>
+          <textarea id="message" name="message" rows="4"></textarea>
+        </div>
+        <div class="consent">
+          <input id="consent" name="consent" type="checkbox" required />
+          <label for="consent">I agree that {site.legalName} can use these details to contact me about the founding programme, as described in the <a href="/privacy">privacy notice</a>.</label>
+        </div>
+        <button class="btn btn-primary" type="submit">Apply for a founding place</button>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // Pre-select options when arriving from the accountants or India pages.
+  const params = new URLSearchParams(location.search);
+  if (params.get('type') === 'firm') {
+    (document.querySelector('input[value="firm"]') as HTMLInputElement | null)?.click();
+  }
+  const country = params.get('country');
+  if (country) {
+    const select = document.getElementById('country') as HTMLSelectElement;
+    select.value = country;
+    if (country === 'India') (document.getElementById('ledger') as HTMLSelectElement).value = 'Zoho Books';
+  }
+</script>
+
+<style>
+  .three {
+    display: grid;
+    gap: 40px;
+  }
+
+  @media (min-width: 900px) {
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+    }
+  }
+
+  .three h2 {
+    font-size: var(--step-2);
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .audit-steps {
+    padding-left: 1.4em;
+    display: grid;
+    gap: 10px;
+  }
+
+  .audit-steps li::marker {
+    font-weight: 700;
+    color: var(--tick);
+  }
+
+  .apply {
+    display: grid;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (min-width: 960px) {
+    .apply {
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 72px;
+    }
+  }
+
+  .form {
+    display: grid;
+    gap: 20px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: clamp(20px, 4vw, 36px);
+  }
+
+  .row {
+    display: grid;
+    gap: 20px;
+  }
+
+  @media (min-width: 640px) {
+    .row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .type {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .type label {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-weight: 500;
+  }
+
+  .type input,
+  .consent input {
+    width: 20px;
+    height: 20px;
+    min-height: 0;
+    flex: none;
+    accent-color: var(--tick);
+  }
+
+  .optional {
+    font-weight: 400;
+    color: var(--ink-soft);
+  }
+
+  .consent {
+    display: flex;
+    gap: 12px;
+    align-items: start;
+    font-size: 0.9375rem;
+  }
+
+  .consent input {
+    margin-top: 3px;
+  }
+
+  .form .btn {
+    justify-self: start;
+  }
+</style>

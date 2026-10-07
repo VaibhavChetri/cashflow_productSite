@@ -1,0 +1,715 @@
+---
+import '../styles/global.css';
+import '../styles/ui.css';
+import Icon from '../components/Icon.astro';
+import { site, nav, productMenu } from '../data/site';
+
+interface Props {
+  title?: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const fullTitle = title ? `${title} | ${site.name}` : `${site.name}: AI finance operations for SMEs`;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const onProduct = path === '/product';
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="canonical" href={new URL(Astro.url.pathname, site.url)} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL('/og.jpg', site.url)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#fbfdfc" />
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap bar-wrap">
+        <div class="bar">
+          <a class="brand" href="/" aria-label={`${site.name} home`}>
+            <img src="/logo-green.png" alt="" width="24" height="30" />
+            <span>{site.name}</span>
+          </a>
+
+          <nav class="nav-desktop" aria-label="Main">
+            <ul>
+              <li class="has-mega" data-mega>
+                <a class:list={['nav-link', 'nav-trigger', { current: onProduct }]} href="/product" aria-haspopup="true" aria-expanded="false" aria-controls="mega">
+                  Products <Icon name="chevron-down" size={16} class="caret" />
+                </a>
+                <div class="mega" id="mega" data-active={productMenu[0].id}>
+                  <div class="mega-inner">
+                    <ul class="mega-cats">
+                      {
+                        productMenu.map((c) => (
+                          <li>
+                            <a class="cat" href={c.href} data-cat={c.id}>
+                              <span class="cat-icon"><Icon name={c.icon} size={22} /></span>
+                              <span class="cat-label">{c.label}</span>
+                              <Icon name="chevron" size={18} class="cat-chev" />
+                            </a>
+                          </li>
+                        ))
+                      }
+                    </ul>
+                    <div class="mega-right">
+                      {
+                        productMenu.map((c) => (
+                          <ul class="mega-items" data-id={c.id}>
+                            {c.items.map((it) => (
+                              <li>
+                                <a href={it.href}>
+                                  <Icon name={it.icon} size={18} />
+                                  <span>{it.label}</span>
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        ))
+                      }
+                      <div class="mega-cta">
+                        <p>Want to see it on your own data? Get a free leakage audit.</p>
+                        <a class="btn btn-quiet" href="/founding-programme#apply">Talk to us</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              {
+                nav.map((item) => (
+                  <li>
+                    <a class:list={['nav-link', { current: path === item.href }]} href={item.href} aria-current={path === item.href ? 'page' : undefined}>
+                      {item.label}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+
+          <a class="btn btn-primary header-cta" href="/founding-programme#apply">Book a leakage audit</a>
+
+          <details class="nav-mobile">
+            <summary>Menu</summary>
+            <nav aria-label="Main (mobile)">
+              <p class="m-head">Products</p>
+              <ul class="m-products">
+                {productMenu.filter((c) => c.id !== 'int').map((c) => <li><a href={c.href}><Icon name={c.icon} size={18} />{c.label}</a></li>)}
+              </ul>
+              <ul class="m-links">
+                {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+                <li><a href="/leakage-calculator">Leakage calculator</a></li>
+              </ul>
+              <a class="btn btn-primary" href="/founding-programme#apply">Book a leakage audit</a>
+            </nav>
+          </details>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-grid">
+        <div class="footer-brand">
+          <p class="footer-name"><img src="/logo-green.png" alt="" width="22" height="27" />{site.name}</p>
+          <p>Reads your finance inbox, reconciles it against your books, bank and approvals, and brings you only the exceptions.</p>
+          <p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+        </div>
+        <nav aria-label="Product">
+          <p class="footer-head">Product</p>
+          <ul>
+            <li><a href="/product">How it works</a></li>
+            <li><a href="/integrations">Integrations</a></li>
+            <li><a href="/leakage-calculator">Leakage calculator</a></li>
+            <li><a href="/trust">AI and your data</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Who it's for">
+          <p class="footer-head">Who it's for</p>
+          <ul>
+            <li><a href="/accountants">Accounting and CA firms</a></li>
+            <li><a href="/india">Finance teams in India</a></li>
+            <li><a href="/founding-programme">Founding programme</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Company">
+          <p class="footer-head">Company</p>
+          <ul>
+            <li><a href="/company">About {site.legalName}</a></li>
+            <li><a href="/privacy">Privacy notice</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="wrap footer-base">
+        <p>&copy; {year} {site.legalName}. Operating in the UK and India.</p>
+        <p>Product screens on this site show demo data.</p>
+      </div>
+    </footer>
+
+    <script>
+      // Products mega menu: hover or click to open, hover/focus a category to switch, Escape to close.
+      const item = document.querySelector<HTMLElement>('[data-mega]');
+      const trigger = item?.querySelector<HTMLAnchorElement>('.nav-trigger');
+      const mega = item?.querySelector<HTMLElement>('.mega');
+      if (item && trigger && mega) {
+        let timer: number | undefined;
+        const setOpen = (open: boolean) => {
+          item.classList.toggle('open', open);
+          trigger.setAttribute('aria-expanded', String(open));
+        };
+        const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+        if (finePointer) {
+          item.addEventListener('mouseenter', () => {
+            clearTimeout(timer);
+            setOpen(true);
+          });
+          item.addEventListener('mouseleave', () => {
+            timer = window.setTimeout(() => setOpen(false), 160);
+          });
+        } else {
+          trigger.addEventListener('click', (e) => {
+            if (!item.classList.contains('open')) {
+              e.preventDefault();
+              setOpen(true);
+            }
+          });
+        }
+        let closedByKey = false;
+        item.addEventListener('focusin', () => {
+          if (closedByKey) {
+            closedByKey = false;
+            return;
+          }
+          setOpen(true);
+        });
+        item.addEventListener('focusout', (e) => {
+          if (!item.contains(e.relatedTarget as Node)) setOpen(false);
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && item.classList.contains('open')) {
+            setOpen(false);
+            closedByKey = true;
+            trigger.focus();
+          }
+        });
+        mega.querySelectorAll<HTMLElement>('.cat').forEach((cat) => {
+          const activate = () => (mega.dataset.active = cat.dataset.cat);
+          cat.addEventListener('mouseenter', activate);
+          cat.addEventListener('focus', activate);
+        });
+      }
+
+      // Reveal illustrations and charts as they scroll into view.
+      const reveal = document.querySelectorAll('[data-reveal], [data-anim]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) =>
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add('in');
+                io.unobserve(e.target);
+              }
+            }),
+          { threshold: 0.2 },
+        );
+        reveal.forEach((el) => io.observe(el));
+      } else {
+        reveal.forEach((el) => el.classList.add('in'));
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  /* Floating glass navigation */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    padding-top: 12px;
+  }
+
+  .bar-wrap {
+    position: relative;
+  }
+
+  .bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 66px;
+    padding: 0 10px 0 20px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.58);
+    -webkit-backdrop-filter: blur(18px) saturate(170%);
+    backdrop-filter: blur(18px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 10px 34px -16px rgba(15, 51, 38, 0.28);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
+  }
+
+  .brand img {
+    width: 24px;
+    height: auto;
+  }
+
+  .nav-desktop {
+    margin-left: auto;
+    height: 66px;
+  }
+
+  .nav-desktop > ul {
+    display: flex;
+    gap: 2px;
+    list-style: none;
+    height: 100%;
+  }
+
+  .nav-desktop > ul > li {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 9px 14px;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.98rem;
+    border-radius: 10px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .nav-link:hover {
+    background: rgba(231, 244, 236, 0.85);
+    color: var(--ink);
+  }
+
+  .nav-link.current {
+    color: var(--brand);
+  }
+
+  .nav-trigger :global(.caret) {
+    transition: transform 0.25s ease;
+  }
+
+  /* Products trigger: green with an underline bar when the menu is open */
+  .has-mega.open .nav-trigger,
+  .has-mega:focus-within .nav-trigger {
+    color: var(--brand);
+    background: transparent;
+  }
+
+  .has-mega.open .nav-trigger::after {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: -13px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--brand);
+  }
+
+  .has-mega.open :global(.caret) {
+    transform: rotate(180deg);
+  }
+
+  .mega {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 10px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+  }
+
+  /* Invisible bridge so the pointer can travel from the trigger to the panel */
+  .mega::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -14px;
+    height: 14px;
+  }
+
+  .has-mega.open .mega {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .mega-inner {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.9fr) 1.1fr;
+    /* Solid: a backdrop blur can't reach the page from inside the glass bar */
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: 0 30px 70px -30px rgba(15, 51, 38, 0.45);
+    padding: 28px;
+  }
+
+  .mega-cats {
+    list-style: none;
+    display: grid;
+    gap: 4px;
+    padding-right: 28px;
+    border-right: 1px solid var(--line);
+  }
+
+  .cat {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 1.125rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+
+  .cat-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .cat-label {
+    flex: 1;
+  }
+
+  .cat :global(.cat-chev) {
+    color: var(--ink-soft);
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .mega[data-active='ap'] [data-cat='ap'],
+  .mega[data-active='ar'] [data-cat='ar'],
+  .mega[data-active='recon'] [data-cat='recon'],
+  .mega[data-active='gst'] [data-cat='gst'],
+  .mega[data-active='controls'] [data-cat='controls'],
+  .mega[data-active='int'] [data-cat='int'] {
+    background: var(--bg-soft);
+  }
+
+  .mega[data-active='ap'] [data-cat='ap'] .cat-icon,
+  .mega[data-active='ar'] [data-cat='ar'] .cat-icon,
+  .mega[data-active='recon'] [data-cat='recon'] .cat-icon,
+  .mega[data-active='gst'] [data-cat='gst'] .cat-icon,
+  .mega[data-active='controls'] [data-cat='controls'] .cat-icon,
+  .mega[data-active='int'] [data-cat='int'] .cat-icon {
+    color: var(--brand);
+    background: var(--tint);
+    border-color: var(--tint-2);
+  }
+
+  .mega[data-active='ap'] [data-cat='ap'] :global(.cat-chev),
+  .mega[data-active='ar'] [data-cat='ar'] :global(.cat-chev),
+  .mega[data-active='recon'] [data-cat='recon'] :global(.cat-chev),
+  .mega[data-active='gst'] [data-cat='gst'] :global(.cat-chev),
+  .mega[data-active='controls'] [data-cat='controls'] :global(.cat-chev),
+  .mega[data-active='int'] [data-cat='int'] :global(.cat-chev) {
+    color: var(--brand);
+    transform: translateX(3px);
+  }
+
+  .mega-right {
+    position: relative;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 20px;
+    padding-left: 40px;
+  }
+
+  .mega-items {
+    grid-area: 1 / 1;
+    list-style: none;
+    display: grid;
+    align-content: start;
+    gap: 2px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  }
+
+  .mega[data-active='ap'] [data-id='ap'],
+  .mega[data-active='ar'] [data-id='ar'],
+  .mega[data-active='recon'] [data-id='recon'],
+  .mega[data-active='gst'] [data-id='gst'],
+  .mega[data-active='controls'] [data-id='controls'],
+  .mega[data-active='int'] [data-id='int'] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .mega-items a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 1.0625rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .mega-items a :global(svg) {
+    color: #9bb0a7;
+    transition: color 0.2s ease;
+  }
+
+  .mega-items a:hover {
+    background: var(--bg-soft);
+    color: var(--ink);
+  }
+
+  .mega-items a:hover :global(svg) {
+    color: var(--brand);
+  }
+
+  .mega-cta {
+    grid-row: 2;
+    display: grid;
+    gap: 16px;
+    justify-items: start;
+    padding: 22px 24px;
+    border-radius: 20px;
+    background: var(--panel-grad);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .mega-cta .btn {
+    min-height: 40px;
+    padding: 8px 20px;
+  }
+
+  .header-cta {
+    min-height: 46px;
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+
+  .nav-mobile {
+    display: none;
+    margin-left: auto;
+  }
+
+  .nav-mobile summary {
+    list-style: none;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 9px 16px;
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    color: var(--ink);
+  }
+
+  .nav-mobile summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-mobile:not([open]) nav {
+    display: none;
+  }
+
+  .nav-mobile nav {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 10px);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 30px 60px -30px rgba(15, 51, 38, 0.45);
+    padding: 18px 20px 22px;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+  }
+
+  .m-head {
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .nav-mobile ul {
+    list-style: none;
+    display: grid;
+  }
+
+  .m-products a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .m-products a :global(svg) {
+    color: var(--brand);
+  }
+
+  .m-links {
+    margin-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .m-links a {
+    display: block;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.0625rem;
+  }
+
+  .nav-mobile .btn {
+    margin-top: 18px;
+    width: 100%;
+  }
+
+  @media (max-width: 1060px) {
+    .nav-desktop,
+    .header-cta {
+      display: none;
+    }
+    .nav-mobile {
+      display: block;
+    }
+  }
+
+  /* Footer */
+  .site-footer {
+    background:
+      radial-gradient(800px 400px at 90% 0%, rgba(34, 181, 115, 0.18), transparent 60%),
+      var(--dark);
+    color: #c6d6ce;
+    padding-top: 80px;
+  }
+
+  .site-footer a {
+    color: #e8f1ec;
+    text-decoration: none;
+  }
+
+  .site-footer a:hover {
+    text-decoration: underline;
+    color: #fff;
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: 40px;
+    padding-bottom: 56px;
+  }
+
+  @media (min-width: 860px) {
+    .footer-grid {
+      grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    }
+  }
+
+  .footer-brand {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+
+  .footer-brand p + p {
+    margin-top: 0;
+  }
+
+  .footer-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.375rem;
+    letter-spacing: -0.02em;
+  }
+
+  .footer-head {
+    color: #fff;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .site-footer ul {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+
+  .footer-base {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    padding-block: 22px 32px;
+    border-top: 1px solid rgba(198, 214, 206, 0.18);
+    font-size: 0.875rem;
+  }
+
+  .footer-base p + p {
+    margin-top: 0;
+  }
+</style>

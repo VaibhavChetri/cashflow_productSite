@@ -1,0 +1,197 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+---
+
+<Layout title="Leakage calculator" description="Estimate how much money and time your finance team loses each year to duplicate payments, errors and manual invoice handling.">
+  <section class="wrap page-head">
+    <h1>What is your finance inbox costing you?</h1>
+    <p class="lede">
+      A rough estimate from your own numbers. It's not a benchmark: change the error rate to whatever you believe is true for your business.
+    </p>
+  </section>
+
+  <section class="section band" aria-labelledby="calc-title">
+    <div class="wrap calc">
+      <form class="inputs" id="calc" aria-labelledby="calc-title" onsubmit="return false">
+        <h2 id="calc-title" class="sr-only">Your numbers</h2>
+        <fieldset class="field currency">
+          <legend>Currency</legend>
+          <label><input type="radio" name="cur" value="GBP" checked /> £ GBP</label>
+          <label><input type="radio" name="cur" value="INR" /> ₹ INR</label>
+        </fieldset>
+        <div class="field">
+          <label for="inv">Supplier invoices per month</label>
+          <input id="inv" name="inv" type="number" inputmode="numeric" min="0" step="10" value="400" />
+        </div>
+        <div class="field">
+          <label for="avg">Average invoice value</label>
+          <input id="avg" name="avg" type="number" inputmode="decimal" min="0" step="50" value="1200" />
+        </div>
+        <div class="field">
+          <label for="rate">Share of invoices with a costly error (%)</label>
+          <input id="rate" name="rate" type="number" inputmode="decimal" min="0" max="20" step="0.1" value="0.5" />
+          <small>Duplicates, already-paid invoices and overpayments that go unnoticed. Start low; 0.5% is one invoice in 200.</small>
+        </div>
+        <div class="field">
+          <label for="mins">Minutes of handling per invoice</label>
+          <input id="mins" name="mins" type="number" inputmode="numeric" min="0" step="1" value="8" />
+          <small>Opening, keying, chasing approval and matching.</small>
+        </div>
+        <div class="field">
+          <label for="cost">Cost of an hour of finance team time</label>
+          <input id="cost" name="cost" type="number" inputmode="decimal" min="0" step="1" value="30" />
+        </div>
+      </form>
+
+      <div class="result" aria-live="polite">
+        <p class="r-label">Money at risk each year</p>
+        <p class="r-big total" id="out-leak">£28,800</p>
+        <p class="r-label">Hours spent on handling each month</p>
+        <p class="r-mid" id="out-hours">53 hours</p>
+        <p class="r-label">Cost of that time each year</p>
+        <p class="r-mid" id="out-time">£19,200</p>
+        <p class="r-note">
+          How we work it out: invoices × average value × error rate × 12, and invoices × minutes ÷ 60 for hours. A leakage audit replaces these
+          assumptions with what we actually find in your inbox and books.
+        </p>
+        <a class="btn btn-primary" href="/founding-programme#apply">Get the real number with a leakage audit</a>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Layout>
+
+<script>
+  const form = document.getElementById('calc') as HTMLFormElement;
+  const defaults = { GBP: { avg: 1200, cost: 30 }, INR: { avg: 50000, cost: 700 } } as const;
+  const num = (id: string) => Math.max(0, Number((document.getElementById(id) as HTMLInputElement).value) || 0);
+
+  function format(value: number, cur: 'GBP' | 'INR') {
+    return new Intl.NumberFormat(cur === 'INR' ? 'en-IN' : 'en-GB', {
+      style: 'currency',
+      currency: cur,
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+
+  function update() {
+    const cur = (new FormData(form).get('cur') as 'GBP' | 'INR') ?? 'GBP';
+    const inv = num('inv');
+    const leak = inv * num('avg') * (num('rate') / 100) * 12;
+    const hours = (inv * num('mins')) / 60;
+    document.getElementById('out-leak')!.textContent = format(leak, cur);
+    document.getElementById('out-hours')!.textContent = `${Math.round(hours).toLocaleString('en-GB')} hours`;
+    document.getElementById('out-time')!.textContent = format(hours * num('cost') * 12, cur);
+  }
+
+  form.addEventListener('input', update);
+  form.querySelectorAll<HTMLInputElement>('input[name="cur"]').forEach((r) =>
+    r.addEventListener('change', () => {
+      const d = defaults[r.value as 'GBP' | 'INR'];
+      (document.getElementById('avg') as HTMLInputElement).value = String(d.avg);
+      (document.getElementById('cost') as HTMLInputElement).value = String(d.cost);
+      update();
+    }),
+  );
+  update();
+</script>
+
+<style>
+  .calc {
+    display: grid;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (min-width: 920px) {
+    .calc {
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+    }
+  }
+
+  .inputs {
+    display: grid;
+    gap: 22px;
+  }
+
+  .currency {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    align-items: center;
+  }
+
+  .currency legend {
+    width: 100%;
+    margin-bottom: 6px;
+  }
+
+  .currency label {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    font-weight: 500;
+  }
+
+  .currency input {
+    width: 18px;
+    height: 18px;
+    min-height: 0;
+    accent-color: var(--tick);
+  }
+
+  .result {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--ink);
+    border-radius: 4px 4px 12px 12px;
+    padding: clamp(24px, 4vw, 40px);
+    display: grid;
+    gap: 6px;
+    justify-items: start;
+    position: sticky;
+    top: 96px;
+  }
+
+  .result p {
+    margin: 0;
+  }
+
+  .result .r-label {
+    color: var(--ink-soft);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    margin-top: 16px;
+  }
+
+  .result .r-label:first-child {
+    margin-top: 0;
+  }
+
+  .r-big {
+    font-size: clamp(2.6rem, 6vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--audit);
+  }
+
+  .r-mid {
+    font-size: var(--step-3);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .result .r-note {
+    margin: 18px 0 20px;
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+</style>

@@ -1,0 +1,109 @@
+---
+// Rebuilt from the GST Reconciliation screen (GSTR-2B vs books). Demo data only.
+const chips = [
+  { t: 'Matched', n: '1,512', c: 'var(--ui-green)', on: true },
+  { t: 'Amount mismatch', n: '71', c: '#e39a2d' },
+  { t: 'In 2B, not in books', n: '382', v: '₹32.2L', c: '#9aa6b2' },
+  { t: 'In books, not in 2B', n: '174', v: '₹20.9L', c: 'var(--ui-red)' },
+  { t: 'Bill without GSTIN', n: '40', v: '₹2.3L', c: '#e39a2d' },
+];
+const rows = [
+  { inv: '745', party: 'Sahyadri Hospitality', gstin: '27AA•••••1Z4', date: '19 Jan 26', twoB: '₹3,274', books: '₹3,274', diff: '', why: 'Invoice number and amount agree between GSTR-2B and books.' },
+  { inv: '812', party: 'Nilgiri Foods Pvt Ltd', gstin: '33AB•••••1Z9', date: '3 Feb 26', twoB: '₹1,19,271', books: '₹1,12,400', diff: '₹6,871', why: 'Amounts differ. The bill in books is missing the freight line.' },
+  { inv: '903', party: 'Vasant Logistics', gstin: '29AC•••••1Z2', date: '21 Feb 26', twoB: '₹54,000', books: '', diff: '', why: 'In GSTR-2B but not booked. Input credit is at risk until the bill is recorded.' },
+];
+---
+
+<div class="ui gst">
+  <div class="gst-head">
+    <h4>GST reconciliation: GSTR-2B vs books</h4>
+    <p class="ui-sub">1 Apr 2025 to 31 Mar 2026</p>
+  </div>
+  <div class="chips" aria-hidden="true">
+    {
+      chips.map((c) => (
+        <span class={`ui-chip ${c.on ? 'ui-chip--on' : ''}`}>
+          <i style={`background:${c.c}`} />
+          {c.t} ({c.n}){c.v && <span class="v">{c.v}</span>}
+        </span>
+      ))
+    }
+  </div>
+  <table class="ui-table">
+    <thead>
+      <tr>
+        <th scope="col">Invoice</th>
+        <th scope="col">Party</th>
+        <th scope="col">Date</th>
+        <th scope="col" class="r">GSTR-2B</th>
+        <th scope="col" class="r">Books</th>
+        <th scope="col" class="r">Diff</th>
+        <th scope="col">Why</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((r) => (
+          <tr>
+            <td>{r.inv}</td>
+            <td>
+              <span class="party">{r.party}</span>
+              <span class="gstin">{r.gstin}</span>
+            </td>
+            <td class="nowrap">{r.date}</td>
+            <td class="r nowrap">{r.twoB}</td>
+            <td class="r nowrap">{r.books || '—'}</td>
+            <td class={`r nowrap ${r.diff ? 'ui-red' : ''}`}>{r.diff || '—'}</td>
+            <td class="why">{r.why}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .gst {
+    min-width: 820px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .gst-head {
+    display: grid;
+    gap: 2px;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .v {
+    color: var(--ui-soft);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+
+  .party {
+    display: block;
+    font-weight: 600;
+  }
+
+  .gstin {
+    display: block;
+    color: var(--ui-soft);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  .why {
+    color: var(--ui-soft);
+    max-width: 280px;
+  }
+</style>

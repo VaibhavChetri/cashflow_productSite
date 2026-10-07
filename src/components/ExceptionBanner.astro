@@ -1,0 +1,81 @@
+---
+// Rebuilt from the exception banners on the Payments screens. Demo data only.
+interface Props {
+  tone?: 'warn' | 'info';
+  title: string;
+  body: string;
+  action: string;
+}
+const { tone = 'warn', title, body, action } = Astro.props;
+---
+
+<div class={`ui banner banner--${tone}`}>
+  <span class="icon" aria-hidden="true">{tone === 'warn' ? '!' : 'i'}</span>
+  <div class="text">
+    <p class="title">{title}</p>
+    <p class="body">{body}</p>
+    <span class="ui-btn">{action}</span>
+  </div>
+</div>
+
+<style>
+  .banner {
+    display: flex;
+    gap: 14px;
+    border-radius: 14px;
+    border: 1.5px solid;
+    border-left-width: 5px;
+  }
+
+  .banner--warn {
+    background: #fffaf0;
+    border-color: #f0b85a;
+  }
+
+  .banner--info {
+    background: #f3f9fd;
+    border-color: #7fbfe0;
+  }
+
+  .icon {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    background: #fbe7c2;
+    color: var(--ui-amber);
+  }
+
+  .banner--info .icon {
+    background: #dcecf7;
+    color: var(--ui-blue);
+  }
+
+  .text {
+    display: grid;
+    gap: 8px;
+    justify-items: start;
+  }
+
+  .title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #7a3a07;
+  }
+
+  .banner--info .title {
+    color: #173f63;
+  }
+
+  .body {
+    color: #8a4a12;
+    max-width: 60ch;
+  }
+
+  .banner--info .body {
+    color: #2f4f69;
+  }
+</style>

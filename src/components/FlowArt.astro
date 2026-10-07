@@ -1,0 +1,427 @@
+---
+// Cashflo-style illustration: a generated invoice backdrop with floating product cards and animated connectors.
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import cfPayables from '../assets/img/cf-payables.png';
+import cfReceivables from '../assets/img/cf-receivables.png';
+import cfReconcile from '../assets/img/cf-reconcile.png';
+
+interface Props {
+  variant: 'payables' | 'receivables' | 'reconcile';
+}
+const { variant } = Astro.props;
+const bg = { payables: cfPayables, receivables: cfReceivables, reconcile: cfReconcile }[variant];
+---
+
+<div class:list={['art', `art--${variant}`]} data-anim aria-hidden="true">
+  <Image src={bg} alt="" widths={[420, 640, 900]} sizes="(min-width: 920px) 44vw, 92vw" class="art-bg" />
+  <div class="layer">
+    {
+      variant === 'payables' && (
+        <>
+          <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M50 40 C 50 52, 24 50, 24 62" />
+            <path d="M50 40 C 50 52, 76 50, 76 62" />
+            <path d="M50 40 L 50 79" />
+          </svg>
+          <span class="hub" style="left:50%;top:40%">
+            <Icon name="check" size={16} />
+          </span>
+          <div class="node" style="left:6%;top:62%;--d:.15s">
+            <span class="tile tile--green"><Icon name="merge" size={22} /></span>
+            <span>Matched to PO and job</span>
+          </div>
+          <div class="node" style="left:58%;top:62%;--d:.3s">
+            <span class="tile tile--purple"><Icon name="users" size={22} /></span>
+            <span>Approved by Sarah K.</span>
+          </div>
+          <div class="node node--alert" style="left:31%;top:79%;--d:.45s">
+            <span class="tile tile--red"><Icon name="alert" size={22} /></span>
+            <span>Already paid. Held.</span>
+          </div>
+        </>
+      )
+    }
+
+    {
+      variant === 'receivables' && (
+        <>
+          <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M50 27 L 50 40" />
+          </svg>
+          <div class="node node--top" style="left:50%;top:13%;--d:.1s">
+            <span class="tile tile--purple"><Icon name="cash" size={22} /></span>
+            <span>Client says paid</span>
+          </div>
+          <span class="dot" style="left:50%;top:27%" />
+          <span class="dot" style="left:50%;top:40%" />
+          <div class="claim" style="--d:.3s">
+            <div class="who">
+              <span class="avatar">KH</span>
+              <p class="name">Kestrel Hospitality</p>
+              <p class="tags">
+                <span>No remittance</span>
+                <span>Not in bank</span>
+              </p>
+            </div>
+            <div class="bubble">
+              <span class="mail">
+                <Icon name="mail" size={20} />
+                <b>1</b>
+              </span>
+              <p>Hi, we paid INV-0388 on Friday. Can you confirm?</p>
+            </div>
+          </div>
+          <div class="choices" style="--d:.5s">
+            <span class="choice">Mark disputed</span>
+            <span class="choice choice--solid">Ask for remittance</span>
+          </div>
+        </>
+      )
+    }
+
+    {
+      variant === 'reconcile' && (
+        <>
+          <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M33 50 C 43 50, 42 25, 52 25" />
+            <path d="M33 50 L 52 50" />
+            <path d="M33 50 C 43 50, 42 75, 52 75" />
+          </svg>
+          <span class="hub" style="left:33%;top:50%">
+            <Icon name="check" size={16} />
+          </span>
+          <div class="node node--stack" style="left:52%;top:18%;--d:.15s">
+            <span class="tile tile--green"><Icon name="bank" size={22} /></span>
+            <span>Bank verified <small>1,931 of 2,877</small></span>
+          </div>
+          <div class="node node--stack" style="left:52%;top:43%;--d:.3s">
+            <span class="tile tile--blue"><Icon name="receipt" size={22} /></span>
+            <span>GSTR-2B matched <small>1,512 invoices</small></span>
+          </div>
+          <div class="node node--stack" style="left:52%;top:68%;--d:.45s">
+            <span class="tile tile--amber"><Icon name="search" size={22} /></span>
+            <span>Mismatches explained <small>71 with reasons</small></span>
+          </div>
+        </>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .art {
+    position: relative;
+    aspect-ratio: 1 / 0.96;
+    border-radius: 32px;
+    overflow: hidden;
+    background: #eceeed;
+    container-type: inline-size;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  }
+
+  .art :global(.art-bg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.4);
+    opacity: 0.95;
+  }
+
+  .layer {
+    position: absolute;
+    inset: 0;
+    font-size: 2.15cqw;
+    color: var(--ink);
+  }
+
+  .layer p {
+    margin: 0;
+    max-width: none;
+  }
+
+  .links {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .links path {
+    fill: none;
+    stroke: #98a7a0;
+    stroke-width: 1.6;
+    stroke-dasharray: 5 6;
+    vector-effect: non-scaling-stroke;
+    animation: flow 1.6s linear infinite;
+  }
+
+  .hub {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 2.2em;
+    height: 2.2em;
+    margin: -1.1em 0 0 -1.1em;
+    border-radius: 50%;
+    background: #2fae73;
+    color: #fff;
+    box-shadow: 0 0 0 0.35em rgba(255, 255, 255, 0.85), 0 0.6em 1.4em -0.4em rgba(18, 132, 79, 0.6);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+
+  .hub :global(svg) {
+    width: 1.2em;
+    height: 1.2em;
+    stroke-width: 2.6;
+  }
+
+  .dot {
+    position: absolute;
+    width: 0.7em;
+    height: 0.7em;
+    margin: -0.35em 0 0 -0.35em;
+    border-radius: 50%;
+    background: #98a7a0;
+  }
+
+  .node {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    width: 36%;
+    padding: 0.85em 1em;
+    border-radius: 0.9em;
+    background: #fff;
+    box-shadow: 0 1.2em 2.4em -1.2em rgba(15, 51, 38, 0.4);
+    font-size: 1.2em;
+    font-weight: 500;
+    line-height: 1.15;
+  }
+
+  .node--top {
+    width: auto;
+    transform: translateX(-50%);
+    padding: 0.9em 1.4em 0.9em 1em;
+  }
+
+  .node--stack {
+    width: 40%;
+  }
+
+  .node small {
+    display: block;
+    margin-top: 0.2em;
+    font-size: 0.72em;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  .node--alert {
+    box-shadow: 0 0 0 0.12em rgba(194, 65, 45, 0.25), 0 1.2em 2.4em -1.2em rgba(15, 51, 38, 0.4);
+  }
+
+  .tile {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.2em;
+    height: 2.2em;
+    border-radius: 0.6em;
+  }
+
+  .tile :global(svg) {
+    width: 1.15em;
+    height: 1.15em;
+  }
+
+  .tile--green {
+    background: linear-gradient(135deg, #e3f6ea, #c4ead4);
+    color: #12844f;
+  }
+
+  .tile--purple {
+    background: linear-gradient(135deg, #eeebfd, #d6cff8);
+    color: #6a52cc;
+  }
+
+  .tile--red {
+    background: linear-gradient(135deg, #fdebe8, #f7cfc8);
+    color: #c2412d;
+  }
+
+  .tile--blue {
+    background: linear-gradient(135deg, #e7f0fd, #cadcf7);
+    color: #2f63c4;
+  }
+
+  .tile--amber {
+    background: linear-gradient(135deg, #fdf2de, #f5ddb0);
+    color: #a8640c;
+  }
+
+  /* Receivables: the claim card, like a chat between your team and the client */
+  .claim {
+    position: absolute;
+    left: 7%;
+    top: 40%;
+    width: 86%;
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 1em;
+    padding: 1em;
+    border-radius: 1.4em;
+    background: rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 1.4em 3em -1.6em rgba(15, 51, 38, 0.35);
+  }
+
+  .who {
+    display: grid;
+    gap: 0.5em;
+    align-content: start;
+    justify-items: start;
+    padding: 0.4em;
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 2.6em;
+    height: 2.6em;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a6b48, #2fae73);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 0 0 0.2em #fff;
+  }
+
+  .name {
+    font-size: 1.25em;
+    font-weight: 500;
+    color: #5f7369;
+  }
+
+  .tags {
+    display: grid;
+    gap: 0.4em;
+    justify-items: start;
+  }
+
+  .tags span {
+    padding: 0.35em 0.8em;
+    border-radius: 999px;
+    background: #e8ecea;
+    color: #6d7f77;
+    font-size: 0.75em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .bubble {
+    position: relative;
+    padding: 1em;
+    border-radius: 1.1em;
+    background: #fff;
+    box-shadow: 0 1em 2em -1.2em rgba(15, 51, 38, 0.35);
+    color: #7c8d86;
+    font-size: 1.1em;
+    line-height: 1.3;
+  }
+
+  .mail {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 2.2em;
+    height: 2.2em;
+    margin-bottom: 0.6em;
+    border-radius: 0.6em;
+    background: #fdeceb;
+    color: #d0413a;
+  }
+
+  .mail :global(svg) {
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  .mail b {
+    position: absolute;
+    top: -0.45em;
+    left: -0.45em;
+    display: grid;
+    place-items: center;
+    width: 1.2em;
+    height: 1.2em;
+    border-radius: 50%;
+    background: #2fae73;
+    color: #fff;
+    font-size: 0.7em;
+  }
+
+  .choices {
+    position: absolute;
+    left: 50%;
+    top: 81%;
+    display: flex;
+    gap: 0.8em;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .choice {
+    padding: 0.8em 1.4em;
+    border-radius: 999px;
+    border: 1.5px solid #b9c5c0;
+    color: #6d7f77;
+    font-size: 1.15em;
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .choice--solid {
+    border-color: transparent;
+    background: #e6ebe8;
+    color: var(--ink);
+    box-shadow: 0 0.8em 1.6em -1em rgba(15, 51, 38, 0.5);
+  }
+
+  /* Entrance when the panel scrolls into view */
+  :global(.js) .art .node,
+  :global(.js) .art .claim,
+  :global(.js) .art .choices {
+    opacity: 0;
+    translate: 0 14px;
+    transition: opacity 0.6s ease var(--d, 0s), translate 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0s);
+  }
+
+  :global(.js) .art.in .node,
+  :global(.js) .art.in .claim,
+  :global(.js) .art.in .choices {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  @keyframes flow {
+    to {
+      stroke-dashoffset: -22;
+    }
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0.35em rgba(255, 255, 255, 0.85), 0 0 0 0.35em rgba(47, 174, 115, 0.35);
+    }
+    50% {
+      box-shadow: 0 0 0 0.35em rgba(255, 255, 255, 0.85), 0 0 0 1em rgba(47, 174, 115, 0);
+    }
+  }
+</style>

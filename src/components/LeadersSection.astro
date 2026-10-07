@@ -1,0 +1,291 @@
+---
+// Ledge-style section for finance leaders: message on the left, a month-end tracker chart on the right.
+import Icon from './Icon.astro';
+
+// Exceptions by state across the month (demo data). Bottom layer first.
+const series = [
+  { key: 'Cleared', color: '#3f9a6b', values: [0, 1, 2, 4, 6, 8, 10, 12, 14, 17, 20, 22] },
+  { key: 'In review', color: '#f2c65a', values: [1, 2, 3, 4, 5, 6, 7, 7, 8, 8, 9, 9] },
+  { key: 'Changes requested', color: '#ef8a4c', values: [0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2] },
+  { key: 'Prepared by AI', color: '#8b7cf6', values: [1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3] },
+  { key: 'Open', color: '#d5dbe0', values: [3, 3, 4, 4, 5, 5, 6, 6, 6, 7, 7, 7] },
+];
+const W = 600;
+const H = 300;
+const left = 44;
+const right = 586;
+const top = 30;
+const bottom = 262;
+const max = 50;
+const n = series[0].values.length;
+const x = (i: number) => left + (i * (right - left)) / (n - 1);
+const y = (v: number) => bottom - (v / max) * (bottom - top);
+
+let base = Array(n).fill(0);
+const areas = series.map((s) => {
+  const lower = base;
+  const upper = lower.map((b, i) => b + s.values[i]);
+  base = upper;
+  const topEdge = upper.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' L');
+  const bottomEdge = lower
+    .map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`)
+    .reverse()
+    .join(' L');
+  return { ...s, d: `M${topEdge} L${bottomEdge} Z` };
+});
+const ticks = [0, 25, 50];
+const dates = [
+  { i: 0, label: 'Oct 1' },
+  { i: 4, label: 'Oct 8' },
+  { i: 8, label: 'Oct 15' },
+  { i: 11, label: 'Oct 22' },
+];
+const latest = series.map((s) => ({ key: s.key, color: s.color, value: s.values[n - 1] })).reverse();
+
+const points = [
+  { title: 'Close without the scramble', text: 'Start each month with reconciliations prepared and the exception list already sorted by value.' },
+  { title: 'Trust every number', text: 'Every figure links back to its email, approval or bank line, with the reasoning shown next to it.' },
+  { title: 'Grow without adding headcount', text: 'More invoices does not have to mean more people. Oversight and control hold as the business grows.' },
+];
+---
+
+<div class="leaders">
+  <div class="lead-top">
+    <div class="lead-text">
+      <span class="pill">For finance leaders</span>
+      <h2>End the month‑end fire drill</h2>
+      <p class="lede">
+        By the time your team logs in, <a href="/product#payables">reconciliations</a> are prepared, <a href="/product#exceptions">exceptions</a> are
+        explained and <a href="/product#receivables">collections</a> are prioritised. Leaders review and decide, and nobody spends the week chasing
+        spreadsheets.
+      </p>
+      <p><a class="btn btn-dark" href="/product">See it for finance leaders <Icon name="arrow" size={18} /></a></p>
+    </div>
+
+    <figure class="chart" data-anim>
+      <figcaption>Month-end tracker</figcaption>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Stacked chart of exceptions this month by state. As of 22 October: 22 cleared, 9 in review, 2 changes requested, 3 prepared by AI and 7 open.">
+        {
+          ticks.map((t) => (
+            <g>
+              <line x1={left} x2={right} y1={y(t)} y2={y(t)} class="grid" />
+              <text x={left - 12} y={y(t) + 4} class="axis" text-anchor="end">{t}</text>
+            </g>
+          ))
+        }
+        <g class="areas">{areas.map((a) => <path d={a.d} fill={a.color} />)}</g>
+        {dates.map((d) => <text x={x(d.i)} y={H - 8} class="axis" text-anchor="middle">{d.label}</text>)}
+      </svg>
+      <div class="tip">
+        {
+          latest.map((l) => (
+            <p>
+              <i style={`background:${l.color}`} />
+              <span>{l.key}</span>
+              <strong>{l.value}</strong>
+            </p>
+          ))
+        }
+      </div>
+    </figure>
+  </div>
+
+  <ul class="points">
+    {
+      points.map((p) => (
+        <li>
+          <span class="check"><Icon name="check" size={22} /></span>
+          <h3>{p.title}</h3>
+          <p>{p.text}</p>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .leaders {
+    display: grid;
+    gap: clamp(56px, 7vw, 88px);
+  }
+
+  .lead-top {
+    display: grid;
+    gap: 48px;
+    align-items: center;
+  }
+
+  @media (min-width: 980px) {
+    .lead-top {
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 64px;
+    }
+  }
+
+  .lead-text {
+    display: grid;
+    gap: 22px;
+    justify-items: start;
+  }
+
+  .lead-text h2 {
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+  }
+
+  .lead-text .lede a {
+    color: var(--brand);
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 7px 16px;
+    border-radius: 8px;
+    background: #c9efb4;
+    color: #1d4a10;
+    font-weight: 500;
+  }
+
+  .chart {
+    position: relative;
+    margin: 0;
+    padding: 22px 22px 14px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: var(--shadow-card);
+  }
+
+  .chart figcaption {
+    color: #9aa9a2;
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+
+  .chart svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .grid {
+    stroke: #edf1ef;
+    stroke-width: 1;
+  }
+
+  .axis {
+    fill: #9aa9a2;
+    font-size: 13px;
+    font-family: var(--font);
+  }
+
+  .areas {
+    clip-path: inset(0 0 0 0);
+  }
+
+  :global(.js) .chart .areas {
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 1.6s cubic-bezier(0.3, 0.6, 0.2, 1) 0.2s;
+  }
+
+  :global(.js) .chart.in .areas {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .tip {
+    position: absolute;
+    top: 38px;
+    right: 34px;
+    display: grid;
+    gap: 8px;
+    min-width: 230px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid var(--line);
+    box-shadow: 0 16px 34px -18px rgba(15, 51, 38, 0.35);
+    font-size: 0.9375rem;
+  }
+
+  :global(.js) .chart .tip {
+    opacity: 0;
+    translate: 0 8px;
+    transition: opacity 0.5s ease 1.4s, translate 0.5s ease 1.4s;
+  }
+
+  :global(.js) .chart.in .tip {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  .tip p {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink-soft);
+  }
+
+  .tip i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .tip span {
+    flex: 1;
+  }
+
+  .tip strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  @media (max-width: 560px) {
+    .tip {
+      position: static;
+      margin-top: 12px;
+      min-width: 0;
+    }
+  }
+
+  .points {
+    list-style: none;
+    display: grid;
+    gap: 40px;
+  }
+
+  @media (min-width: 860px) {
+    .points {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+    }
+  }
+
+  .points li {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+
+  .check {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    background: #c9efb4;
+    color: #1d4a10;
+    margin-bottom: 14px;
+  }
+
+  .points h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .points p {
+    color: var(--ink-soft);
+  }
+</style>

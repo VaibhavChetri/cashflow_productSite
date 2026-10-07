@@ -1,0 +1,69 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+import studio from '../assets/img/studio.png';
+---
+
+<Layout title="About us" description={`${site.legalName} is an AI consulting and product studio working across the UK and India. We build ${site.name} for finance teams.`}>
+  <section class="wrap page-head">
+    <h1>We built this because a finance inbox broke a good team</h1>
+    <p class="lede">
+      {site.legalName} is an AI consulting and product studio working across the UK and India, led by Navinder (Nav) Kaplish.
+    </p>
+  </section>
+
+  <section class="section band" aria-labelledby="story-title">
+    <div class="wrap split">
+      <div class="section-head story">
+        <h2 id="story-title">Where it started</h2>
+        <p>
+          A UK property maintenance company asked us to fix their accounts payable. Their finance team was two people. Over a single weekend,
+          more than 200 emails could land in the shared inbox: invoices, reminders, approval chains, and now and then a legal notice.
+        </p>
+        <p>
+          Reading invoices turned out to be the easy part. The hard part was checking each one against the approval tool, the job system and the
+          ledger, and catching what slipped between them. That checking is what {site.name} does.
+        </p>
+        <p>
+          We then built the receivables side for a growing services business in India, where the truth about each unpaid invoice was buried in
+          thousands of email threads, bank lines and gateway settlements.
+        </p>
+      </div>
+      <Image src={studio} alt="A studio table with laptops and sticky notes in front of a whiteboard covered in a hand-drawn flow diagram" widths={[480, 800, 1200]} sizes="(min-width: 920px) 50vw, 100vw" class="photo" />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="believe-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="believe-title">How we build</h2>
+      </div>
+      <ul class="ledger-list">
+        <li><strong>Exceptions over noise</strong><p>A good finance tool is mostly quiet. If everything matches, your team shouldn't have to look.</p></li>
+        <li><strong>Evidence over guesses</strong><p>Every flag points to its source: the email, the approval, the ledger line, the bank entry.</p></li>
+        <li><strong>Your stack, not ours</strong><p>We connect to the systems you already trust instead of asking you to move.</p></li>
+        <li><strong>Engineered for real money</strong><p>Every module ships with a schema, an audit design, a test plan and a runbook. Finance software doesn't get to be a pile of scripts.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section band" aria-labelledby="contact-title">
+    <div class="wrap">
+      <div class="section-head flush">
+        <h2 id="contact-title">Talk to us</h2>
+        <p class="lede">We work from the UK and India. Email is the fastest way to reach the team.</p>
+        <p><a class="btn btn-quiet" href={`mailto:${site.email}`}>{site.email}</a></p>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Layout>
+
+<style>
+  .story p {
+    color: var(--ink-soft);
+  }
+</style>

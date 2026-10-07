@@ -1,0 +1,123 @@
+---
+// Integration logos in their brand colours, with an honest status under each.
+// Official marks come from Simple Icons (src/assets/logos). Systems without a file show a text mark.
+import { integrations, statusLabel } from '../data/site';
+
+const files = import.meta.glob<string>('../assets/logos/*.svg', { query: '?raw', import: 'default', eager: true });
+const svgFor = (slug: string) => files[`../assets/logos/${slug}.svg`];
+const shown = integrations.filter((i) => i.featured);
+const short = { available: 'Live', 'rolling-out': 'Rolling out', next: 'Coming soon' } as const;
+---
+
+<ul class="logos">
+  {
+    shown.map((i) => (
+      <li>
+        <span class="mark" style={`--c:${i.color ?? '#0f3326'}`} title={statusLabel[i.status]}>
+          {i.logo && svgFor(i.logo) ? <span class="svg" set:html={svgFor(i.logo)} /> : <span class="mono">{i.mono ?? i.name}</span>}
+        </span>
+        <span class="name">{i.name}</span>
+        <span class={`state state--${i.status}`}>{short[i.status]}</span>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .logos {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px 16px;
+  }
+
+  @media (min-width: 640px) {
+    .logos {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 960px) {
+    .logos {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  .logos li {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: 0 14px 30px -20px rgba(15, 51, 38, 0.45);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .logos li:hover .mark {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 40px -22px rgba(15, 51, 38, 0.5);
+  }
+
+  .svg {
+    display: block;
+    width: 42px;
+    height: 42px;
+    color: var(--c);
+  }
+
+  .svg :global(svg) {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+
+  .svg :global(title) {
+    display: none;
+  }
+
+  .mono {
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .state {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 2px 9px;
+    border-radius: 999px;
+  }
+
+  .state--available {
+    background: #dcf1e4;
+    color: var(--brand-deep);
+  }
+
+  .state--rolling-out {
+    background: #f7ead2;
+    color: var(--amber);
+  }
+
+  .state--next {
+    background: #e8eeeb;
+    color: var(--ink-soft);
+  }
+</style>

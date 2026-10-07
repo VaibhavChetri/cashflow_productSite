@@ -1,0 +1,117 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import GstRecon from '../components/GstRecon.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site, integrations, statusLabel } from '../data/site';
+import indiaFinance from '../assets/img/india-finance.png';
+
+const indiaStack = integrations.filter((i) =>
+  ['Zoho Books', 'Tally', 'SAP', 'ICICI Bank statements', 'RBL Bank statements', 'Razorpay', 'GSTR-2B and GSTR-1', 'Gmail', 'Microsoft 365'].includes(i.name),
+);
+---
+
+<Layout title="For finance teams in India" description={`${site.name} for Indian finance teams: GSTR-2B reconciliation, MSME payment deadlines, and receipts matched across Zoho Books, banks and Razorpay.`}>
+  <section class="wrap page-head head-split">
+    <div class="head-text">
+      <p><span class="status status--rolling-out">Early access in India</span></p>
+      <h1>From GST to bank, every rupee accounted for</h1>
+      <p class="lede">
+        Indian finance teams reconcile more sources than most: books, banks, payment gateways and tax returns. {site.name} matches them every day
+        and explains each mismatch.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/founding-programme?country=India#apply">Apply for early access</a>
+      </div>
+    </div>
+    <Image src={indiaFinance} alt="Two members of a finance team working at desks with laptops and printed invoices in a bright office" widths={[480, 800, 1200]} sizes="(min-width: 920px) 45vw, 100vw" class="photo" loading="eager" />
+  </section>
+
+  <section class="section band" aria-labelledby="pain-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="pain-title">Three reconciliations that cost real money</h2>
+      </div>
+      {/* CONFIRM: MSME prioritisation and TDS-net receipt matching with Shreyas & Varun */}
+      <ul class="ledger-list">
+        <li>
+          <strong>Input tax credit</strong>
+          <p>Bills that appear in GSTR-2B but not in your books, or in your books but not in 2B, put credit at risk every month. Each one is listed with the reason.</p>
+        </li>
+        <li>
+          <strong>Payments to micro and small suppliers</strong>
+          <p>Under Section 43B(h) of the Income Tax Act, amounts owed to registered micro and small enterprises are only deductible if paid on time. Every supplier invoice is tracked against its due date, so MSME payments can be prioritised.</p>
+        </li>
+        <li>
+          <strong>Receipts that never quite match</strong>
+          <p>Customers pay net of TDS, gateways settle in batches a day or two later, and banks show one credit for many invoices. Receipts are matched across your ledger, gateway settlements and bank.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="gst-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="gst-title">GSTR-2B against your books, with the reason for every gap</h2>
+        <p class="lede">Matched, amount mismatch, missing on either side, or a bill without a GSTIN. Filter to the ones that cost you credit and send them to the vendor.</p>
+      </div>
+      <figure class="shot">
+        <div class="shot-frame"><GstRecon /></div>
+        <figcaption>GST reconciliation, shown with demo data.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section band" aria-labelledby="stack-title">
+    <div class="wrap split split--text-wide">
+      <div class="section-head">
+        <h2 id="stack-title">Built for the Indian finance stack</h2>
+        <p class="lede">Zoho Books today, with bank statements and Razorpay rolling out, and Tally and SAP next.</p>
+        <p>Working with a CA firm? <a href="/accountants">See our design partner programme</a>.</p>
+      </div>
+      <ul class="stack">
+        {
+          indiaStack.map((i) => (
+            <li>
+              <span>{i.name}</span>
+              <span class={`status status--${i.status}`}>{statusLabel[i.status]}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand />
+</Layout>
+
+<style>
+  @media (min-width: 920px) {
+    .head-split {
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+  }
+
+  .head-text {
+    display: grid;
+    gap: 20px;
+  }
+
+  .stack {
+    list-style: none;
+    border-top: 2px solid var(--ink);
+  }
+
+  .stack li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+    font-weight: 650;
+  }
+</style>

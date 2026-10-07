@@ -1,0 +1,142 @@
+---
+// Nanonets-style module cards with isometric illustrations.
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import isoCapture from '../assets/img/iso-capture.png';
+import isoPayables from '../assets/img/iso-payables.png';
+import isoReceivables from '../assets/img/iso-receivables.png';
+import isoReconcile from '../assets/img/iso-reconcile.png';
+
+const modules = [
+  {
+    title: 'Inbox capture',
+    text: 'Read every email, PDF and attachment into a structured record, with a confidence score on each field.',
+    img: isoCapture,
+    alt: 'Isometric drawing of a PDF, an email and a receipt passing through a green scanning plane',
+    href: '/product#capture',
+  },
+  {
+    title: 'Payables matching',
+    text: 'Match each invoice to its PO, job, approval and ledger entry before anyone pays it.',
+    img: isoPayables,
+    alt: 'Isometric drawing of an invoice with PO, job and GL tags attached to its lines',
+    href: '/product#payables',
+  },
+  {
+    title: 'Receivables and cash',
+    text: "Match receipts to invoices across bank, gateway and ledger, and check every \"we've paid\".",
+    img: isoReceivables,
+    alt: 'Isometric drawing of an invoice connected by flowing lines to a bank statement',
+    href: '/product#receivables',
+  },
+  {
+    title: 'Reconciliation and GST',
+    text: 'Vendor, bank and GSTR-2B reconciliation, with every gap explained in plain English.',
+    img: isoReconcile,
+    alt: 'Isometric drawing of books, bank, vendor and GSTR-2B records joined by lines, three with green checks',
+    href: '/product#compliance',
+  },
+];
+---
+
+<div class="mods">
+  {
+    modules.map((m) => (
+      <a class="mod" href={m.href}>
+        <span class="mod-img">
+          <Image src={m.img} alt={m.alt} widths={[360, 560, 760]} sizes="(min-width: 1100px) 25vw, (min-width: 640px) 50vw, 100vw" />
+        </span>
+        <span class="mod-body">
+          <span class="mod-title">
+            {m.title}
+            <Icon name="arrow" size={18} />
+          </span>
+          <span class="mod-text">{m.text}</span>
+        </span>
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .mods {
+    display: grid;
+    border: 1px solid var(--line-strong);
+    background: var(--line-strong);
+    gap: 1px;
+  }
+
+  @media (min-width: 640px) {
+    .mods {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .mods {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .mod {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.25s ease;
+  }
+
+  .mod-img {
+    display: block;
+    overflow: hidden;
+    background: #efebe3;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .mod-img :global(img) {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .mod:hover .mod-img :global(img) {
+    transform: scale(1.05);
+  }
+
+  .mod-body {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding: 26px 28px 30px;
+  }
+
+  .mod-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .mod-title :global(svg) {
+    color: var(--ink-soft);
+    transition: transform 0.25s ease, color 0.25s ease;
+  }
+
+  .mod:hover .mod-title :global(svg) {
+    transform: translateX(4px);
+    color: var(--brand);
+  }
+
+  .mod-text {
+    color: var(--ink-soft);
+  }
+
+  .mod:hover {
+    background: #fbfdfc;
+  }
+</style>

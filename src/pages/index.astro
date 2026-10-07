@@ -1,0 +1,783 @@
+---
+import Layout from '../layouts/Layout.astro';
+import HeroCollage from '../components/HeroCollage.astro';
+import Cockpit from '../components/Cockpit.astro';
+import FlowArt from '../components/FlowArt.astro';
+import LogoGrid from '../components/LogoGrid.astro';
+import ModuleCards from '../components/ModuleCards.astro';
+import TrailRows from '../components/TrailRows.astro';
+import ExceptionBanner from '../components/ExceptionBanner.astro';
+import VendorRecon from '../components/VendorRecon.astro';
+import ApprovalMatch from '../components/ApprovalMatch.astro';
+import LeadersSection from '../components/LeadersSection.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+
+const rows = [
+  {
+    eyebrow: 'Accounts payable',
+    title: "Stop paying invoices you shouldn't",
+    body: 'Every invoice is read from the inbox and checked against your approval tool, job system and ledger. Duplicates and already-paid invoices are held before the payment run, with the reason attached.',
+    href: '/product#payables',
+    art: 'payables' as const,
+  },
+  {
+    eyebrow: 'Receivables and collections',
+    title: 'Know which clients will pay, and which only say they have',
+    body: "The engine reads every thread with every client. It separates real disputes from slow payers, and checks each \"we've paid you\" against the bank before an invoice is marked settled.",
+    href: '/product#receivables',
+    art: 'receivables' as const,
+  },
+  {
+    eyebrow: 'Reconciliation and compliance',
+    title: 'Books, bank and GST returns that agree',
+    body: 'Vendor balances, bank lines, gateway settlements and GSTR-2B are matched every day. Each mismatch comes with an explanation your team can act on.',
+    href: '/product#compliance',
+    art: 'reconcile' as const,
+  },
+];
+
+const compare = [
+  ['Data gathering', 'Download statements and exports from every bank, gateway and inbox', 'Inbox, ledger, bank and gateway data pulled in automatically every day'],
+  ['Invoice capture', 'Re-key each invoice from PDFs and email bodies', 'AI reads every email and attachment, with a confidence score on each field'],
+  ['Matching', 'Tick and match line by line in spreadsheets', 'Rules match invoices to approvals, jobs, ledger and bank'],
+  ['Exceptions', 'Found at month-end, if they are found at all', 'Flagged the same day, with the reason and the next step'],
+  ['Payment status', 'Search old emails to work out who said what', 'Threads are read to show who promised, disputed or proved payment'],
+  ['Posting', 'Manual journals and CSV imports', 'Nothing posts without a confirmed match'],
+  ['Audit trail', 'Scattered across inboxes, spreadsheets and shared drives', 'Every match and decision logged, from email to ledger'],
+  ['Month-end', 'Days of reconciliation before you can close', 'Start the close from a short exception list'],
+];
+
+const leaks = [
+  ['Duplicate invoices', 'The same invoice arrives twice, by email and by post, and both get paid.'],
+  ['Invoices paid twice', 'A supplier resends an invoice that was settled last month.'],
+  ['Partial payments booked as full', 'The ledger says settled. The bank says otherwise.'],
+  ['"We paid you on Friday"', 'A client says they paid, your books say unpaid, and nobody checks the bank.'],
+  ['Money out with no bill behind it', 'Advances and on-account payments that never get matched to a bill.'],
+];
+---
+
+<Layout description={`${site.name} reads every email in your finance inbox, reconciles invoices and payments against your ledger, approvals and bank, and gives finance leaders a single view of every finance operation.`}>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-text">
+        <p class="eyebrow">AP and AR automation for finance teams</p>
+        <h1>Your books say one thing. Your inbox knows the truth.</h1>
+        <p class="lede">
+          {site.name} reads every email in your finance inbox, checks each invoice and payment against your ledger, approvals and bank, and brings
+          your team only the ones that don't add up.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="/founding-programme#apply">Book a free leakage audit</a>
+          <a class="btn btn-quiet" href="/product">See the product</a>
+        </div>
+        <p class="hero-note">Works with Xero, Zoho Books and ApprovalMax. Nothing posts to your ledger without a confirmed match.</p>
+      </div>
+      <HeroCollage />
+    </div>
+  </section>
+
+  <!-- Leaders: the cockpit, in Stampli-style bento panels -->
+  <section class="section" aria-labelledby="cockpit-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="cockpit-title">A bird's-eye view of every finance operation</h2>
+        <p class="lede">
+          With the CFO cockpit, finance leaders see the whole picture at a glance: cash to collect, bills due, payments held, approvals stuck and
+          books that don't match the bank. Then drill into any number.
+        </p>
+      </div>
+
+      <div class="bento">
+        <div class="panel panel--wide">
+          <div class="panel-text">
+            <h3>The CFO cockpit</h3>
+            <p>One screen for payables, receivables, reconciliation and compliance, refreshed before your first meeting.</p>
+            <a class="panel-link" href="/product#receivables">See the cockpit <Icon name="arrow" size={16} /></a>
+          </div>
+          <div class="panel-ui panel-ui--cockpit">
+            <div class="shot-frame"><Cockpit /></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-text">
+            <h3>Know your cash position at 9am</h3>
+            <p>Cash to collect, bills due and money held, without asking anyone for a spreadsheet.</p>
+          </div>
+          <div class="mini ui">
+            <p><span>Cash to collect</span><strong>£1.42m</strong></p>
+            <p><span>Bills due this week</span><strong>£318k</strong></p>
+            <p><span>Held before payment</span><strong class="ui-red">£21,850</strong></p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-text">
+            <h3>See risk before it becomes bad debt</h3>
+            <p>Ageing, disputes and clients who have gone quiet, flagged while there is still time to act.</p>
+          </div>
+          <div class="mini ui">
+            <div class="mini-bar"><span style="flex:45;background:#cfd6de"></span><span style="flex:15;background:#4cbf86"></span><span style="flex:13;background:#f2c14e"></span><span style="flex:11;background:#ef8a3c"></span><span style="flex:16;background:#e2504a"></span></div>
+            <p><span>At risk: 90+ days and disputed</span><strong class="ui-red">£264,900</strong></p>
+            <p><span>Clients gone quiet for 60+ days</span><strong>14</strong></p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-text">
+            <h3>Decide, don't dig</h3>
+            <p>Every exception arrives with its evidence and a recommended next step.</p>
+          </div>
+          <div class="mini ui">
+            <p class="decision"><span><strong>Hold CI-0773</strong> £7,400, already paid 12 Sep</span><span class="mini-btn">Hold</span></p>
+            <p class="decision"><span><strong>Kestrel says paid</strong> £9,400, not in bank</span><span class="mini-btn">Ask</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cashflo-style capability rows -->
+  <section class="section band" aria-labelledby="cf-title">
+    <div class="wrap">
+      <div class="section-head center cf-head">
+        <h2 id="cf-title">Automate the finance inbox, <span class="hl">while protecting cash, control and compliance</span></h2>
+        <p class="lede">Start with one workflow or run the whole engine. Either way, your team stops keying, chasing and matching by hand.</p>
+      </div>
+      <div class="cf-rows">
+        {
+          rows.map((r, i) => (
+            <div class:list={['cf-row', { 'cf-row--flip': i % 2 === 1 }]}>
+              <div class="cf-text">
+                <p class="eyebrow">{r.eyebrow}</p>
+                <h3 class="cf-title">{r.title}</h3>
+                <p class="cf-body">{r.body}</p>
+                <div class="actions">
+                  <a class="btn btn-quiet" href={r.href}>Learn more</a>
+                  <a class="btn btn-dark" href="/founding-programme#apply">
+                    Book a leakage audit <Icon name="arrow" size={18} />
+                  </a>
+                </div>
+              </div>
+              <FlowArt variant={r.art} />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Manual vs AI‑powered reconciliation -->
+  <section class="section" aria-labelledby="cmp-title">
+    <div class="wrap">
+      <h2 id="cmp-title" class="cmp-title">Manual reconciliation vs {site.name} AI‑powered reconciliation</h2>
+      <table class="cmp">
+        <thead>
+          <tr>
+            <td></td>
+            <th scope="col" class="cmp-manual"><span class="badge badge--x"><Icon name="x" size={14} /></span>Manual reconciliation</th>
+            <th scope="col" class="cmp-ai"><span class="badge badge--ok"><Icon name="check" size={14} /></span>{site.name} AI‑powered reconciliation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            compare.map(([label, manual, ai]) => (
+              <tr>
+                <th scope="row">{label}</th>
+                <td class="m">
+                  <Icon name="x" size={16} />
+                  <span>{manual}</span>
+                </td>
+                <td class="a">
+                  <Icon name="check" size={16} />
+                  <span>{ai}</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Integrations -->
+  <section class="section band" aria-labelledby="int-title">
+    <div class="wrap">
+      <div class="section-head center int-head">
+        <h2 id="int-title">Connects to your inbox, ledger, banks and approvals.</h2>
+        <p class="lede">
+          Pre-built connectors for the systems finance teams already run. New ones plug into the same core.
+          <a href="/integrations">See all integrations</a>
+        </p>
+      </div>
+      <LogoGrid />
+    </div>
+  </section>
+
+  <!-- Modules -->
+  <section class="section" aria-labelledby="mods-title">
+    <div class="wrap">
+      <div class="mods-top">
+        <p class="mods-label">What it covers</p>
+        <a class="mods-link" href="/product">See the full product <Icon name="arrow" size={16} /></a>
+      </div>
+      <h2 id="mods-title" class="mods-title">The rest of your finance operations, automated.</h2>
+      <ModuleCards />
+    </div>
+  </section>
+
+  <!-- Exceptions, in bento panels -->
+  <section class="section band" aria-labelledby="moments-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="moments-title">Built around the exceptions, not the busywork</h2>
+      </div>
+      <div class="moments">
+        <div class="panel moment moment--wide">
+          <div class="moment-text">
+            <h3>The email trail is the evidence</h3>
+            <p>For every unpaid invoice, {site.name} reads the thread: who promised payment, who disputed it, how long it has gone quiet. You get the next move, not a pile of emails.</p>
+          </div>
+          <div class="shot-frame"><TrailRows /></div>
+        </div>
+        <div class="panel moment">
+          <div class="moment-text">
+            <h3>Only the exceptions reach you</h3>
+            <p>Each flag says what's wrong in plain English and how it clears.</p>
+          </div>
+          <ExceptionBanner
+            title="38 of 412 payments have a mode or account mismatch"
+            body="Payment mode is recorded as cash, but the money landed in a bank account. Your ledger is unchanged. Fix it at source and the flag clears on the next refresh."
+            action="Show only mismatched"
+          />
+          <ExceptionBanner
+            tone="info"
+            title="15 of 52 payments have no bill attached"
+            body="Usually advances, retainers or on-account payments. Check whether each one is intentional or a missing bill link."
+            action="Show only payments with no bill"
+          />
+        </div>
+        <div class="panel moment">
+          <div class="moment-text">
+            <h3>Every number has a source</h3>
+            <p>The amount on the invoice is checked against the amount in the email before anyone approves it.</p>
+          </div>
+          <div class="shot-frame"><ApprovalMatch /></div>
+        </div>
+        <div class="panel moment moment--wide">
+          <div class="moment-text">
+            <h3>Books, bank and bills, side by side</h3>
+            <p>See which vendors are clean and which have overdue balances, ignored payment requests, or payments your bank can't confirm.</p>
+          </div>
+          <div class="shot-frame"><VendorRecon compact /></div>
+        </div>
+      </div>
+      <p class="demo-note">All product screens show demo data.</p>
+    </div>
+  </section>
+
+  <!-- Leakage -->
+  <section class="section" aria-labelledby="leak-title">
+    <div class="wrap split split--text-wide leak-grid">
+      <div class="section-head">
+        <h2 id="leak-title">Where the money leaks</h2>
+        <p class="lede">Leakage is rarely fraud. It's ordinary mistakes that nobody has time to catch, repeated every month.</p>
+        <p><a class="btn btn-quiet" href="/leakage-calculator">Estimate what it costs you</a></p>
+      </div>
+      <ul class="ledger-list">
+        {
+          leaks.map(([title, text]) => (
+            <li>
+              <strong>{title}</strong>
+              <p>{text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Finance leaders -->
+  <section class="section band" aria-label="For finance leaders">
+    <div class="wrap">
+      <LeadersSection />
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="faq-title">Questions finance leaders ask first</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>What if the AI misreads an invoice?</summary>
+          <div><p>Every extraction has a confidence score, and uncertain ones go to a person. Even a correct read has to match your ledger, approvals and bank before anything is treated as settled.</p></div>
+        </details>
+        <details>
+          <summary>Do we have to change our accounting software?</summary>
+          <div><p>No. {site.name} works on top of the ledger, approval tool and inbox you already use. See the <a href="/integrations">integrations page</a> for what's available now.</p></div>
+        </details>
+        <details>
+          <summary>Does it make payments?</summary>
+          <div><p>No. It tells your team what to pay, what to hold and who to chase. Paying stays with your people and your bank.</p></div>
+        </details>
+        <details>
+          <summary>How long does it take to get started?</summary>
+          <div><p>Start with a leakage audit: we connect to your inbox and ledger and report what we find, in money. If you go ahead, setup builds on the same connections.</p></div>
+        </details>
+        <details>
+          <summary>Who is behind it?</summary>
+          <div><p>{site.legalName}, an AI product studio working in the UK and India, with a background in governance, risk and compliance. <a href="/company">More about us</a>.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Layout>
+
+<style>
+  /* Hero */
+  .hero {
+    padding-block: clamp(40px, 6vw, 80px) clamp(64px, 8vw, 104px);
+    overflow-x: clip;
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: clamp(40px, 6vw, 64px);
+    align-items: center;
+  }
+
+  @media (min-width: 1060px) {
+    .hero-grid {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+  }
+
+  .hero-text {
+    display: grid;
+    gap: 24px;
+    justify-items: start;
+  }
+
+  .hero h1 {
+    max-width: 13ch;
+  }
+
+  .hero-note {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+    padding-left: 14px;
+    border-left: 2px solid var(--brand-bright);
+  }
+
+  /* Bento panels */
+  .bento {
+    display: grid;
+    gap: 24px;
+  }
+
+  @media (min-width: 900px) {
+    .bento {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .panel--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .bento .panel {
+    display: grid;
+    align-content: space-between;
+    gap: 28px;
+    padding: clamp(24px, 3.4vw, 44px);
+  }
+
+  .panel-text {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    justify-items: start;
+  }
+
+  .panel-text h3 {
+    font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+    letter-spacing: -0.02em;
+  }
+
+  .panel-text p {
+    color: var(--ink-soft);
+  }
+
+  .panel-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  @media (min-width: 900px) {
+    .panel--wide {
+      grid-template-columns: 0.32fr 0.68fr;
+      align-items: start;
+      padding-right: 0;
+      padding-bottom: 0;
+    }
+    .panel--wide .panel-text {
+      padding-top: 8px;
+    }
+    .panel-ui--cockpit {
+      margin-bottom: -2px;
+    }
+    .panel-ui--cockpit .shot-frame {
+      border-radius: 16px 0 0 0;
+      border-right: 0;
+      border-bottom: 0;
+    }
+  }
+
+  .mini {
+    display: grid;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 16px 30px -22px rgba(15, 51, 38, 0.45);
+  }
+
+  .mini p {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: none;
+  }
+
+  .mini p span {
+    color: var(--ui-soft);
+  }
+
+  .mini p strong {
+    color: var(--ui-ink);
+  }
+
+  .mini-bar {
+    display: flex;
+    gap: 2px;
+    height: 8px;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .decision {
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--ui-line);
+  }
+
+  .decision:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .decision span strong {
+    display: block;
+  }
+
+  .mini-btn {
+    flex: none;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: var(--ui-green-bg);
+    color: var(--ui-green) !important;
+    font-weight: 600;
+  }
+
+  /* Cashflo-style rows */
+  .cf-head h2 {
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+    max-width: 24ch;
+  }
+
+  .hl {
+    color: var(--brand);
+  }
+
+  .cf-rows {
+    display: grid;
+    gap: clamp(64px, 9vw, 120px);
+  }
+
+  .cf-row {
+    display: grid;
+    gap: 40px;
+    align-items: center;
+  }
+
+  @media (min-width: 920px) {
+    .cf-row {
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+    }
+    .cf-row--flip .cf-text {
+      order: 2;
+    }
+  }
+
+  .cf-text {
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+  }
+
+  .cf-title {
+    font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+
+  .cf-body {
+    font-size: 1.1875rem;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  /* Comparison */
+  .cmp-title {
+    max-width: 26ch;
+    margin-bottom: 40px;
+    font-weight: 400;
+    font-size: clamp(1.9rem, 3.6vw, 2.75rem);
+  }
+
+  .cmp {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--line-strong);
+    font-size: 1.0625rem;
+  }
+
+  .cmp thead th {
+    text-align: left;
+    padding: 26px 28px;
+    font-weight: 500;
+    font-size: 1.2rem;
+    border-bottom: 2px solid var(--line-strong);
+  }
+
+  .cmp thead td {
+    border-bottom: 2px solid var(--line-strong);
+  }
+
+  .cmp-manual {
+    background: #f6ebea;
+    color: var(--ink);
+  }
+
+  .cmp-ai {
+    background: #e6f3ea;
+    color: var(--brand);
+  }
+
+  .badge {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    margin-right: 12px;
+    border-radius: 50%;
+    vertical-align: middle;
+  }
+
+  .badge--x {
+    background: #f7d4d0;
+    color: var(--audit);
+  }
+
+  .badge--ok {
+    background: #c9ebd6;
+    color: var(--brand);
+  }
+
+  .cmp tbody th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--ink);
+    padding: 22px 28px;
+    width: 18%;
+    vertical-align: middle;
+  }
+
+  .cmp tbody td {
+    position: relative;
+    padding: 22px 28px 22px 54px;
+    vertical-align: middle;
+    width: 41%;
+  }
+
+  .cmp tbody tr + tr > * {
+    border-top: 1px solid var(--line);
+  }
+
+  .cmp td :global(svg) {
+    position: absolute;
+    left: 28px;
+    top: 50%;
+    margin-top: -8px;
+  }
+
+  .cmp td.m {
+    color: #7a8a83;
+  }
+
+  .cmp td.m :global(svg) {
+    color: #a8b5af;
+  }
+
+  .cmp td.a {
+    color: var(--ink);
+  }
+
+  .cmp td.a :global(svg) {
+    color: var(--brand);
+  }
+
+  @media (max-width: 760px) {
+    .cmp thead td {
+      display: none;
+    }
+    .cmp thead tr {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .cmp thead th {
+      padding: 16px;
+      font-size: 0.95rem;
+    }
+    .badge {
+      display: grid;
+      margin: 0 0 8px;
+    }
+    .cmp tbody tr {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .cmp tbody th {
+      grid-column: 1 / -1;
+      width: auto;
+      padding: 18px 16px 4px;
+    }
+    .cmp tbody td {
+      width: auto;
+      font-size: 0.95rem;
+      padding: 8px 16px 18px 40px;
+    }
+    .cmp td :global(svg) {
+      left: 16px;
+      top: 10px;
+      margin-top: 0;
+    }
+    .cmp tbody tr + tr > td {
+      border-top: 0;
+    }
+  }
+
+  /* Integrations */
+  .int-head h2 {
+    font-weight: 400;
+    font-size: clamp(2rem, 4.4vw, 3.25rem);
+    max-width: 22ch;
+  }
+
+  .int-head .lede a {
+    white-space: nowrap;
+  }
+
+  /* Modules */
+  .mods-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .mods-label {
+    color: var(--ink-soft);
+    font-size: 1.0625rem;
+  }
+
+  .mods-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+
+  .mods-link:hover {
+    color: var(--brand);
+  }
+
+  .mods-title {
+    margin: 18px 0 44px;
+    font-weight: 400;
+    font-size: clamp(2.2rem, 5vw, 3.75rem);
+    letter-spacing: -0.035em;
+  }
+
+  /* Exception panels */
+  .moments {
+    display: grid;
+    gap: 24px;
+  }
+
+  @media (min-width: 980px) {
+    .moments {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+    .moment--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .moment {
+    display: grid;
+    align-content: start;
+    gap: 22px;
+    padding: clamp(22px, 3vw, 40px);
+    min-width: 0;
+  }
+
+  .moment-text {
+    display: grid;
+    gap: 8px;
+    max-width: 62ch;
+  }
+
+  .moment-text h3 {
+    font-size: clamp(1.35rem, 2vw, 1.65rem);
+  }
+
+  .moment-text p {
+    color: var(--ink-soft);
+  }
+
+  .demo-note {
+    margin-top: 28px;
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+
+  .leak-grid {
+    align-items: start;
+  }
+</style>

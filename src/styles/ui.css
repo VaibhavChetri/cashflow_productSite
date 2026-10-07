@@ -1,0 +1,164 @@
+/* Shared styles for the product-screen replicas. Mirrors the real dashboard's look. */
+.ui {
+  --ui-ink: #1c2430;
+  --ui-soft: #6b7684;
+  --ui-line: #e7ebef;
+  --ui-bg: #f7f9fb;
+  --ui-green: #2f8a57;
+  --ui-green-bg: #eaf6ee;
+  --ui-amber: #b4650c;
+  --ui-amber-bg: #fdf3e2;
+  --ui-red: #c23b30;
+  --ui-red-bg: #fdecea;
+  --ui-purple: #6e3fc4;
+  --ui-purple-bg: #f1ebfc;
+  --ui-blue: #2f5fc4;
+  --ui-blue-bg: #eaf1fd;
+  color: var(--ui-ink);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  padding: clamp(16px, 2.4vw, 28px);
+}
+
+.ui h4 {
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.ui-sub {
+  color: var(--ui-soft);
+  font-size: 0.8125rem;
+}
+
+.ui-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-soft);
+}
+
+.ui-num {
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.ui-red {
+  color: var(--ui-red);
+}
+.ui-amber {
+  color: var(--ui-amber);
+}
+.ui-green {
+  color: var(--ui-green);
+}
+.ui-blue {
+  color: var(--ui-blue);
+}
+.ui-purple {
+  color: var(--ui-purple);
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  background: #eef1f4;
+  color: var(--ui-soft);
+}
+
+.tag--red {
+  background: var(--ui-red-bg);
+  color: var(--ui-red);
+}
+.tag--amber {
+  background: var(--ui-amber-bg);
+  color: var(--ui-amber);
+}
+.tag--green {
+  background: var(--ui-green-bg);
+  color: var(--ui-green);
+}
+.tag--purple {
+  background: var(--ui-purple-bg);
+  color: var(--ui-purple);
+}
+.tag--blue {
+  background: var(--ui-blue-bg);
+  color: var(--ui-blue);
+}
+
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ui-table th {
+  text-align: left;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-soft);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ui-line);
+  white-space: nowrap;
+}
+
+.ui-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--ui-line);
+  vertical-align: top;
+}
+
+.ui-table .r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--ui-line);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: #fff;
+}
+
+.ui-chip i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.ui-chip--on {
+  border-color: var(--ui-green);
+  color: var(--ui-green);
+  background: var(--ui-green-bg);
+}
+
+.ui-btn {
+  display: inline-block;
+  border: 1px solid var(--ui-line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ui-ink);
+}

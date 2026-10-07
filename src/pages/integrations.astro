@@ -1,0 +1,152 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CtaBand from '../components/CtaBand.astro';
+import LogoGrid from '../components/LogoGrid.astro';
+import { site, integrations, statusLabel } from '../data/site';
+
+const groups = [...new Set(integrations.map((i) => i.group))];
+---
+
+<Layout title="Integrations" description={`${site.name} works on top of Xero, Zoho Books, ApprovalMax and your finance inbox. See every connector and its status.`}>
+  <section class="wrap page-head">
+    <h1>Works on top of what you already run</h1>
+    <p class="lede">
+      {site.name} doesn't replace your ledger, approval tool or inbox. It connects to them and checks the gaps between them. The core engine is
+      the same for every customer; connectors handle the systems that differ.
+    </p>
+  </section>
+
+  <section class="section logos-band" aria-label="Featured integrations">
+    <div class="wrap"><LogoGrid /></div>
+  </section>
+
+  <section class="section band" aria-labelledby="list-title">
+    <div class="wrap">
+      <h2 id="list-title" class="sr-only">Connectors and their status</h2>
+      <dl class="legend">
+        <div><dt><span class="status status--available">{statusLabel.available}</span></dt><dd>In use with customers today.</dd></div>
+        <div><dt><span class="status status--rolling-out">{statusLabel['rolling-out']}</span></dt><dd>Working with early-access customers.</dd></div>
+        <div><dt><span class="status status--next">{statusLabel.next}</span></dt><dd>Committed and scheduled.</dd></div>
+      </dl>
+
+      <div class="groups">
+        {
+          groups.map((g) => (
+            <section class="group" aria-label={g}>
+              <h3>{g}</h3>
+              <ul>
+                {integrations
+                  .filter((i) => i.group === g)
+                  .map((i) => (
+                    <li>
+                      <span class="name">
+                        {i.name}
+                        {i.note && <small>{i.note}</small>}
+                      </span>
+                      <span class={`status status--${i.status}`}>{statusLabel[i.status]}</span>
+                    </li>
+                  ))}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="how-title">
+    <div class="wrap split split--text-wide">
+      <div class="section-head">
+        <h2 id="how-title">How connections work</h2>
+        <p class="lede">We start with read access. Whether {site.name} ever writes back to your ledger is agreed with you, account by account.</p>
+      </div>
+      <ul class="ledger-list">
+        {/* CONFIRM: access model and write-back policy with Shreyas & Varun before launch */}
+        <li><strong>Inbox</strong><p>A connection to your finance mailbox in Microsoft 365 or Gmail. Your team keeps using it as normal.</p></li>
+        <li><strong>Ledger</strong><p>Read access to invoices, bills, payments and contacts, using the accounting system's official connection.</p></li>
+        <li><strong>Approvals and jobs</strong><p>Read access to approval status and job references, so every invoice can be traced to the work behind it.</p></li>
+        <li><strong>Bank and payments</strong><p>Statement and settlement data, so a payment only counts as made when the money has actually moved.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section band" aria-labelledby="missing-title">
+    <div class="wrap">
+      <div class="section-head flush">
+        <h2 id="missing-title">Don't see your system?</h2>
+        <p class="lede">
+          Tell us what you run. New connectors plug into the same core, so adding one doesn't change how the product works for you.
+        </p>
+        <p><a class="btn btn-quiet" href={`mailto:${site.email}?subject=Connector%20request`}>Email us your stack</a></p>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Layout>
+
+<style>
+  .logos-band {
+    padding-top: 8px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 32px;
+    margin: 0 0 40px;
+  }
+
+  .legend div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .legend dd {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+  }
+
+  .groups {
+    display: grid;
+    gap: 40px 48px;
+  }
+
+  @media (min-width: 860px) {
+    .groups {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .group h3 {
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .group ul {
+    list-style: none;
+  }
+
+  .group li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .name {
+    display: grid;
+    font-weight: 650;
+    font-size: var(--step-1);
+  }
+
+  .name small {
+    font-weight: 400;
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+  }
+</style>

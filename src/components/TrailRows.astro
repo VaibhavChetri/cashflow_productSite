@@ -1,0 +1,198 @@
+---
+// Rebuilt from the Cash Flow list ("payment truth from the email trail"). Demo data only.
+const rows = [
+  {
+    inv: 'INV-2026-0412',
+    next: 'Client must send 3 missing POs before they pay',
+    client: 'Halden Logistics',
+    amount: '£40,100',
+    tags: [{ t: 'Disputed', c: 'red' }],
+    activity: ['58 emails', '41d quiet', 'no proof'],
+    due: '22 Aug',
+    late: '+45d',
+    action: { t: 'Hold', c: 'green' },
+  },
+  {
+    inv: 'INV-2026-0388',
+    next: 'Ask for remittance: client says paid on 12 Sep',
+    client: 'Kestrel Hospitality',
+    amount: '£9,400',
+    tags: [{ t: 'Client says paid', c: 'purple' }],
+    activity: ['6 emails', 'not in bank'],
+    due: '30 Aug',
+    late: '+37d',
+    action: { t: 'Send', c: 'amber' },
+  },
+  {
+    inv: 'INV-2026-0451',
+    next: 'Chase second approver, out of office since 2 Sep',
+    client: 'Arden Property Services',
+    amount: '£7,050',
+    tags: [
+      { t: 'Chase', c: 'amber' },
+      { t: 'Misclassified', c: 'purple' },
+    ],
+    activity: ['11 emails', '19d quiet'],
+    due: '15 Sep',
+    late: '+21d',
+    action: { t: 'Send', c: 'amber' },
+  },
+];
+---
+
+<div class="ui trail">
+  <div class="trail-head">
+    <h4>Cash flow</h4>
+    <p class="ui-sub"><strong>776</strong> invoices, payment status verified from the email trail</p>
+  </div>
+  <div class="group-by" aria-hidden="true">
+    <span class="ui-label">Group by</span>
+    <span>Amount</span><span class="on">State</span><span>Client</span><span>Aging</span><span>Risk</span><span>Proof</span>
+  </div>
+  <table class="ui-table">
+    <thead>
+      <tr>
+        <th scope="col">Invoice and next action</th>
+        <th scope="col">Client</th>
+        <th scope="col" class="r">Amount</th>
+        <th scope="col">Tags</th>
+        <th scope="col">Activity</th>
+        <th scope="col" class="r">Due</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="group">
+        <td colspan="6"><strong>Needs a decision</strong> <span class="count">3</span></td>
+        <td class="r"><strong>£56,550</strong></td>
+      </tr>
+      {
+        rows.map((r) => (
+          <tr>
+            <td class="inv">
+              <span class="mono">{r.inv}</span>
+              <span class="next">{r.next}</span>
+            </td>
+            <td>{r.client}</td>
+            <td class="r amt">{r.amount}</td>
+            <td>
+              <span class="tags">
+                {r.tags.map((t) => (
+                  <span class={`tag tag--${t.c}`}>{t.t}</span>
+                ))}
+              </span>
+            </td>
+            <td class="activity">
+              {r.activity.map((a, i) => (
+                <span class={i > 0 ? 'ui-red' : undefined}>{a}</span>
+              ))}
+            </td>
+            <td class="r nowrap">
+              {r.due} <span class="ui-red late">{r.late}</span>
+            </td>
+            <td class={`ui-${r.action.c} act`}>
+              {r.action.c === 'green' ? '●' : '▲'} {r.action.t}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .trail {
+    min-width: 860px;
+  }
+
+  .trail-head {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+
+  .group-by {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ui-soft);
+  }
+
+  .group-by span:not(.ui-label) {
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  .group-by .on {
+    background: var(--ui-ink);
+    color: #fff;
+  }
+
+  .group td {
+    background: var(--ui-bg);
+    padding-block: 9px;
+  }
+
+  .count {
+    display: inline-block;
+    background: #e3e8ee;
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  .inv {
+    border-left: 3px solid var(--ui-red);
+  }
+
+  .mono {
+    display: block;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .next {
+    display: block;
+    color: var(--ui-soft);
+    font-size: 0.8125rem;
+  }
+
+  .next::before {
+    content: '\2192\00a0';
+  }
+
+  .amt {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .activity {
+    display: grid;
+    font-size: 0.8125rem;
+  }
+
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  .late {
+    font-weight: 700;
+    font-size: 0.8125rem;
+  }
+
+  .act {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+</style>

@@ -1,0 +1,240 @@
+---
+// Rebuilt from the Cashflow Cockpit screen, widened into a CFO overview across payables and receivables. Demo data only.
+const aging = [
+  { label: 'Not due', value: '£640k', share: 45, color: '#cfd6de' },
+  { label: '0–30d', value: '£221k', share: 15, color: '#4cbf86' },
+  { label: '30–60d', value: '£187k', share: 13, color: '#f2c14e' },
+  { label: '60–90d', value: '£142k', share: 11, color: '#ef8a3c' },
+  { label: '90+ d', value: '£230k', share: 16, color: '#e2504a' },
+];
+const tabs = ['Overview', 'Payables', 'Receivables', 'Reconciliation', 'Compliance'];
+---
+
+<div class="ui cockpit">
+  <div class="cp-head">
+    <div>
+      <h4>CFO cockpit</h4>
+      <p class="ui-sub">Every finance operation in one view. Updated 06:00 today.</p>
+    </div>
+    <span class="tag tag--green">34 reconciled overnight</span>
+  </div>
+
+  <div class="tabs" aria-hidden="true">
+    {tabs.map((t, i) => <span class={i === 0 ? 'on' : undefined}>{t}</span>)}
+  </div>
+
+  <div class="brief">
+    <p class="ui-label">Executive brief</p>
+    <div class="brief-row">
+      <div>
+        <p class="ui-label">Cash to collect</p>
+        <p class="ui-num">£1.42m</p>
+        <p class="ui-sub">141 invoices outstanding</p>
+      </div>
+      <div>
+        <p class="ui-label">Bills due this week</p>
+        <p class="ui-num">£318k</p>
+        <p class="ui-sub">64 bills, 9 awaiting approval</p>
+      </div>
+      <div>
+        <p class="ui-label">Held before payment</p>
+        <p class="ui-num ui-red">£21,850</p>
+        <p class="ui-sub">5 duplicates and already-paid</p>
+      </div>
+      <div>
+        <p class="ui-label">Books ≠ bank</p>
+        <p class="ui-num ui-amber">£96,200</p>
+        <p class="ui-sub">58 payments to fix</p>
+      </div>
+    </div>
+
+    <div class="moves">
+      <div class="move move--green">
+        <p class="ui-label">Collectable now</p>
+        <p class="ui-num">£148,200</p>
+        <p class="ui-sub">proven overdue, ready to chase</p>
+      </div>
+      <div class="move move--red">
+        <p class="ui-label">At risk</p>
+        <p class="ui-num">£264,900</p>
+        <p class="ui-sub">90+ days and disputed</p>
+      </div>
+      <div class="move move--blue">
+        <p class="ui-label">Decisions waiting on you</p>
+        <p class="ui-num">31</p>
+        <p class="ui-sub">holds, approvals and disputes</p>
+      </div>
+    </div>
+
+    <p class="ui-label aging-label">Receivables by age</p>
+    <div class="aging" role="img" aria-label="Receivables by age: £640k not due, £221k 0 to 30 days, £187k 30 to 60 days, £142k 60 to 90 days, £230k over 90 days">
+      {aging.map((a) => <span style={`flex:${a.share};background:${a.color}`} />)}
+    </div>
+    <ul class="legend" aria-hidden="true">
+      {
+        aging.map((a) => (
+          <li>
+            <i style={`background:${a.color}`} />
+            {a.label} <strong>{a.value}</strong>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="review">
+      <strong>Overnight</strong>
+      <span><strong>2,640</strong> finance threads read</span>
+      <span><strong>412</strong> payments matched</span>
+      <span><strong class="ui-red">55</strong> disputes with pushback</span>
+      <span><strong>91</strong> unproven "we've paid" claims</span>
+    </p>
+  </div>
+</div>
+
+<style>
+  .cockpit {
+    min-width: 660px;
+  }
+
+  .cp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid var(--ui-line);
+    margin-bottom: 16px;
+    font-weight: 600;
+    color: var(--ui-soft);
+  }
+
+  .tabs span {
+    padding-bottom: 9px;
+  }
+
+  .tabs .on {
+    color: var(--ui-green);
+    box-shadow: inset 0 -2px 0 var(--ui-green);
+  }
+
+  .brief {
+    border: 1px solid var(--ui-line);
+    border-radius: 12px;
+    padding: 20px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .brief-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--ui-line);
+  }
+
+  .brief-row > div {
+    display: grid;
+    gap: 4px;
+    align-content: start;
+  }
+
+  .moves {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .move {
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: grid;
+    gap: 4px;
+    border: 1px solid;
+  }
+
+  .move .ui-label::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: 1px;
+    background: var(--ui-green);
+  }
+
+  .move--green {
+    background: #f1faf4;
+    border-color: #bfe5cd;
+  }
+
+  .move--red {
+    background: #fdf2f1;
+    border-color: #f2c6c1;
+  }
+
+  .move--red .ui-label::before {
+    background: var(--ui-red);
+  }
+
+  .move--blue {
+    background: #f2f6fd;
+    border-color: #c9d8f4;
+  }
+
+  .move--blue .ui-label::before {
+    background: var(--ui-blue);
+  }
+
+  .aging-label {
+    margin-bottom: -8px;
+  }
+
+  .aging {
+    display: flex;
+    height: 8px;
+    border-radius: 99px;
+    overflow: hidden;
+    gap: 2px;
+  }
+
+  .legend {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    font-size: 0.75rem;
+    color: var(--ui-soft);
+    margin-top: -6px;
+  }
+
+  .legend i {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+
+  .legend strong {
+    color: var(--ui-ink);
+    font-weight: 600;
+  }
+
+  .review {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    background: var(--ui-bg);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.8125rem;
+    max-width: none;
+  }
+</style>

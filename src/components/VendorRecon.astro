@@ -1,0 +1,213 @@
+---
+// Rebuilt from the Vendor Reconciliation screen. Demo data only.
+interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+
+const vendors = [
+  { name: 'Pinecrest Maintenance', dot: 'red', tags: ['Overdue', 'Requests ignored', 'Books ≠ bank'], bills: 12, out: '£29,380', over: '£29,380', paid: '£168,000', emails: 14, req: '11 / 5' },
+  { name: 'Meridian Foods', dot: 'red', tags: ['Overdue', 'Books ≠ bank'], bills: 137, out: '£28,820', over: '£27,930', paid: '£190,400', emails: 324, req: '18 / 1' },
+  { name: 'Halden Logistics', dot: 'amber', tags: ['Overdue', 'Requests ignored'], bills: 32, out: '£7,500', over: '£5,440', paid: '£52,720', emails: 70, req: '39 / 30' },
+  { name: 'Copperleaf Interiors', dot: 'amber', tags: ['Overdue'], bills: 4, out: '£6,880', over: '£6,880', paid: '£5,000', emails: 9, req: '0' },
+];
+const shown = compact ? vendors.slice(0, 3) : vendors;
+const tagColour = (t: string) => (t === 'Requests ignored' ? 'amber' : 'red');
+---
+
+<div class={`ui recon ${compact ? 'is-compact' : ''}`}>
+  {
+    !compact && (
+      <>
+        <div class="tabs" aria-hidden="true">
+          <span class="on">Vendor reconciliation</span>
+          <span>GST reconciliation</span>
+          <span>PF, ESIC, PT</span>
+        </div>
+        <div class="kpis">
+          <div>
+            <p class="ui-label">Payments bank-verified</p>
+            <p class="ui-num">67%</p>
+            <p class="ui-sub">1,931 of 2,877 payments</p>
+          </div>
+          <div>
+            <p class="ui-label">Unverified value</p>
+            <p class="ui-num ui-red">£412,800</p>
+            <p class="ui-sub">awaiting bank confirmation</p>
+          </div>
+          <div>
+            <p class="ui-label">Clean vendors</p>
+            <p class="ui-num ui-green">125 / 579</p>
+            <p class="ui-sub">no open exceptions</p>
+          </div>
+        </div>
+        <div class="attention">
+          <p class="ui-label">Needs attention</p>
+          <div>
+            <span>Paid, no bill in books</span>
+            <strong class="ui-amber">58, £96,200</strong>
+          </div>
+          <div>
+            <span>Overdue balance</span>
+            <strong class="ui-amber">266, £318,400</strong>
+          </div>
+          <div>
+            <span>No email trail</span>
+            <strong class="ui-amber">232</strong>
+          </div>
+          <div>
+            <span>Payment requests ignored</span>
+            <strong class="ui-amber">64</strong>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  <div class="filters" aria-hidden="true">
+    <span class="ui-chip">All</span>
+    <span class="ui-chip">Paid, no bill</span>
+    <span class="ui-chip">Overdue + email</span>
+    <span class="ui-chip ui-chip--on"><i style="background:var(--ui-red)"></i>Books ≠ bank</span>
+  </div>
+
+  <table class="ui-table">
+    <thead>
+      <tr>
+        <th scope="col">Vendor</th>
+        <th scope="col" class="r">Bills</th>
+        <th scope="col" class="r">Outstanding</th>
+        <th scope="col" class="r">Overdue</th>
+        {!compact && <th scope="col" class="r">Paid</th>}
+        <th scope="col" class="r">Emails</th>
+        {!compact && <th scope="col" class="r">Asked / ignored</th>}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        shown.map((v) => (
+          <tr>
+            <td>
+              <span class="vendor">
+                <i class={`dot dot--${v.dot}`} />
+                {v.name}
+              </span>
+              <span class="vtags">
+                {v.tags.map((t) => (
+                  <span class={`tag tag--${tagColour(t)}`}>{t}</span>
+                ))}
+              </span>
+            </td>
+            <td class="r">{v.bills}</td>
+            <td class="r strong">{v.out}</td>
+            <td class="r ui-red">{v.over}</td>
+            {!compact && <td class="r">{v.paid}</td>}
+            <td class="r">{v.emails}</td>
+            {!compact && <td class="r">{v.req}</td>}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .recon {
+    min-width: 720px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .recon.is-compact {
+    min-width: 520px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 22px;
+    border-bottom: 1px solid var(--ui-line);
+    font-weight: 600;
+    color: var(--ui-soft);
+  }
+
+  .tabs span {
+    padding-bottom: 10px;
+  }
+
+  .tabs .on {
+    color: var(--ui-blue);
+    box-shadow: inset 0 -2px 0 var(--ui-blue);
+  }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    border: 1px solid var(--ui-line);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+
+  .kpis > div {
+    display: grid;
+    gap: 4px;
+  }
+
+  .attention {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px 16px;
+  }
+
+  .attention .ui-label {
+    grid-column: 1 / -1;
+  }
+
+  .attention div {
+    display: grid;
+    font-size: 0.8125rem;
+  }
+
+  .attention strong {
+    font-size: 1rem;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .vendor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 650;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  .dot--red {
+    background: var(--ui-red);
+  }
+
+  .dot--amber {
+    background: #e39a2d;
+  }
+
+  .vtags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 6px 0 0 16px;
+  }
+
+  .strong {
+    font-weight: 700;
+  }
+</style>

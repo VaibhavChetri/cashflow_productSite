@@ -1,0 +1,24 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { site } from '../data/site';
+---
+
+<Layout title="Application received" description="Thanks for applying to the founding programme.">
+  <section class="wrap page-head done">
+    <svg width="64" height="64" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13.5l5 5L20 6" fill="none" stroke="#2c7a4e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <h1>Application received</h1>
+    <p class="lede">
+      We'll reply within two working days to book a 20-minute call. If anything is urgent, email <a href={`mailto:${site.email}`}>{site.email}</a>.
+    </p>
+    <div class="actions">
+      <a class="btn btn-quiet" href="/product">Explore the product while you wait</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .done {
+    min-height: 60vh;
+    align-content: center;
+  }
+</style>

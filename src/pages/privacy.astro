@@ -1,0 +1,75 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { site } from '../data/site';
+// CONFIRM: have this notice reviewed before launch (form provider, retention period, registered address).
+---
+
+<Layout title="Privacy notice" description={`How ${site.legalName} handles personal data collected through this website.`}>
+  <section class="wrap page-head">
+    <h1>Privacy notice</h1>
+    <p class="lede">This notice covers personal data collected through this website. Last updated 7 October 2026.</p>
+  </section>
+
+  <section class="section band">
+    <div class="wrap prose">
+      <h2>Who we are</h2>
+      <p>This website is run by {site.legalName}. For anything about your data, email <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+
+      <h2>What we collect</h2>
+      <p>
+        When you apply for the founding programme or email us, we collect what you give us: your name, work email, company, role, country,
+        accounting system, invoice volume and any message you write.
+      </p>
+      <p>This website doesn't use advertising or analytics cookies, and the leakage calculator runs in your browser without sending us your numbers.</p>
+
+      <h2>Why we use it</h2>
+      <p>
+        We use your details to reply to you and to discuss the founding programme. Our lawful basis is your consent, given when you submit the
+        form, and our legitimate interest in responding to business enquiries.
+      </p>
+
+      <h2>Who we share it with</h2>
+      <p>
+        Only the service providers that host this website and receive form submissions on our behalf. We don't sell your data or share it for
+        marketing.
+      </p>
+
+      <h2>How long we keep it</h2>
+      <p>We keep enquiry details for up to 24 months after our last contact with you, unless you ask us to delete them sooner.</p>
+
+      <h2>Your rights</h2>
+      <p>
+        Under UK GDPR, and India's Digital Personal Data Protection Act where it applies, you can ask to see, correct or delete your data, and
+        withdraw your consent at any time. Email us and we'll respond within one month. In the UK, you can also complain to the Information
+        Commissioner's Office.
+      </p>
+
+      <h2>Data in our product</h2>
+      <p>
+        Customer data processed by {site.name} itself is covered by a separate data processing agreement, signed with each customer. See
+        <a href="/trust">AI and your data</a> for how we handle it.
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .prose {
+    max-width: 760px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .prose h2 {
+    font-size: var(--step-2);
+    margin-top: 24px;
+  }
+
+  .prose h2:first-child {
+    margin-top: 0;
+  }
+
+  .prose p + p {
+    margin-top: 0;
+  }
+</style>

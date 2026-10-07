@@ -1,0 +1,105 @@
+---
+// Rebuilt from the Approval Board detail view. Demo data only.
+---
+
+<div class="ui approval">
+  <div class="a-head">
+    <div>
+      <p class="who">Pinecrest Maintenance <span class="ui-sub">4 items</span></p>
+      <p class="ui-sub">Bristol North depot, requested 30 Sep</p>
+    </div>
+    <div class="pills">
+      <span class="tag">Pending</span>
+      <span class="tag tag--blue">Waiting: 1st approver</span>
+    </div>
+  </div>
+
+  <div class="compare">
+    <div>
+      <p class="ui-label">Amount on invoice</p>
+      <p class="val">£7,343.66</p>
+    </div>
+    <div>
+      <p class="ui-label">Amount the email said</p>
+      <p class="val ui-red">£7,100.00</p>
+    </div>
+    <div class="diff">
+      <span class="tag tag--red">Differs by £243.66</span>
+      <p class="ui-sub">Revised quote attached on 16 Sep. Check before approving.</p>
+    </div>
+  </div>
+
+  <div class="files">
+    <p class="ui-label">Attachments (2)</p>
+    <p class="file"><span aria-hidden="true">▤</span> Pinecrest revised quote 16-09.pdf</p>
+    <p class="file"><span aria-hidden="true">▤</span> PM-1190 invoice.pdf</p>
+  </div>
+</div>
+
+<style>
+  .approval {
+    min-width: 480px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .a-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .who {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .pills {
+    display: flex;
+    gap: 6px;
+    align-items: start;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+    border: 1px solid var(--ui-line);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .val {
+    font-weight: 700;
+    font-size: 1.25rem;
+  }
+
+  .diff {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px dashed var(--ui-line);
+  }
+
+  .files {
+    display: grid;
+    gap: 6px;
+  }
+
+  .file {
+    border: 1px solid var(--ui-line);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .file span {
+    display: inline-block;
+    margin-right: 6px;
+    color: var(--ui-soft);
+  }
+</style>

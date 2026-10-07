@@ -1,0 +1,297 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Cockpit from '../components/Cockpit.astro';
+import TrailRows from '../components/TrailRows.astro';
+import ExceptionBanner from '../components/ExceptionBanner.astro';
+import VendorRecon from '../components/VendorRecon.astro';
+import GstRecon from '../components/GstRecon.astro';
+import ApprovalMatch from '../components/ApprovalMatch.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+
+const parts = [
+  { id: 'capture', label: 'Capture' },
+  { id: 'payables', label: 'Payables' },
+  { id: 'receivables', label: 'Receivables' },
+  { id: 'approvals', label: 'Approvals' },
+  { id: 'exceptions', label: 'Exceptions' },
+  { id: 'compliance', label: 'Compliance' },
+];
+
+const fields = [
+  ['Supplier', 'Pinecrest Maintenance', 99],
+  ['Invoice number', 'PM-1190', 99],
+  ['Amount', '£7,343.66', 98],
+  ['Due date', '28 Oct 2026', 97],
+  ['PO number', 'PO-44817', 95],
+  ['Job number', 'Not found', 0],
+] as const;
+---
+
+<Layout title="Product" description={`How ${site.name} reads your finance inbox, reconciles payables and receivables against your ledger, approvals and bank, and brings your team only the exceptions.`}>
+  <section class="wrap page-head">
+    <h1>One engine, from inbox to ledger</h1>
+    <p class="lede">
+      {site.name} has three jobs: read everything that arrives in your finance inbox, check it against every system that holds part of the truth, and
+      hand your team the short list of things that need a decision.
+    </p>
+    <nav class="jump" aria-label="On this page">
+      <ul>
+        {parts.map((p) => <li><a href={`#${p.id}`}>{p.label}</a></li>)}
+      </ul>
+    </nav>
+  </section>
+
+  <section class="section band" id="capture" aria-labelledby="capture-title">
+    <div class="wrap split">
+      <div class="section-head">
+        <h2 id="capture-title">Capture: every email becomes a record</h2>
+        <p class="lede">The AI reads email bodies and attachments as they arrive, whatever the layout, and turns each invoice into structured data.</p>
+        <ul class="ticks">
+          <li>Extracts supplier, invoice number, amount, due date, PO number and job number</li>
+          <li>Sorts every invoice into upcoming, due soon or overdue</li>
+          <li>Classifies mail as vendor, payment, quote, reimbursement, client escalation or internal</li>
+          <li>Sends legal notices straight to your finance director</li>
+          <li>Gives each field a confidence score and sends uncertain ones to a person</li>
+        </ul>
+      </div>
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="ui capture">
+            <div class="mail">
+              <p class="ui-sub">From: accounts@pinecrest-maintenance.example</p>
+              <p class="subj">Invoice PM-1190 for September works</p>
+              <p class="ui-sub">1 attachment: PM-1190.pdf</p>
+            </div>
+            <table class="ui-table">
+              <thead>
+                <tr><th scope="col">Field</th><th scope="col">Extracted</th><th scope="col" class="r">Confidence</th></tr>
+              </thead>
+              <tbody>
+                {
+                  fields.map(([f, v, c]) => (
+                    <tr>
+                      <td>{f}</td>
+                      <td class={c === 0 ? 'ui-red' : undefined}><strong>{v}</strong></td>
+                      <td class="r">{c === 0 ? <span class="tag tag--red">Needs review</span> : <span class="tag tag--green">{c}%</span>}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <figcaption>Illustration of an extraction, with demo data. A missing job number goes to the review queue.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" id="payables" aria-labelledby="pay-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="pay-title">Payables: four sources, one answer</h2>
+        <p class="lede">
+          An invoice is only safe to pay when what the supplier sent, what was approved, what work was done and what your ledger says all agree.
+          {site.name} checks all four.
+        </p>
+      </div>
+      <ol class="sources">
+        <li><strong>Inbox</strong><span>What the supplier sent</span></li>
+        <li><strong>Approval tool</strong><span>What was approved</span></li>
+        <li><strong>Job system</strong><span>What work was done</span></li>
+        <li><strong>Ledger and bank</strong><span>What was recorded and paid</span></li>
+      </ol>
+      <figure class="shot wide-shot">
+        <div class="shot-frame"><VendorRecon /></div>
+        <figcaption>Vendor reconciliation, shown with demo data.</figcaption>
+      </figure>
+      <ul class="ticks catches">
+        <li>Duplicate invoices and invoices that were already paid</li>
+        <li>Partial payments recorded as full</li>
+        <li>Missing PO or job numbers</li>
+        <li>Payments made with no bill behind them</li>
+        <li>Ledger entries the bank can't confirm</li>
+        <li>Payment requests suppliers have sent that nobody answered</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section band" id="receivables" aria-labelledby="ar-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p><span class="status status--rolling-out">Early access</span></p>
+        <h2 id="ar-title">Receivables: the truth about every unpaid invoice</h2>
+        <p class="lede">
+          Your ledger knows what's unpaid. The email trail knows why. {site.name} reads both, then tells you which invoices are genuinely
+          collectable, which are disputed, and which clients say they've paid when your bank says otherwise.
+        </p>
+      </div>
+      <figure class="shot wide-shot">
+        <div class="shot-frame"><Cockpit /></div>
+        <figcaption>The CFO cockpit: every finance operation in one view, each morning. Demo data.</figcaption>
+      </figure>
+      <figure class="shot wide-shot">
+        <div class="shot-frame"><TrailRows /></div>
+        <figcaption>Each invoice comes with its next action, based on what the emails actually say. Demo data.</figcaption>
+      </figure>
+      <ul class="ticks catches">
+        <li>Matches payments to invoices across your ledger, bank statements and payment gateway</li>
+        <li>Flags "client says paid" claims that the bank can't confirm</li>
+        <li>Spots disputes, pushback and threads that have gone quiet</li>
+        <li>Suggests the next move: hold, send a reminder, or ask for missing documents</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="approvals" aria-labelledby="appr-title">
+    <div class="wrap split">
+      <div class="section-head">
+        <h2 id="appr-title">Approvals: know what's stuck, and with whom</h2>
+        <p class="lede">Multi-level approvals are tracked through email, so you can see exactly who an invoice is waiting on.</p>
+        <ul class="ticks">
+          <li>Tracks each approval step and who holds it</li>
+          <li>Compares the amount on the invoice with the amount in the email</li>
+          <li>Keeps attachments and evidence with the request</li>
+        </ul>
+      </div>
+      <figure class="shot">
+        <div class="shot-frame"><ApprovalMatch /></div>
+        <figcaption>An approval with a mismatch caught before sign-off. Demo data.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section band" id="exceptions" aria-labelledby="exc-title">
+    <div class="wrap split split--text-wide">
+      <div class="section-head">
+        <h2 id="exc-title">Exceptions: one queue, every reason spelled out</h2>
+        <p class="lede">
+          A flag on its own creates work. Each exception says what's wrong, why it matters, and what clears it. When an invoice is late,
+          {site.name} tells you why: a missing reference, a stuck approval, or a supplier error.
+        </p>
+        <p>Your source systems are never changed behind your back. Fix the cause at source, and the flag clears on the next refresh.</p>
+      </div>
+      <div class="banners">
+        <ExceptionBanner
+          title="38 of 412 payments have a mode or account mismatch"
+          body="Payment mode is recorded as cash, but the money landed in a bank account. Fix it at source and the flag clears on the next refresh."
+          action="Show only mismatched"
+        />
+        <ExceptionBanner
+          tone="info"
+          title="15 of 52 payments have no bill attached"
+          body="Usually advances, retainers or on-account payments. Check whether each one is intentional or a missing bill link."
+          action="Show only payments with no bill"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="compliance" aria-labelledby="comp-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p><span class="status status--rolling-out">Early access in India</span></p>
+        <h2 id="comp-title">Compliance: reconcile tax returns against your books</h2>
+        <p class="lede">
+          For Indian finance teams, {site.name} matches GSTR-2B and GSTR-1 against your books and explains every mismatch, so input tax credit
+          isn't lost to a missing bill.
+        </p>
+        <p><a href="/india">Read more about {site.name} in India</a></p>
+      </div>
+      <figure class="shot wide-shot">
+        <div class="shot-frame"><GstRecon /></div>
+        <figcaption>GST reconciliation, shown with demo data.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <CtaBand />
+</Layout>
+
+<style>
+  .jump ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .jump a {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    background: var(--surface);
+  }
+
+  .jump a:hover {
+    border-color: var(--ink);
+  }
+
+  .capture {
+    min-width: 420px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .mail {
+    border: 1px solid var(--ui-line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: var(--ui-bg);
+    display: grid;
+    gap: 2px;
+  }
+
+  .subj {
+    font-weight: 700;
+  }
+
+  .sources {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    border-top: 2px solid var(--ink);
+    margin-bottom: clamp(32px, 5vw, 48px);
+  }
+
+  .sources li {
+    display: grid;
+    gap: 4px;
+    padding: 18px 20px 18px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .sources span {
+    color: var(--ink-soft);
+  }
+
+  .wide-shot + .wide-shot {
+    margin-top: 32px;
+  }
+
+  .catches {
+    margin-top: 36px;
+  }
+
+  @media (min-width: 860px) {
+    .catches {
+      grid-template-columns: 1fr 1fr;
+      column-gap: 48px;
+    }
+  }
+
+  .banners {
+    display: grid;
+    gap: 20px;
+  }
+
+  .section-head .status {
+    margin-bottom: -4px;
+  }
+</style>
