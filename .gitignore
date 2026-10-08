@@ -8,3 +8,5 @@ npm-debug.log*
 audit/
 .playwright-mcp/
 /launch-80s.mp4
+.vercel
+.env*
