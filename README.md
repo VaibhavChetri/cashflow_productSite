@@ -1,6 +1,6 @@
 # Radlabs product website
 
-Static multi-page site built with [Astro 5](https://astro.build). No client framework. JavaScript is limited to the Products mega menu, scroll-triggered animations, the tab switchers, the leakage slider and calculator, the product chapter bar and the form pre-fill.
+Static multi-page site built with [Astro 5](https://astro.build). No client framework. JavaScript is limited to the Products mega menu, scroll-triggered animations, the tab switchers, the product chapter bar and the form pre-fill.
 
 ## Run it
 
@@ -23,7 +23,7 @@ If styles look out of date after a lot of edits, stop the dev server, delete `no
 | Pages (one file per URL) | `src/pages/` |
 | Glass navigation, Products mega menu, footer | `src/layouts/Layout.astro` |
 | Hero film and its synced chapter bar (video files in `public/video/`) | `src/components/HeroVideo.astro` |
-| Homepage and shared moments: agent log, context graph, role tabs, audit steps, compare switch, integrations hub, leakage slider, client switcher | `AgentLog`, `ContextGraph`, `RoleTabs`, `AuditSteps`, `CompareToggle`, `IntegrationHub`, `LeakSlider`, `ClientPortfolio` in `src/components/` |
+| Homepage and shared moments: agent log, context graph, role tabs, audit steps, compare switch, integrations hub, client switcher | `AgentLog`, `ContextGraph`, `RoleTabs`, `AuditSteps`, `CompareToggle`, `IntegrationHub`, `ClientPortfolio` in `src/components/` |
 | Dark page headers | `src/layouts/Layout.astro`, `.page-head` in `src/styles/global.css` |
 | Design rules for the homepage moments | `DESIGN.md` |
 | Integration logo grid | `src/components/LogoGrid.astro` |

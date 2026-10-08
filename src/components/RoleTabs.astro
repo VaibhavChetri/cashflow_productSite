@@ -186,17 +186,9 @@ const roles = [
     min-width: 0;
   }
 
-  /* With JavaScript: panels share one grid cell, so the section keeps the tallest panel's height and never jumps. */
-  :global(.js) .role-panels {
-    gap: 0;
-  }
-
-  :global(.js) .role-panel {
-    grid-area: 1 / 1;
-  }
-
+  /* With JavaScript only the chosen panel takes up room, so short panels don't leave a gap. */
   :global(.js) .role-panel:not([data-on]) {
-    visibility: hidden;
+    display: none;
   }
 
   :global(.js) .role-panel[data-on] .role-ui {

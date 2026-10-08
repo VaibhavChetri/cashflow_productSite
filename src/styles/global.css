@@ -184,6 +184,11 @@ ol {
   background: var(--bg-soft);
 }
 
+/* Two tinted sections in a row read as one, so don't double the padding between them. */
+.band + .band {
+  padding-top: 0;
+}
+
 .lede {
   font-size: var(--step-1);
   line-height: 1.5;

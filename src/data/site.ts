@@ -66,8 +66,6 @@ export const productMenu = [
     items: [
       { label: 'GSTR-2B vs books', icon: 'receipt', href: '/india' },
       { label: 'GSTR-1 vs invoices', icon: 'file', href: '/india' },
-      { label: 'PF, ESIC and PT reconciliation', icon: 'users', href: '/india' },
-      { label: 'Supplier due-date tracking', icon: 'clock', href: '/india' },
     ],
   },
   {

@@ -36,7 +36,6 @@ General Sans for everything. Numbers in logs and tables use `font-variant-numeri
 | `RoleTabs` | Accessible tabs, one per role, own screen per tab | Ledge roles |
 | `AuditSteps` | Self-playing four-step timeline | Razorpay AP workflow, Glean time badges |
 | `IntegrationHub` | Connectors on a ring; only live ones flow | Xelix, Cashflo |
-| `LeakSlider` | One-slider leakage estimate with rolling digits | Mysa odometer |
 | `HeroVideo` | The launch film in a frame, with a chapter bar synced to its scenes | Notion hero |
 
 ## What this site does differently
@@ -54,7 +53,7 @@ General Sans for everything. Numbers in logs and tables use `font-variant-numeri
 
 ## No fake numbers
 
-No running totals, "processed so far" counters, customer counts or logos unless they are real and approved. Estimates (the leakage slider and calculator) must show their assumptions. All product screens say they show demo data. Anything marked `CONFIRM` in the code stays as it is until confirmed.
+No running totals, "processed so far" counters, customer counts or logos unless they are real and approved. Any estimate must show its assumptions. All product screens say they show demo data. Anything marked `CONFIRM` in the code stays as it is until confirmed.
 
 ## Dev server gotcha
 

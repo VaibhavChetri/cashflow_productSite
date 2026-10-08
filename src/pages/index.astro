@@ -9,19 +9,10 @@ import ContextGraph from '../components/ContextGraph.astro';
 import RoleTabs from '../components/RoleTabs.astro';
 import AuditSteps from '../components/AuditSteps.astro';
 import CompareToggle from '../components/CompareToggle.astro';
-import LeakSlider from '../components/LeakSlider.astro';
 import LeadersSection from '../components/LeadersSection.astro';
 import CtaBand from '../components/CtaBand.astro';
 import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
-
-const leaks = [
-  ['Duplicate invoices', 'The same invoice arrives twice, by email and by post, and both get paid.'],
-  ['Invoices paid twice', 'A supplier resends an invoice that was settled last month.'],
-  ['Partial payments booked as full', 'The ledger says settled. The bank says otherwise.'],
-  ['"We paid you on Friday"', 'A client says they paid, your books say unpaid, and nobody checks the bank.'],
-  ['Money out with no bill behind it', 'Advances and on-account payments that never get matched to a bill.'],
-];
 ---
 
 <Layout description={`${site.name} reads every email in your finance inbox, reconciles invoices and payments against your ledger, approvals and bank, and gives finance leaders a single view of every finance operation.`}>
@@ -146,27 +137,6 @@ const leaks = [
       </div>
       <RoleTabs />
       <p class="demo-note">All product screens show demo data.</p>
-    </div>
-  </section>
-
-  <!-- Leakage -->
-  <section class="section" aria-labelledby="leak-title">
-    <div class="wrap split split--text-wide leak-grid">
-      <div class="section-head">
-        <h2 id="leak-title">Where the money leaks</h2>
-        <p class="lede">Leakage is rarely fraud. It's ordinary mistakes that nobody has time to catch, repeated every month.</p>
-        <LeakSlider />
-      </div>
-      <ul class="ledger-list">
-        {
-          leaks.map(([title, text]) => (
-            <li>
-              <strong>{title}</strong>
-              <p>{text}</p>
-            </li>
-          ))
-        }
-      </ul>
     </div>
   </section>
 
@@ -475,7 +445,4 @@ const leaks = [
     }
   }
 
-  .leak-grid {
-    align-items: start;
-  }
 </style>
