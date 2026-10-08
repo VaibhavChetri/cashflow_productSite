@@ -8,12 +8,12 @@
   --line-strong: #c9dbd2;
   --ink: #0f3326;
   --text: #2f4a40;
-  --ink-soft: #5b7369;
-  --brand: #12844f;
+  --ink-soft: #4f665c;
+  --brand: #0f7a48;
   --brand-deep: #0b6a3e;
   --brand-bright: #22b573;
   --audit: #c2412d;
-  --amber: #a8640c;
+  --amber: #8f5409;
   --surface: #ffffff;
   --dark: #0b2a1f;
 
@@ -40,6 +40,9 @@
   --step-5: clamp(2.6rem, 5.6vw, 4.25rem);
 
   --panel-grad: linear-gradient(135deg, #f6fbf8 0%, #e3f3ea 55%, #cfeadb 100%);
+  --header-h: 78px;
+  /* Mysa-style halftone: a field of small green dots, faded out by a mask where it's used */
+  --dots: radial-gradient(circle, rgba(95, 211, 154, 0.55) 1.1px, transparent 1.7px) 0 0 / 14px 14px;
   --shadow-card: 0 1px 2px rgba(15, 51, 38, 0.05), 0 18px 40px -18px rgba(15, 51, 38, 0.22);
   --shadow-sheet: var(--shadow-card);
 }
@@ -336,13 +339,61 @@ ol {
   color: var(--ink-soft);
 }
 
-/* Soft gradient panel, the base of every bento card */
+/* Nanonets-style app window bar: put it as the first child of a .shot-frame */
+.win-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+  background: #fafcfb;
+}
+
+.win-bar i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e2e8e5;
+}
+
+.win-bar i:nth-child(1) {
+  background: #f1a59b;
+}
+.win-bar i:nth-child(2) {
+  background: #f4cf7c;
+}
+.win-bar i:nth-child(3) {
+  background: #8fd6ad;
+}
+
+/* Tinted panel with a faint halftone, for the one panel in a group that should lead */
+.panel--lead {
+  background: #eef6f1;
+}
+
+.panel--lead::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(15, 122, 72, 0.22) 1.1px, transparent 1.7px) 0 0 / 14px 14px;
+  -webkit-mask-image: radial-gradient(60% 80% at 0% 100%, #000 5%, transparent 70%);
+  mask-image: radial-gradient(60% 80% at 0% 100%, #000 5%, transparent 70%);
+  pointer-events: none;
+}
+
+.panel--lead > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* White card, the base of every bento panel. Green is kept for signals, not surfaces. */
 .panel {
   position: relative;
-  background: var(--panel-grad);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 28px;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 20px 50px -30px rgba(15, 51, 38, 0.35);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 1px 2px rgba(15, 51, 38, 0.04), 0 24px 48px -32px rgba(15, 51, 38, 0.28);
   overflow: hidden;
 }
 
@@ -536,20 +587,86 @@ ol {
   color: var(--ink-soft);
 }
 
-/* Page heading for inner pages */
+/* Page heading for inner pages: a dark band with a halftone field that reaches up behind the floating nav. */
 .page-head {
-  padding-block: clamp(56px, 8vw, 104px) clamp(40px, 6vw, 72px);
+  position: relative;
+  isolation: isolate;
+  padding-block: clamp(64px, 9vw, 120px) clamp(56px, 7vw, 96px);
   display: grid;
   gap: 20px;
+  color: #c3d6cc;
+}
+
+.page-head::before,
+.page-head::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: calc(-1 * var(--header-h));
+  bottom: 0;
+  left: calc(50% - 50vw);
+  right: calc(50% - 50vw);
+}
+
+.page-head::before {
+  background:
+    radial-gradient(900px 480px at 85% 10%, rgba(34, 181, 115, 0.24), transparent 65%),
+    linear-gradient(170deg, #0f3326, var(--dark));
+}
+
+.page-head::after {
+  background: var(--dots);
+  -webkit-mask-image: radial-gradient(70% 90% at 100% 100%, #000 10%, transparent 70%);
+  mask-image: radial-gradient(70% 90% at 100% 100%, #000 10%, transparent 70%);
+  opacity: 0.7;
 }
 
 .page-head h1 {
   max-width: 18ch;
+  color: #fff;
+}
+
+.page-head .lede,
+.page-head p {
+  color: #c3d6cc;
+}
+
+.page-head a:not(.btn) {
+  color: #8fe0b5;
 }
 
 .kicker {
   font-weight: 500;
   color: var(--brand);
+}
+
+.page-head .kicker {
+  color: #5fd39a;
+}
+
+/* Dark band for the agent log (homepage, India page) */
+.night-band {
+  background:
+    radial-gradient(800px 420px at 90% 40%, rgba(34, 181, 115, 0.18), transparent 65%),
+    linear-gradient(180deg, var(--dark), #0f3326);
+}
+
+/* Buttons on dark surfaces */
+.on-dark .btn-quiet,
+.page-head .btn-quiet {
+  border-color: rgba(232, 240, 235, 0.7);
+  color: #e8f0eb;
+}
+
+.on-dark .btn-quiet:hover,
+.page-head .btn-quiet:hover {
+  background: #e8f0eb;
+  color: var(--ink);
+}
+
+.on-dark :focus-visible,
+.page-head :focus-visible {
+  outline-color: #7fd1a1;
 }
 
 /* Forms */

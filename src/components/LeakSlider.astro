@@ -1,0 +1,130 @@
+---
+// A one-slider version of the leakage calculator, with Mysa-style rolling digits.
+// Same formula and defaults as /leakage-calculator: invoices × £1,200 average × 0.5% costly errors × 12 months.
+const avg = 1200;
+const rate = 0.005;
+const start = 400;
+const fmt = (v: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(v);
+const first = fmt(start * avg * rate * 12);
+---
+
+<div class="leak" data-leak data-avg={avg} data-rate={rate}>
+  <label class="leak-q" for="leak-inv">Supplier invoices a month: <output id="leak-inv-out" for="leak-inv">{start}</output></label>
+  <input id="leak-inv" type="range" min="50" max="3000" step="50" value={start} />
+
+  <p class="leak-label">Likely to slip through each year</p>
+  <p class="odo" aria-hidden="true">
+    {[...first].map((ch) => (/\d/.test(ch) ? <span class="col" style={`--d:${ch}`}><span>0123456789</span></span> : <span class="sym">{ch}</span>))}
+  </p>
+  <p class="sr-only" aria-live="polite" id="leak-sr">{first}</p>
+  <p class="leak-note">
+    Assumes £1,200 per invoice and one costly error in 200. <a href="/leakage-calculator">Use your own numbers</a>.
+  </p>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-leak]').forEach((root) => {
+    const input = root.querySelector<HTMLInputElement>('input')!;
+    const out = root.querySelector('output')!;
+    const odo = root.querySelector<HTMLElement>('.odo')!;
+    const sr = root.querySelector<HTMLElement>('#leak-sr')!;
+    const avg = Number(root.dataset.avg);
+    const rate = Number(root.dataset.rate);
+    const fmt = (v: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(v);
+    let timer: number | undefined;
+
+    // Rebuild the odometer only when the shape of the number changes (a new digit or comma); otherwise just roll each column.
+    const render = (text: string) => {
+      const shape = text.replace(/\d/g, '0');
+      if (odo.dataset.shape !== shape) {
+        odo.dataset.shape = shape;
+        odo.innerHTML = [...text]
+          .map((ch) => (/\d/.test(ch) ? `<span class="col" style="--d:0"><span>0123456789</span></span>` : `<span class="sym">${ch}</span>`))
+          .join('');
+        odo.getBoundingClientRect();
+      }
+      const cols = odo.querySelectorAll<HTMLElement>('.col');
+      [...text.replace(/\D/g, '')].forEach((d, i) => cols[i]?.style.setProperty('--d', d));
+    };
+
+    odo.dataset.shape = fmt(Number(input.value) * avg * rate * 12).replace(/\d/g, '0');
+    input.addEventListener('input', () => {
+      const inv = Number(input.value);
+      const text = fmt(inv * avg * rate * 12);
+      out.textContent = String(inv);
+      render(text);
+      clearTimeout(timer);
+      timer = window.setTimeout(() => (sr.textContent = text), 400);
+    });
+  });
+</script>
+
+<style>
+  .leak {
+    display: grid;
+    gap: 14px;
+    padding: clamp(24px, 3vw, 36px);
+    border-radius: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+  }
+
+  .leak-q {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .leak-q output {
+    font-variant-numeric: tabular-nums;
+    color: var(--brand);
+  }
+
+  input[type='range'] {
+    width: 100%;
+    accent-color: var(--brand);
+    height: 28px;
+    cursor: pointer;
+  }
+
+  .leak p + p {
+    margin-top: 0;
+  }
+
+  .leak .leak-label {
+    margin-top: 10px;
+    color: var(--ink-soft);
+  }
+
+  /* Each digit is a 0–9 strip in a one-digit window, rolled to its value */
+  .odo {
+    display: flex;
+    max-width: none;
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .odo :global(.col) {
+    display: inline-block;
+    height: 1em;
+    overflow: hidden;
+  }
+
+  .odo :global(.col > span) {
+    display: block;
+    width: 0.62em;
+    word-break: break-all;
+    line-height: 1;
+    transform: translateY(calc(var(--d) * -1em));
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .leak-note {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+</style>

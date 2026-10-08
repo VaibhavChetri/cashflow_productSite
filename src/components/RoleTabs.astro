@@ -1,0 +1,225 @@
+---
+// Ledge-style role switcher: one tab per seat in the finance team, each with its outcome and its own product screen.
+// Without JavaScript every panel shows, stacked.
+import Icon from './Icon.astro';
+import VendorRecon from './VendorRecon.astro';
+import ApprovalMatch from './ApprovalMatch.astro';
+import TrailRows from './TrailRows.astro';
+
+const roles = [
+  {
+    id: 'controller',
+    tab: 'Financial controllers',
+    title: 'Books, bank and bills that agree before month-end',
+    points: ['Vendor balances checked against the bank every day', 'Each mismatch explained in plain English', 'Fix it at source and the flag clears on the next refresh'],
+    cta: 'See reconciliation',
+    layout: 'side',
+    href: '/product#compliance',
+  },
+  {
+    id: 'ap',
+    tab: 'AP teams',
+    title: 'Every number on an invoice has a source',
+    points: ['The invoice amount is checked against the email before approval', 'Duplicates and already-paid invoices held before the run', 'Stuck approvals chased when the approver is away'],
+    cta: 'See payables',
+    layout: 'side',
+    href: '/product#payables',
+  },
+  {
+    id: 'ar',
+    tab: 'AR and collections',
+    title: 'Know who will pay, and who only says they have',
+    points: ['Every thread with every client read and summarised', 'Each "we\'ve paid you" checked against the bank', 'A next action on every unpaid invoice'],
+    cta: 'See receivables',
+    layout: 'wide',
+    href: '/product#receivables',
+  },
+];
+---
+
+<div class="roles" data-tabs>
+  <div class="role-bar" role="tablist" aria-label="Choose your role">
+    {
+      roles.map((r, i) => (
+        <button class="role-tab" role="tab" id={`tab-${r.id}`} aria-controls={`panel-${r.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+          {r.tab}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="role-panels">
+  {
+    roles.map((r, i) => (
+      <div class={`role-panel role-panel--${r.layout}`} role="tabpanel" id={`panel-${r.id}`} aria-labelledby={`tab-${r.id}`} data-on={i === 0 ? '' : undefined}>
+        <div class="role-text">
+          <h3>{r.title}</h3>
+          <div class="role-more">
+            <ul class="ticks">
+              {r.points.map((p) => <li>{p}</li>)}
+            </ul>
+            <a class="btn btn-dark" href={r.href}>
+              {r.cta} <Icon name="arrow" size={18} />
+            </a>
+          </div>
+        </div>
+        <div class="role-ui shot-frame">
+          {r.id === 'controller' && <VendorRecon compact />}
+          {r.id === 'ap' && <ApprovalMatch />}
+          {r.id === 'ar' && <TrailRows />}
+        </div>
+      </div>
+    ))
+  }
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const select = (tab: HTMLButtonElement, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t === tab;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        root.querySelector<HTMLElement>(`#${t.getAttribute('aria-controls')}`)!.toggleAttribute('data-on', on);
+      });
+      if (focus) tab.focus();
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(tab));
+      tab.addEventListener('keydown', (e) => {
+        const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+        if (step) select(tabs[(i + step + tabs.length) % tabs.length], true);
+        if (e.key === 'Home') select(tabs[0], true);
+        if (e.key === 'End') select(tabs[tabs.length - 1], true);
+      });
+    });
+  });
+</script>
+
+<style>
+  .role-bar {
+    display: none;
+  }
+
+  :global(.js) .role-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 6px;
+    gap: 6px;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+    margin-bottom: clamp(28px, 4vw, 48px);
+  }
+
+  .role-tab {
+    font: inherit;
+    font-weight: 500;
+    font-size: 1rem;
+    min-height: 52px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 13px;
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  .role-tab:hover {
+    color: var(--ink);
+    background: var(--bg-soft);
+  }
+
+  .role-tab[aria-selected='true'] {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .role-panel {
+    display: grid;
+    gap: clamp(28px, 4vw, 44px);
+    align-content: start;
+  }
+
+  .role-panels {
+    display: grid;
+    gap: 72px;
+  }
+
+  .role-text {
+    display: grid;
+    gap: 22px;
+  }
+
+  /* Narrow screens sit beside the text; wide tables get the full width below a two-column intro. */
+  @media (min-width: 980px) {
+    .role-panel--side {
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 56px;
+      align-items: center;
+    }
+    .role-panel--wide .role-text {
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+  }
+
+  .role-text h3 {
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    max-width: 18ch;
+  }
+
+  .role-more {
+    display: grid;
+    gap: 24px;
+    justify-items: start;
+  }
+
+  .role-ui {
+    min-width: 0;
+  }
+
+  /* With JavaScript: panels share one grid cell, so the section keeps the tallest panel's height and never jumps. */
+  :global(.js) .role-panels {
+    gap: 0;
+  }
+
+  :global(.js) .role-panel {
+    grid-area: 1 / 1;
+  }
+
+  :global(.js) .role-panel:not([data-on]) {
+    visibility: hidden;
+  }
+
+  :global(.js) .role-panel[data-on] .role-ui {
+    animation: settle 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  :global(.js) .role-panel[data-on] .role-text {
+    animation: settle 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) 0.05s backwards;
+  }
+
+  @keyframes settle {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .role-bar {
+      grid-template-columns: 1fr;
+    }
+    .role-tab {
+      min-height: 46px;
+    }
+  }
+</style>

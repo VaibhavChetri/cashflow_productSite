@@ -11,51 +11,141 @@ import { site } from '../data/site';
   </section>
 
   <section class="section band">
-    <div class="wrap prose">
-      <h2>Who we are</h2>
+    <div class="wrap legal">
+      <nav class="toc" aria-label="On this page">
+        <p class="toc-title" aria-hidden="true">On this page</p>
+        <ol>
+          <li><a href="#who-we-are">Who we are</a></li>
+          <li><a href="#what-we-collect">What we collect</a></li>
+          <li><a href="#why-we-use-it">Why we use it</a></li>
+          <li><a href="#who-we-share-it-with">Who we share it with</a></li>
+          <li><a href="#how-long-we-keep-it">How long we keep it</a></li>
+          <li><a href="#your-rights">Your rights</a></li>
+          <li><a href="#data-in-our-product">Data in our product</a></li>
+        </ol>
+      </nav>
+    <div class="prose">
+      <h2 id="who-we-are">Who we are</h2>
       <p>This website is run by {site.legalName}. For anything about your data, email <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
 
-      <h2>What we collect</h2>
+      <h2 id="what-we-collect">What we collect</h2>
       <p>
         When you apply for the founding programme or email us, we collect what you give us: your name, work email, company, role, country,
         accounting system, invoice volume and any message you write.
       </p>
       <p>This website doesn't use advertising or analytics cookies, and the leakage calculator runs in your browser without sending us your numbers.</p>
 
-      <h2>Why we use it</h2>
+      <h2 id="why-we-use-it">Why we use it</h2>
       <p>
         We use your details to reply to you and to discuss the founding programme. Our lawful basis is your consent, given when you submit the
         form, and our legitimate interest in responding to business enquiries.
       </p>
 
-      <h2>Who we share it with</h2>
+      <h2 id="who-we-share-it-with">Who we share it with</h2>
       <p>
         Only the service providers that host this website and receive form submissions on our behalf. We don't sell your data or share it for
         marketing.
       </p>
 
-      <h2>How long we keep it</h2>
+      <h2 id="how-long-we-keep-it">How long we keep it</h2>
       <p>We keep enquiry details for up to 24 months after our last contact with you, unless you ask us to delete them sooner.</p>
 
-      <h2>Your rights</h2>
+      <h2 id="your-rights">Your rights</h2>
       <p>
         Under UK GDPR, and India's Digital Personal Data Protection Act where it applies, you can ask to see, correct or delete your data, and
         withdraw your consent at any time. Email us and we'll respond within one month. In the UK, you can also complain to the Information
         Commissioner's Office.
       </p>
 
-      <h2>Data in our product</h2>
+      <h2 id="data-in-our-product">Data in our product</h2>
       <p>
         Customer data processed by {site.name} itself is covered by a separate data processing agreement, signed with each customer. See
         <a href="/trust">AI and your data</a> for how we handle it.
       </p>
     </div>
+    </div>
   </section>
 </Layout>
 
+<script>
+  // Mark the section in view in the contents list.
+  const links = new Map([...document.querySelectorAll<HTMLAnchorElement>('.toc a')].map((a) => [a.hash.slice(1), a]));
+  const io = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        links.forEach((a) => a.removeAttribute('aria-current'));
+        links.get(e.target.id)?.setAttribute('aria-current', 'true');
+      }),
+    { rootMargin: '0px 0px -70% 0px' },
+  );
+  document.querySelectorAll('.prose h2[id]').forEach((h) => io.observe(h));
+</script>
+
 <style>
+  /* Wide screens: a sticky list of sections beside the notice. Narrow screens: the notice alone. */
+  .legal {
+    display: grid;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .toc {
+    display: none;
+  }
+
+  @media (min-width: 1000px) {
+    .legal {
+      grid-template-columns: 240px minmax(0, 760px);
+      gap: 72px;
+    }
+    .toc {
+      display: grid;
+      gap: 12px;
+      position: sticky;
+      top: calc(var(--header-h) + 32px);
+    }
+  }
+
+  .toc-title {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  .toc ol {
+    list-style: none;
+    display: grid;
+    border-left: 2px solid var(--line-strong);
+  }
+
+  .toc a {
+    display: block;
+    margin-left: -2px;
+    padding: 7px 0 7px 16px;
+    border-left: 2px solid transparent;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .toc a:hover,
+  .toc a[aria-current='true'] {
+    color: var(--brand);
+    border-left-color: var(--brand-bright);
+  }
+
+  .prose h2 {
+    scroll-margin-top: calc(var(--header-h) + 24px);
+  }
+
   .prose {
     max-width: 760px;
+    padding: clamp(24px, 4vw, 48px);
+    border-radius: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
     display: grid;
     gap: 14px;
   }

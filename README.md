@@ -1,6 +1,6 @@
 # Radlabs product website
 
-Static multi-page site built with [Astro 5](https://astro.build). No client framework. The only JavaScript is the Products mega menu, scroll-triggered animations, the leakage calculator and the form pre-fill.
+Static multi-page site built with [Astro 5](https://astro.build). No client framework. JavaScript is limited to the Products mega menu, scroll-triggered animations, the tab switchers, the leakage slider and calculator, the product chapter bar and the form pre-fill.
 
 ## Run it
 
@@ -22,8 +22,10 @@ If styles look out of date after a lot of edits, stop the dev server, delete `no
 | Product name, email, domain, menus, connector statuses | `src/data/site.ts` |
 | Pages (one file per URL) | `src/pages/` |
 | Glass navigation, Products mega menu, footer | `src/layouts/Layout.astro` |
-| Hero collage and its animations | `src/components/HeroCollage.astro` |
-| Cashflo-style illustrations | `src/components/FlowArt.astro` |
+| Hero film and its synced chapter bar (video files in `public/video/`) | `src/components/HeroVideo.astro` |
+| Homepage and shared moments: agent log, context graph, role tabs, audit steps, compare switch, integrations hub, leakage slider, client switcher | `AgentLog`, `ContextGraph`, `RoleTabs`, `AuditSteps`, `CompareToggle`, `IntegrationHub`, `LeakSlider`, `ClientPortfolio` in `src/components/` |
+| Dark page headers | `src/layouts/Layout.astro`, `.page-head` in `src/styles/global.css` |
+| Design rules for the homepage moments | `DESIGN.md` |
 | Integration logo grid | `src/components/LogoGrid.astro` |
 | Module cards, leaders section | `src/components/ModuleCards.astro`, `LeadersSection.astro` |
 | Product-screen replicas (demo data) | `src/components/` |
@@ -31,7 +33,7 @@ If styles look out of date after a lot of edits, stop the dev server, delete `no
 | Product-screen styling | `src/styles/ui.css` |
 | Images (generated with Vertex AI, `gemini-3-pro-image`) | `src/assets/img/` |
 | Brand logos (from Simple Icons) | `src/assets/logos/` |
-| Green logo, favicon | `public/logo-green.png`, `public/favicon.png` (made from `logo.png`) |
+| Nav logo (red flame), favicon, iPhone icon | `public/logo.png`, `public/favicon.png`, `public/apple-touch-icon.png` (made from `logo.png`); the footer uses it too; diagrams use `public/logo-green.png` |
 
 Product screens are HTML rebuilds of the real dashboard filled with demo data. Never paste real screenshots: they contain customer names, bank account numbers and GSTINs.
 

@@ -1,12 +1,12 @@
 /* Shared styles for the product-screen replicas. Mirrors the real dashboard's look. */
 .ui {
   --ui-ink: #1c2430;
-  --ui-soft: #6b7684;
+  --ui-soft: #5d6876;
   --ui-line: #e7ebef;
   --ui-bg: #f7f9fb;
-  --ui-green: #2f8a57;
+  --ui-green: #23744a;
   --ui-green-bg: #eaf6ee;
-  --ui-amber: #b4650c;
+  --ui-amber: #985509;
   --ui-amber-bg: #fdf3e2;
   --ui-red: #c23b30;
   --ui-red-bg: #fdecea;
@@ -20,8 +20,13 @@
   padding: clamp(16px, 2.4vw, 28px);
 }
 
-.ui h4 {
+/* Screen titles in the mock product UI are styled text, not headings, so they stay out of the page outline */
+.ui .ui-title {
+  margin: 0;
+  color: var(--ui-ink);
   font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.2;
   letter-spacing: -0.01em;
 }
 

@@ -1,0 +1,395 @@
+---
+// Ledge-style switcher for firms: pick one of three demo clients and see that client's exception list.
+// Same accessible tab pattern as RoleTabs (arrow keys, Home/End, roving tabindex). Without JavaScript every client shows, stacked.
+// Demo data only, reusing the names and figures from the rest of the site.
+import ExceptionBanner from './ExceptionBanner.astro';
+
+type Tone = 'red' | 'amber' | 'purple' | 'green';
+interface Item {
+  who: string;
+  what: string;
+  amount: string;
+  tag: string;
+  tone: Tone;
+  action: string;
+}
+interface Client {
+  id: string;
+  name: string;
+  meta: string;
+  items: Item[];
+  banner?: boolean;
+}
+
+const clients: Client[] = [
+  {
+    id: 'property',
+    name: 'Property management',
+    meta: 'Xero · UK',
+    banner: true,
+    items: [
+      { who: 'Pinecrest PM-1190', what: 'Already paid on 12 Sep. Held before the payment run.', amount: '£7,343.66', tag: 'Held', tone: 'red', action: 'Keep on hold' },
+      { who: 'Halden Logistics', what: 'Waiting on 3 missing POs. Reply drafted for your review.', amount: '£40,100', tag: 'Drafted', tone: 'amber', action: 'Review reply' },
+    ],
+  },
+  {
+    id: 'facilities',
+    name: 'Facilities services',
+    meta: 'Xero · UK',
+    items: [
+      { who: 'Kestrel Hospitality, INV-2026-0388', what: 'Client says it paid on 12 Sep. Nothing in the bank.', amount: '£9,400', tag: 'Needs proof', tone: 'purple', action: 'Ask for remittance' },
+      { who: 'Arden Property Services, INV-2026-0451', what: 'Second approver out of office since 2 Sep.', amount: '£7,050', tag: 'Chase', tone: 'amber', action: 'Send chaser' },
+      { who: 'Meridian Foods', what: 'Supplier balance in the books does not match the bank.', amount: '£28,820', tag: 'Books ≠ bank', tone: 'red', action: 'Explain' },
+    ],
+  },
+  {
+    id: 'india',
+    name: 'Restaurant group',
+    meta: 'Zoho Books · India',
+    items: [
+      { who: 'Nilgiri Foods Pvt Ltd, invoice 812', what: 'GSTR-2B says ₹1,19,271, books say ₹1,12,400. The bill in books is missing the freight line.', amount: '₹6,871', tag: 'Explained', tone: 'green', action: 'Fix the bill' },
+      { who: 'Vasant Logistics, invoice 903', what: 'In GSTR-2B but not booked. Input credit is at risk until the bill is recorded.', amount: '₹54,000', tag: 'Not booked', tone: 'red', action: 'Book the bill' },
+    ],
+  },
+];
+const count = (c: Client) => c.items.length + (c.banner ? 1 : 0);
+---
+
+<div class="portfolio" data-portfolio>
+  <div class="pf-bar" role="tablist" aria-label="Choose a demo client" aria-orientation="vertical">
+    <p class="pf-bar-title" aria-hidden="true">Your clients <span>demo</span></p>
+    {
+      clients.map((c, i) => (
+        <button class="pf-tab" role="tab" id={`pf-tab-${c.id}`} aria-controls={`pf-panel-${c.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+          <span class="pf-name">{c.name}</span>
+          <span class="pf-meta">{c.meta}</span>
+          <span class="pf-count">{count(c)} to review</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="pf-panels">
+    {
+      clients.map((c, i) => (
+        <div class="pf-panel shot-frame" role="tabpanel" id={`pf-panel-${c.id}`} aria-labelledby={`pf-tab-${c.id}`} data-on={i === 0 ? '' : undefined}>
+          <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="ui pf-ui">
+            <div class="pf-head">
+              <div>
+                <h3 class="pf-title">{c.name}</h3>
+                <p class="ui-sub">{c.meta} · exceptions this morning · demo data</p>
+              </div>
+              <span class="ui-chip ui-chip--on">{count(c)} to review</span>
+            </div>
+            {c.banner && (
+              <ExceptionBanner
+                tone="info"
+                title="15 of 52 payments have no bill attached"
+                body="Usually advances, retainers or on-account payments. Check whether each one is intentional or a missing bill link."
+                action="Show only payments with no bill"
+              />
+            )}
+            <ul class="pf-list" style={`--rows:${c.items.length}`}>
+              {c.items.map((it, n) => (
+                <li style={`--n:${n}`}>
+                  <span class={`tag tag--${it.tone}`}>{it.tag}</span>
+                  <div class="pf-what">
+                    <p class="pf-who">{it.who}</p>
+                    <p class="ui-sub">{it.what}</p>
+                  </div>
+                  <p class="pf-amt">{it.amount}</p>
+                  <span class="ui-btn">{it.action}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-portfolio]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const select = (tab: HTMLButtonElement, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t === tab;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        root.querySelector<HTMLElement>(`#${t.getAttribute('aria-controls')}`)!.toggleAttribute('data-on', on);
+      });
+      if (focus) tab.focus();
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(tab));
+      tab.addEventListener('keydown', (e) => {
+        // Vertical list on wide screens, a row on narrow ones: both arrow pairs move.
+        const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+        if (step) {
+          e.preventDefault();
+          select(tabs[(i + step + tabs.length) % tabs.length], true);
+        }
+        if (e.key === 'Home') select(tabs[0], true);
+        if (e.key === 'End') select(tabs[tabs.length - 1], true);
+      });
+    });
+  });
+</script>
+
+<style>
+  .portfolio {
+    display: grid;
+    gap: 20px;
+  }
+
+  .pf-bar {
+    display: none;
+  }
+
+  :global(.js) .pf-bar {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+  }
+
+  .pf-bar-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+
+  .pf-bar-title span {
+    font-size: 0.8125rem;
+    padding: 1px 9px;
+    border-radius: 999px;
+    background: var(--tint);
+    color: var(--brand-deep);
+  }
+
+  .pf-tab {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 12px;
+    text-align: left;
+    font: inherit;
+    padding: 16px 18px 16px 22px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .pf-tab::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 16px;
+    bottom: 16px;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--line-strong);
+    transition: background-color 0.2s ease;
+  }
+
+  .pf-tab:hover {
+    border-color: var(--line-strong);
+  }
+
+  .pf-tab[aria-selected='true'] {
+    border-color: var(--brand-bright);
+    box-shadow: var(--shadow-card);
+  }
+
+  .pf-tab[aria-selected='true']::before {
+    background: var(--brand-bright);
+  }
+
+  .pf-name {
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .pf-meta {
+    grid-row: 2;
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+  }
+
+  .pf-count {
+    grid-row: 1 / 3;
+    grid-column: 2;
+    align-self: center;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .pf-tab[aria-selected='true'] .pf-count {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .pf-panels {
+    display: grid;
+    gap: 32px;
+    min-width: 0;
+  }
+
+  .pf-panel {
+    min-width: 0;
+  }
+
+  .pf-ui {
+    display: grid;
+    gap: 18px;
+  }
+
+  .pf-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .pf-title {
+    font-size: 1.25rem;
+    color: var(--ui-ink);
+  }
+
+  .pf-list {
+    list-style: none;
+    display: grid;
+    border: 1px solid var(--ui-line);
+    border-radius: 14px;
+  }
+
+  .pf-list li {
+    display: grid;
+    grid-template-columns: 104px 1fr auto auto;
+    gap: 6px 16px;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--ui-line);
+  }
+
+  .pf-list li:last-child {
+    border-bottom: 0;
+  }
+
+  .pf-list .tag {
+    justify-self: start;
+  }
+
+  .pf-who {
+    font-weight: 600;
+  }
+
+  .pf-what {
+    display: grid;
+    gap: 2px;
+  }
+
+  .pf-what p + p {
+    margin-top: 0;
+  }
+
+  .pf-amt {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 720px) {
+    .pf-list li {
+      grid-template-columns: 1fr auto;
+    }
+    .pf-what {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+    .pf-list .ui-btn {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      justify-self: start;
+    }
+  }
+
+  @media (min-width: 980px) {
+    .portfolio {
+      grid-template-columns: 300px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+  }
+
+  /* Narrow screens: the client list becomes a row of chips that scrolls sideways. */
+  @media (max-width: 979px) {
+    :global(.js) .pf-bar {
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(200px, 1fr);
+      overflow-x: auto;
+      padding: 4px 2px 10px;
+      scroll-snap-type: x mandatory;
+    }
+    .pf-tab {
+      scroll-snap-align: start;
+      grid-template-columns: 1fr;
+      align-content: start;
+      gap: 4px;
+    }
+    .pf-count {
+      grid-row: auto;
+      grid-column: 1;
+      justify-self: start;
+      margin-top: 6px;
+    }
+    .pf-bar-title {
+      display: none;
+    }
+  }
+
+  /* With JavaScript: panels share one grid cell so the section never jumps; each switch replays the list. */
+  :global(.js) .pf-panels {
+    gap: 0;
+  }
+
+  :global(.js) .pf-panel {
+    grid-area: 1 / 1;
+  }
+
+  :global(.js) .pf-panel:not([data-on]) {
+    visibility: hidden;
+  }
+
+  /* On phones the panels differ a lot in height, so hide the others outright rather than reserve the tallest. */
+  @media (max-width: 979px) {
+    :global(.js) .pf-panel:not([data-on]) {
+      display: none;
+    }
+  }
+
+  :global(.js) .pf-panel[data-on] .pf-list li {
+    animation: pf-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) calc(var(--n) * 0.07s) backwards;
+  }
+
+  @keyframes pf-in {
+    from {
+      transform: translateX(-10px);
+      opacity: 0;
+    }
+  }
+</style>

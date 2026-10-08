@@ -1,0 +1,386 @@
+---
+// Notion-style hero film: the 80-second launch video in a framed window, with a chapter bar underneath that stays in sync.
+// The active chapter's bar fills as the film plays; clicking a chapter jumps to it.
+// Chapter times come from the film's storyboard (radlabs-launch-video/STORYBOARD.md: frame global starts).
+// The film is muted by default (it only has quiet UI sounds, no voice), autoplays while in view, and never autoplays
+// for people who ask for reduced motion.
+const chapters = [
+  { t: 0, label: 'The problem' },
+  { t: 14, label: 'What you owe today' },
+  { t: 26, label: 'Four systems, checked' },
+  { t: 40, label: 'The right person' },
+  { t: 52, label: 'It never pays' },
+  { t: 62, label: 'Monthly report' },
+];
+const duration = 80;
+---
+
+<div class="hv" data-hero-video data-duration={duration}>
+  <div class="hv-stage">
+    <div class="hv-frame">
+      <video
+        muted
+        playsinline
+        loop
+        preload="metadata"
+        poster="/video/launch-poster.jpg"
+        aria-label="Product film, 80 seconds. On-screen text only, no voice-over."
+        aria-describedby="hv-summary"
+      >
+        <source src="/video/launch-720.mp4" type="video/mp4" media="(max-width: 760px)" />
+        <source src="/video/launch-1080.mp4" type="video/mp4" />
+      </video>
+      <div class="hv-ctrls">
+        <button class="hv-btn hv-play" type="button" aria-label="Pause film" data-state="playing">
+          <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="3.6" height="14" rx="1"></rect><rect x="13.9" y="5" width="3.6" height="14" rx="1"></rect></svg>
+          <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a1 1 0 0 0 1.5.86l10.2-6.4a1 1 0 0 0 0-1.72L9.5 4.74A1 1 0 0 0 8 5.6Z"></path></svg>
+        </button>
+        <button class="hv-btn hv-sound" type="button" aria-label="Turn sound on" aria-pressed="false">
+          <svg class="i-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.4v13.2l-4.8-4.1H4z"></path><path d="m16 9.5 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+          <svg class="i-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.4v13.2l-4.8-4.1H4z"></path><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a7.8 7.8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        </button>
+        <button class="hv-btn hv-full" type="button" aria-label="Watch full screen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p class="sr-only" id="hv-summary">
+    The film shows an invoice that was already paid hiding in a finance inbox, the Today view of what you owe, four systems checked every day,
+    exceptions routed to the right person, the promise that it never pays anyone, and a monthly report of what it found. Sample data throughout.
+  </p>
+
+  <div class="hv-chapters-wrap">
+    <ol class="hv-chapters" aria-label="Film chapters">
+      {
+        chapters.map((c, i) => (
+          <li>
+            <button type="button" class="hv-chap" data-t={c.t} data-end={chapters[i + 1]?.t ?? duration}>
+              <span class="hv-bar" aria-hidden="true">
+                <i />
+              </span>
+              <span class="hv-label">{c.label}</span>
+            </button>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-hero-video]').forEach((root) => {
+    const video = root.querySelector('video')!;
+    const playBtn = root.querySelector<HTMLButtonElement>('.hv-play')!;
+    const soundBtn = root.querySelector<HTMLButtonElement>('.hv-sound')!;
+    const chaps = [...root.querySelectorAll<HTMLButtonElement>('.hv-chap')];
+    const list = root.querySelector<HTMLElement>('.hv-chapters')!;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let userPaused = reduce;
+    let active = -1;
+    let raf = 0;
+
+    const setPlayState = () => {
+      const playing = !video.paused;
+      playBtn.dataset.state = playing ? 'playing' : 'paused';
+      playBtn.setAttribute('aria-label', playing ? 'Pause film' : 'Play film');
+    };
+
+    // Keep the chapter bar in step with the film: highlight the current chapter and fill its bar.
+    const sync = () => {
+      const t = video.currentTime;
+      const i = chaps.findIndex((c) => t >= Number(c.dataset.t) && t < Number(c.dataset.end));
+      if (i !== active && i !== -1) {
+        chaps.forEach((c, n) => {
+          c.toggleAttribute('data-on', n === i);
+          c.toggleAttribute('aria-current', n === i);
+          if (n === i) c.setAttribute('aria-current', 'step');
+        });
+        active = i;
+        // On phones the chapter row scrolls sideways: bring the active one into view without moving the page.
+        const c = chaps[i];
+        if (list.scrollWidth > list.clientWidth) list.scrollTo({ left: c.offsetLeft - 16, behavior: 'smooth' });
+      }
+      if (i !== -1) {
+        const c = chaps[i];
+        const p = (t - Number(c.dataset.t)) / (Number(c.dataset.end) - Number(c.dataset.t));
+        c.style.setProperty('--p', String(Math.min(1, Math.max(0, p))));
+      }
+    };
+
+    const loop = () => {
+      sync();
+      raf = requestAnimationFrame(loop);
+    };
+
+    video.addEventListener('play', () => {
+      setPlayState();
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(loop);
+    });
+    video.addEventListener('pause', () => {
+      setPlayState();
+      cancelAnimationFrame(raf);
+      sync();
+    });
+    video.addEventListener('seeked', sync);
+    video.addEventListener('loadedmetadata', sync);
+
+    const play = () => video.play().catch(() => setPlayState());
+
+    playBtn.addEventListener('click', () => {
+      if (video.paused) {
+        userPaused = false;
+        play();
+      } else {
+        userPaused = true;
+        video.pause();
+      }
+    });
+
+    soundBtn.addEventListener('click', () => {
+      video.muted = !video.muted;
+      soundBtn.setAttribute('aria-pressed', String(!video.muted));
+      soundBtn.setAttribute('aria-label', video.muted ? 'Turn sound on' : 'Turn sound off');
+      if (!video.muted && video.paused) {
+        userPaused = false;
+        play();
+      }
+    });
+
+    // Full screen: the film is designed at 1920px wide, so on a phone this is the way to read it. iOS only supports it on the video element.
+    root.querySelector<HTMLButtonElement>('.hv-full')!.addEventListener('click', () => {
+      const v = video as HTMLVideoElement & { webkitEnterFullscreen?: () => void };
+      if (v.requestFullscreen) v.requestFullscreen().catch(() => v.webkitEnterFullscreen?.());
+      else v.webkitEnterFullscreen?.();
+      userPaused = false;
+      play();
+    });
+
+    chaps.forEach((c) =>
+      c.addEventListener('click', () => {
+        video.currentTime = Number(c.dataset.t);
+        userPaused = false;
+        play();
+      }),
+    );
+
+    // Play only while at least half the film is on screen, unless the visitor paused it or prefers reduced motion.
+    new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting && !userPaused) play();
+        else if (!e.isIntersecting && !video.paused) video.pause();
+      },
+      { threshold: 0.5 },
+    ).observe(video);
+
+    setPlayState();
+    sync();
+  });
+</script>
+
+<style>
+  .hv {
+    --frame-r: 18px;
+    display: grid;
+    /* minmax(0, 1fr) so the sideways-scrolling chapter row on phones can't stretch the column wider than the screen */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  /* Soft glows in the film's own colours (sky blue, lilac, peach) so the frame melts into the page */
+  .hv-stage {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .hv-stage::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -8% -6% -10%;
+    background:
+      radial-gradient(40% 50% at 12% 30%, rgba(142, 197, 255, 0.45), transparent 70%),
+      radial-gradient(36% 46% at 88% 22%, rgba(196, 170, 255, 0.4), transparent 70%),
+      radial-gradient(40% 46% at 70% 95%, rgba(255, 190, 150, 0.38), transparent 70%),
+      radial-gradient(34% 40% at 25% 92%, rgba(95, 211, 154, 0.25), transparent 70%);
+    filter: blur(30px);
+  }
+
+  .hv-frame {
+    position: relative;
+    max-width: 1120px;
+    margin-inline: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--frame-r);
+    overflow: hidden;
+    background: #f1eff8;
+    border: 1px solid rgba(15, 51, 38, 0.08);
+    box-shadow:
+      0 1px 2px rgba(15, 51, 38, 0.05),
+      0 30px 80px -30px rgba(40, 50, 90, 0.35),
+      0 0 0 8px rgba(255, 255, 255, 0.55);
+  }
+
+  .hv-frame video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Notion-style controls: small glass buttons in the frame's corner */
+  .hv-ctrls {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .hv-btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.82);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 0 6px 18px -8px rgba(15, 51, 38, 0.45);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .hv-btn:hover {
+    background: #fff;
+    transform: scale(1.06);
+  }
+
+  .hv-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+
+  .hv-full svg {
+    fill: none;
+  }
+
+  .hv-play[data-state='playing'] .i-play,
+  .hv-play[data-state='paused'] .i-pause,
+  .hv-sound[aria-pressed='false'] .i-on,
+  .hv-sound[aria-pressed='true'] .i-off {
+    display: none;
+  }
+
+  /* Chapter bar: one segment per scene, the active one fills with the film */
+  .hv-chapters-wrap {
+    max-width: 1120px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  .hv-chapters {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+  }
+
+  .hv-chap {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 2px;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    color: var(--ink-soft);
+  }
+
+  .hv-bar {
+    position: relative;
+    display: block;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--line-strong);
+    overflow: hidden;
+  }
+
+  .hv-bar i {
+    position: absolute;
+    inset: 0;
+    background: var(--brand);
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  .hv-chap[data-on] .hv-bar i {
+    transform: scaleX(var(--p, 0));
+  }
+
+  .hv-label {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.3;
+    transition: color 0.25s ease;
+  }
+
+  .hv-chap:hover .hv-label,
+  .hv-chap[data-on] .hv-label {
+    color: var(--ink);
+  }
+
+  .hv-chap:focus-visible {
+    outline: 3px solid var(--brand-bright);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Phones: smaller controls, and the chapter row scrolls sideways */
+  @media (max-width: 760px) {
+    .hv {
+      --frame-r: 12px;
+    }
+    .hv-frame {
+      box-shadow:
+        0 20px 50px -24px rgba(40, 50, 90, 0.35),
+        0 0 0 5px rgba(255, 255, 255, 0.55);
+    }
+    .hv-ctrls {
+      left: 10px;
+      bottom: 10px;
+    }
+    .hv-btn {
+      width: 34px;
+      height: 34px;
+    }
+    .hv-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+    .hv-chapters {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      gap: 18px;
+      padding-bottom: 4px;
+    }
+    .hv-chapters::-webkit-scrollbar {
+      display: none;
+    }
+    .hv-chapters li {
+      flex: 0 0 auto;
+      width: 150px;
+      scroll-snap-align: start;
+    }
+  }
+</style>

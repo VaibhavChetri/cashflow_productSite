@@ -1,0 +1,236 @@
+---
+// Manual vs Radlabs as a switch instead of a two-column table: one column at a time, so it's half the length on a phone.
+// It starts on "Manual" and flips itself once when scrolled into view; after that the reader is in control.
+// The switch is two radio buttons and the swap is CSS (:has), so it works without JavaScript.
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+
+const rows = [
+  ['Data gathering', 'Download statements and exports from every bank, gateway and inbox', 'Inbox, ledger, bank and gateway data pulled in automatically every day'],
+  ['Invoice capture', 'Re-key each invoice from PDFs and email bodies', 'AI reads every email and attachment, with a confidence score on each field'],
+  ['Matching', 'Tick and match line by line in spreadsheets', 'Rules match invoices to approvals, jobs, ledger and bank'],
+  ['Exceptions', 'Found at month-end, if they are found at all', 'Flagged the same day, with the reason and the next step'],
+  ['Payment status', 'Search old emails to work out who said what', 'Threads are read to show who promised, disputed or proved payment'],
+  ['Posting', 'Manual journals and CSV imports', 'Nothing posts without a confirmed match'],
+  ['Audit trail', 'Scattered across inboxes, spreadsheets and shared drives', 'Every match and decision logged, from email to ledger'],
+  ['Month-end', 'Days of reconciliation before you can close', 'Start the close from a short exception list'],
+];
+---
+
+<div class="cmpx" data-cmp>
+  <fieldset class="switch">
+    <legend class="sr-only">Show reconciliation</legend>
+    <input type="radio" name="cmp" id="cmp-manual" value="manual" checked />
+    <label for="cmp-manual">Done by hand</label>
+    <input type="radio" name="cmp" id="cmp-ai" value="ai" />
+    <label for="cmp-ai">With {site.name}</label>
+    <span class="knob" aria-hidden="true"></span>
+  </fieldset>
+
+  <ul class="cmp-rows">
+    {
+      rows.map(([label, manual, ai], n) => (
+        <li style={`--n:${n}`}>
+          <p class="r-label">{label}</p>
+          <div class="r-swap">
+            <p class="m">
+              <Icon name="x" size={16} />
+              <span>{manual}</span>
+            </p>
+            <p class="a">
+              <Icon name="check" size={16} />
+              <span>{ai}</span>
+            </p>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<script>
+  // Flip to "With Radlabs" once, a moment after the comparison comes into view, unless the reader already chose.
+  document.querySelectorAll<HTMLElement>('[data-cmp]').forEach((root) => {
+    const ai = root.querySelector<HTMLInputElement>('#cmp-ai');
+    let touched = false;
+    root.addEventListener('change', () => (touched = true));
+    if (!ai || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        setTimeout(() => {
+          if (!touched) ai.checked = true;
+        }, 1400);
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(root);
+  });
+</script>
+
+<style>
+  .cmpx {
+    display: grid;
+    gap: 36px;
+    justify-items: center;
+  }
+
+  /* The switch: two labels on a track, with a knob that slides under the chosen one */
+  .switch {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin: 0;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+    min-width: min(100%, 440px);
+  }
+
+  .switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .switch label {
+    position: relative;
+    z-index: 1;
+    padding: 12px 24px;
+    border-radius: 999px;
+    text-align: center;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: color 0.35s ease;
+  }
+
+  .knob {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 6px;
+    width: calc(50% - 6px);
+    border-radius: 999px;
+    background: #f3e3e1;
+    transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1), background-color 0.45s ease;
+  }
+
+  #cmp-manual:checked + label {
+    color: #9c2f20;
+  }
+
+  #cmp-ai:checked + label {
+    color: #fff;
+  }
+
+  .switch:has(#cmp-ai:checked) .knob {
+    transform: translateX(100%);
+    background: var(--brand);
+  }
+
+  .switch input:focus-visible + label {
+    outline: 3px solid var(--brand-bright);
+    outline-offset: 2px;
+  }
+
+  /* Rows: label above, both versions stacked in one cell so the swap never changes the height */
+  .cmp-rows {
+    list-style: none;
+    width: 100%;
+    display: grid;
+    gap: 14px;
+  }
+
+  @media (min-width: 820px) {
+    .cmp-rows {
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+  }
+
+  .cmp-rows li {
+    display: grid;
+    gap: 8px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    transition: border-color 0.4s ease, background-color 0.4s ease;
+  }
+
+  .r-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  .r-swap {
+    display: grid;
+  }
+
+  .r-swap p {
+    grid-area: 1 / 1;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    max-width: none;
+    margin: 0;
+    font-size: 1.0625rem;
+    transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s;
+    transition-delay: calc(var(--n) * 0.05s);
+  }
+
+  .r-swap :global(svg) {
+    flex: none;
+    position: relative;
+    top: 2px;
+  }
+
+  .m {
+    color: #5f6e68;
+  }
+
+  .m :global(svg) {
+    color: var(--audit);
+  }
+
+  .a {
+    color: var(--ink);
+  }
+
+  .a :global(svg) {
+    color: var(--brand);
+  }
+
+  /* Default (and no-:has browsers): manual shows. With "With Radlabs" chosen, the AI line takes its place. */
+  .a {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  .cmpx:has(#cmp-ai:checked) .m {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  .cmpx:has(#cmp-ai:checked) .a {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+  }
+
+  .cmpx:has(#cmp-ai:checked) .cmp-rows li {
+    border-color: color-mix(in srgb, var(--brand) 28%, transparent);
+    background: color-mix(in srgb, var(--brand-bright) 5%, #fff);
+  }
+
+  .cmpx:has(#cmp-manual:checked) .cmp-rows li {
+    background: #fdf8f7;
+  }
+</style>

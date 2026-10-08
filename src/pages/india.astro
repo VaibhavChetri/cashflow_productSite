@@ -2,13 +2,39 @@
 import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import GstRecon from '../components/GstRecon.astro';
+import AgentLog from '../components/AgentLog.astro';
+import Icon from '../components/Icon.astro';
 import CtaBand from '../components/CtaBand.astro';
-import { site, integrations, statusLabel } from '../data/site';
+import { site, integrations, statusLabel, type Status } from '../data/site';
 import indiaFinance from '../assets/img/india-finance.png';
 
 const indiaStack = integrations.filter((i) =>
-  ['Zoho Books', 'Tally', 'SAP', 'ICICI Bank statements', 'RBL Bank statements', 'Razorpay', 'GSTR-2B and GSTR-1', 'Gmail', 'Microsoft 365'].includes(i.name),
+  ['Zoho Books', 'Tally', 'SAP', 'ICICI Bank', 'RBL Bank', 'Razorpay', 'GSTR-2B and GSTR-1', 'Gmail', 'Microsoft 365'].includes(i.name),
 );
+const columns: Status[] = ['available', 'rolling-out', 'next'];
+const files = import.meta.glob<string>('../assets/logos/*.svg', { query: '?raw', import: 'default', eager: true });
+const svgFor = (slug?: string) => slug && files[`../assets/logos/${slug}.svg`];
+const statusOf = (name: string) => integrations.find((i) => i.name === name)!.status;
+
+// One demo night, in rupees. Only connectors that are "available" in site.ts (Microsoft 365, Zoho Books) do work here;
+// GSTR-2B, banks and Razorpay are rolling out, so the lede says so instead of showing them as live.
+// CONFIRM: the MSME line restates the MSME prioritisation claim below; check it with Shreyas & Varun alongside that one.
+const nightLines = [
+  { t: '01:30', text: 'Read 1,184 emails and 296 attachments in the finance inbox (Microsoft 365)', state: 'Read', tone: 'ok' as const },
+  { t: '01:52', text: '204 supplier invoices matched to bills in Zoho Books', state: 'Matched', tone: 'ok' as const },
+  { t: '02:20', text: 'Every supplier invoice tracked against its due date', state: 'Tracked', tone: 'ok' as const },
+  { t: '02:21', text: '3 invoices from registered micro and small suppliers fall due by Friday, ₹4,86,200 in total. Flagged to pay first', state: 'Pay first', tone: 'warn' as const },
+  { t: '03:05', text: 'Nilgiri Foods invoice 812 says ₹1,19,271. The bill in Zoho Books says ₹1,12,400: the freight line is missing', state: 'Fix the bill', tone: 'warn' as const },
+  { t: '03:40', text: 'Vasant Logistics invoice 903, ₹54,000, arrived by email but isn’t booked yet', state: 'Book it', tone: 'warn' as const },
+];
+
+// Razorpay-style GST flow, traced with the same demo rows as the GST screen below.
+const gstFlow = [
+  { title: 'GSTR-2B', status: statusOf('GSTR-2B and GSTR-1'), body: 'What your suppliers filed, invoice by invoice.', k: 'Nilgiri Foods · 812', v: '₹1,19,271' },
+  { title: 'Your books', status: statusOf('Zoho Books'), body: 'The same bill as it sits in Zoho Books.', k: 'Bill 812', v: '₹1,12,400' },
+  { title: 'Mismatch, with the reason', body: 'Matched, amount mismatch, missing on either side, or a bill without a GSTIN.', k: 'Diff ₹6,871', v: 'Freight line missing', bad: true },
+  { title: 'Supplier follow-up', body: 'Filter to the ones that cost you credit and send them to the vendor.', k: 'In books, not in 2B', v: '174 bills · ₹20.9L' },
+];
 ---
 
 <Layout title="For finance teams in India" description={`${site.name} for Indian finance teams: GSTR-2B reconciliation, MSME payment deadlines, and receipts matched across Zoho Books, banks and Razorpay.`}>
@@ -27,59 +53,109 @@ const indiaStack = integrations.filter((i) =>
     <Image src={indiaFinance} alt="Two members of a finance team working at desks with laptops and printed invoices in a bright office" widths={[480, 800, 1200]} sizes="(min-width: 920px) 45vw, 100vw" class="photo" loading="eager" />
   </section>
 
-  <section class="section band" aria-labelledby="pain-title">
+  <section class="section" aria-labelledby="pain-title">
     <div class="wrap">
       <div class="section-head">
         <h2 id="pain-title">Three reconciliations that cost real money</h2>
       </div>
       {/* CONFIRM: MSME prioritisation and TDS-net receipt matching with Shreyas & Varun */}
-      <ul class="ledger-list">
-        <li>
-          <strong>Input tax credit</strong>
+      <ul class="pains">
+        <li class="panel panel--lead">
+          <span class="pain-top"><span class="pain-icon"><Icon name="receipt" size={22} /></span><span class="pain-chip">GSTR-2B vs books</span></span>
+          <h3>Input tax credit</h3>
           <p>Bills that appear in GSTR-2B but not in your books, or in your books but not in 2B, put credit at risk every month. Each one is listed with the reason.</p>
         </li>
-        <li>
-          <strong>Payments to micro and small suppliers</strong>
+        <li class="panel">
+          <span class="pain-top"><span class="pain-icon"><Icon name="clock" size={22} /></span><span class="pain-chip">Section 43B(h)</span></span>
+          <h3>Payments to micro and small suppliers</h3>
           <p>Under Section 43B(h) of the Income Tax Act, amounts owed to registered micro and small enterprises are only deductible if paid on time. Every supplier invoice is tracked against its due date, so MSME payments can be prioritised.</p>
         </li>
-        <li>
-          <strong>Receipts that never quite match</strong>
+        <li class="panel">
+          <span class="pain-top"><span class="pain-icon"><Icon name="bank" size={22} /></span><span class="pain-chip">Ledger, gateway, bank</span></span>
+          <h3>Receipts that never quite match</h3>
           <p>Customers pay net of TDS, gateways settle in batches a day or two later, and banks show one credit for many invoices. Receipts are matched across your ledger, gateway settlements and bank.</p>
         </li>
       </ul>
     </div>
   </section>
 
-  <section class="section" aria-labelledby="gst-title">
+  <!-- Nanonets-style overnight log, in rupees -->
+  <section class="section night-band on-dark" aria-labelledby="night-title">
+    <div class="wrap">
+      <AgentLog
+        lines={nightLines}
+        heading="Overnight, in rupees."
+        headingId="night-title"
+        lede="One demo night on the connectors that are live in India today: Microsoft 365 and Zoho Books. GSTR-2B, bank statements and Razorpay join the same run as they roll out."
+        caption="Overnight run, Tuesday (IST)"
+        final="Morning brief ready. 3 payments to prioritise, 2 bills to sort out."
+      />
+    </div>
+  </section>
+
+  <section class="section band" aria-labelledby="gst-title">
     <div class="wrap">
       <div class="section-head">
         <h2 id="gst-title">GSTR-2B against your books, with the reason for every gap</h2>
         <p class="lede">Matched, amount mismatch, missing on either side, or a bill without a GSTIN. Filter to the ones that cost you credit and send them to the vendor.</p>
       </div>
-      <figure class="shot">
-        <div class="shot-frame"><GstRecon /></div>
+
+      <ol class="gflow" data-anim aria-label="How a GST gap is found and followed up">
+        {
+          gstFlow.map((s, n) => (
+            <li style={`--n:${n}`}>
+              <div class="g-card">
+                <p class="g-top">
+                  <span class="g-n" aria-hidden="true">{n + 1}</span>
+                  {s.status && <span class={`status status--${s.status}`}>{statusLabel[s.status]}</span>}
+                </p>
+                <h3>{s.title}</h3>
+                <p class="g-body">{s.body}</p>
+                <p class={`g-row ui ${s.bad ? 'g-row--bad' : ''}`}>
+                  <span>{s.k}</span>
+                  <strong>{s.v}</strong>
+                </p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <figure class="shot gst-shot">
+        <div class="shot-frame"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div><GstRecon /></div>
         <figcaption>GST reconciliation, shown with demo data.</figcaption>
       </figure>
     </div>
   </section>
 
-  <section class="section band" aria-labelledby="stack-title">
-    <div class="wrap split split--text-wide">
+  <section class="section" aria-labelledby="stack-title">
+    <div class="wrap">
       <div class="section-head">
         <h2 id="stack-title">Built for the Indian finance stack</h2>
         <p class="lede">Zoho Books today, with bank statements and Razorpay rolling out, and Tally and SAP next.</p>
         <p>Working with a CA firm? <a href="/accountants">See our design partner programme</a>.</p>
       </div>
-      <ul class="stack">
+      <div class="board">
         {
-          indiaStack.map((i) => (
-            <li>
-              <span>{i.name}</span>
-              <span class={`status status--${i.status}`}>{statusLabel[i.status]}</span>
-            </li>
+          columns.map((c) => (
+            <div class={`col col--${c}`}>
+              <h3><span class={`status status--${c}`}>{statusLabel[c]}</span></h3>
+              <ul>
+                {indiaStack
+                  .filter((i) => i.status === c)
+                  .map((i) => (
+                    <li>
+                      <span class="mark" style={`--c:${i.color ?? '#0f3326'}`} aria-hidden="true">
+                        {svgFor(i.logo) ? <span class="svg" set:html={svgFor(i.logo)} /> : <span class="mono">{i.mono ?? 'GST'}</span>}
+                      </span>
+                      {i.name}
+                    </li>
+                  ))}
+              </ul>
+            </div>
           ))
         }
-      </ul>
+      </div>
     </div>
   </section>
 
@@ -100,18 +176,277 @@ const indiaStack = integrations.filter((i) =>
     gap: 20px;
   }
 
-  .stack {
+  /* Three pains: distinct titled cards, not a sequence */
+  .pains {
     list-style: none;
-    border-top: 2px solid var(--ink);
+    display: grid;
+    gap: 20px;
   }
 
-  .stack li {
+  @media (min-width: 900px) {
+    .pains {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .pains .panel {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    padding: clamp(24px, 3vw, 36px);
+  }
+
+  .pain-top {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .pain-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--dark);
+    color: #5fd39a;
+  }
+
+  .pain-chip {
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .pains h3 {
+    font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+    letter-spacing: -0.02em;
+  }
+
+  .pains p {
+    color: var(--ink-soft);
+  }
+
+  /* GST flow: four connected steps */
+  .gflow {
+    --step: 0.6s;
+    list-style: none;
+    display: grid;
+    gap: 28px;
+    margin-bottom: clamp(40px, 5vw, 64px);
+  }
+
+  @media (min-width: 960px) {
+    .gflow {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 36px;
+    }
+  }
+
+  .gflow li {
+    position: relative;
+    display: grid;
+  }
+
+  /* Connector between cards: an arrow down on mobile, across on desktop */
+  .gflow li + li::before {
+    content: '';
+    position: absolute;
+    left: 32px;
+    top: -28px;
+    height: 28px;
+    border-left: 2px dashed var(--line-strong);
+  }
+
+  @media (min-width: 960px) {
+    .gflow li + li::before {
+      left: -36px;
+      top: 50%;
+      width: 36px;
+      height: 0;
+      border-left: 0;
+      border-top: 2px dashed var(--line-strong);
+    }
+  }
+
+  .g-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 22px;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    box-shadow: var(--shadow-card);
+  }
+
+  .g-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 28px;
+  }
+
+  .g-n {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .g-card h3 {
+    font-size: 1.2rem;
+  }
+
+  .g-body {
+    margin-bottom: 6px;
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+
+  .g-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+    margin-top: auto;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--bg-soft);
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .g-row span {
+    color: var(--ui-soft);
+  }
+
+  .g-row strong {
+    color: var(--ui-ink);
+  }
+
+  .g-row--bad {
+    background: #fdeeea;
+  }
+
+  .g-row--bad strong {
+    color: #a3301d;
+  }
+
+  /* One moment: the gap travels left to right; each card's border lights in turn. */
+  :global(.js) .gflow .g-card {
+    transition: border-color 0.4s ease;
+    transition-delay: calc(var(--n) * var(--step) + 0.2s);
+  }
+
+  :global(.js) .gflow li + li::before {
+    transition: border-color 0.4s ease;
+    transition-delay: calc(var(--n) * var(--step));
+  }
+
+  :global(.js) .gflow.in .g-card {
+    border-color: var(--brand-bright);
+  }
+
+  :global(.js) .gflow.in li + li::before {
+    border-color: var(--brand-bright);
+  }
+
+  /* Stack board, by status */
+  .board {
+    display: grid;
+    gap: 20px;
+  }
+
+  @media (min-width: 900px) {
+    .board {
+      grid-template-columns: 0.9fr 1.3fr 0.9fr;
+      align-items: start;
+    }
+  }
+
+  .col {
+    display: grid;
     gap: 16px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--rule);
-    font-weight: 650;
+    padding: 22px;
+    border-radius: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+
+  .col--next {
+    background: transparent;
+    border: 1.5px dashed var(--line-strong);
+  }
+
+  .col h3 {
+    font-size: 1rem;
+  }
+
+  .col ul {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+  }
+
+  @media (min-width: 900px) {
+    .col--rolling-out ul {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .col li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  .mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+  }
+
+  .svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    color: var(--c);
+  }
+
+  .svg :global(svg) {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+
+  .svg :global(title) {
+    display: none;
+  }
+
+  .mono {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--c);
   }
 </style>

@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import AuditSteps from '../components/AuditSteps.astro';
+import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
 
 // Netlify Forms works with no setup when formEndpoint is empty. Any other host needs formEndpoint set.
@@ -7,49 +9,77 @@ const action = site.formEndpoint || '/thanks';
 ---
 
 <Layout title="Founding programme" description={`Apply for one of ${site.foundingPlaces} founding places: a leakage audit on your own inbox and books, a founding price, and a direct line to the team building ${site.name}.`}>
-  <section class="wrap page-head">
-    <h1>{site.foundingPlaces} founding places. Real numbers from your own inbox.</h1>
+  <section class="wrap page-head fp-head">
+    <div class="fp-text">
+    <h1>
+      <span class="keep"><span class="circled">{site.foundingPlaces} founding places<svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M18 34 C 14 10, 100 2, 160 7 C 212 11, 214 44, 166 52 C 112 61, 26 58, 8 42 C 0 32, 20 16, 52 12"></path></svg></span>.</span> Real numbers from your own inbox.
+    </h1>
     <p class="lede">
       We're onboarding a small group of finance teams and accounting firms by hand. Each one starts with a leakage audit, so you see what{' '}
       {site.name} finds before you commit to anything.
     </p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#apply">Apply for a founding place</a>
+      <a class="btn btn-quiet" href="/leakage-calculator">Estimate your leakage first</a>
+    </div>
+    </div>
+    <div class="report" aria-label="Example of an audit report, using demo data" role="figure">
+      <div class="report-top">
+        <p class="report-title">Leakage audit report</p>
+        <p class="report-sub">Day 14 · demo data</p>
+      </div>
+      <ul class="report-list">
+        <li><span class="tag-r tag-r--red">Already paid</span><span class="report-what">Pinecrest PM-1190, paid on 12 Sep</span><strong>£7,343.66</strong></li>
+        <li><span class="tag-r tag-r--purple">Says paid</span><span class="report-what">Kestrel Hospitality, INV-2026-0388, not in the bank</span><strong>£9,400</strong></li>
+        <li><span class="tag-r tag-r--amber">No bill</span><span class="report-what">Payments with no bill attached</span><strong>15 of 52</strong></li>
+      </ul>
+      <p class="report-foot">Each finding comes with its evidence: the email, the ledger line and the bank entry.</p>
+    </div>
   </section>
 
-  <section class="section band" aria-labelledby="get-title">
-    <div class="wrap three">
-      <div>
-        <h2 id="get-title">What you get</h2>
-        <ul class="ticks">
-          <li>A leakage audit on your own inbox and books</li>
-          <li>A founding price, agreed up front</li>
-          <li>Onboarding done with you, not handed over</li>
-          <li>A direct line to the people building the product</li>
-        </ul>
+  <section class="section band" aria-labelledby="deal-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="deal-title">What you get, and what we ask</h2>
+        <p class="lede">A short list on each side, agreed before you start.</p>
       </div>
-      <div>
-        <h2>What we ask</h2>
-        <ul class="ticks">
-          <li>About an hour of feedback a month</li>
-          <li>Permission to share your results, only if you're happy with them</li>
-          <li>Occasionally, a call with a business considering {site.name}</li>
-        </ul>
-      </div>
-      <div>
-        <h2>How the audit works</h2>
-        {/* CONFIRM: audit length and access model */}
-        <ol class="audit-steps">
-          <li>A 20-minute call about how your finance team works</li>
-          <li>We connect to your finance inbox and ledger</li>
-          <li>{site.name} runs on your real data for two weeks</li>
-          <li>You get a report of what it found, in money</li>
-        </ol>
+      <div class="deal">
+        <div class="side side--get on-dark">
+          <h3>What you get</h3>
+          <ul class="deal-list">
+            <li>A leakage audit on your own inbox and books</li>
+            <li>A founding price, agreed up front</li>
+            <li>Onboarding done with you, not handed over</li>
+            <li>A direct line to the people building the product</li>
+          </ul>
+        </div>
+        <span class="seam" aria-hidden="true">⇄</span>
+        <div class="side side--ask">
+          <h3>What we ask</h3>
+          <ul class="deal-list">
+            <li>About an hour of feedback a month</li>
+            <li>Permission to share your results, only if you're happy with them</li>
+            <li>Occasionally, a call with a business considering {site.name}</li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="section" id="apply" aria-labelledby="apply-title">
-    <div class="wrap apply">
+  <section class="section" aria-labelledby="audit-title">
+    <div class="wrap">
       <div class="section-head">
+        <h2 id="audit-title">How the audit works</h2>
+        <p class="lede">From the first call to a report in money, on your own inbox and books.</p>
+      </div>
+      {/* CONFIRM: audit length and access model */}
+      <AuditSteps />
+    </div>
+  </section>
+
+  <section class="section band" id="apply" aria-labelledby="apply-title">
+    <div class="wrap apply">
+      <div class="section-head apply-head">
         <h2 id="apply-title">Apply for a founding place</h2>
         <p class="lede">Tell us a little about your finance team. We'll reply within two working days to book the first call.</p>
         <p>Prefer email? Write to <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
@@ -61,70 +91,85 @@ const action = site.formEndpoint || '/thanks';
 
         <fieldset class="field type">
           <legend>I'm applying as</legend>
-          <label><input type="radio" name="applicant_type" value="business" checked /> A business with its own finance team</label>
-          <label><input type="radio" name="applicant_type" value="firm" /> An accounting or CA firm</label>
+          <div class="tiles">
+            <label class="tile"><input type="radio" name="applicant_type" value="business" checked /> <span>A business with its own finance team</span></label>
+            <label class="tile"><input type="radio" name="applicant_type" value="firm" /> <span>An accounting or CA firm</span></label>
+          </div>
         </fieldset>
 
-        <div class="row">
-          <div class="field">
-            <label for="name">Your name</label>
-            <input id="name" name="name" autocomplete="name" required />
+        <fieldset class="group">
+          <legend><span aria-hidden="true">1</span> You and your company</legend>
+          <div class="row">
+            <div class="field">
+              <label for="name">Your name</label>
+              <input id="name" name="name" autocomplete="name" required />
+            </div>
+            <div class="field">
+              <label for="email">Work email</label>
+              <input id="email" name="email" type="email" autocomplete="email" required />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="company">Company</label>
+              <input id="company" name="company" autocomplete="organization" required />
+            </div>
+            <div class="field">
+              <label for="role">Your role</label>
+              <input id="role" name="role" autocomplete="organization-title" placeholder="e.g. Finance Director" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend><span aria-hidden="true">2</span> Your finance set-up</legend>
+          <div class="row row--3">
+            <div class="field">
+              <label for="country">Country</label>
+              <select id="country" name="country">
+                <option>United Kingdom</option>
+                <option>India</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="ledger">Accounting system</label>
+              <select id="ledger" name="ledger">
+                <option>Xero</option>
+                <option>Zoho Books</option>
+                <option>Tally</option>
+                <option>SAP</option>
+                <option>QuickBooks</option>
+                <option>Sage</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="volume">Supplier invoices per month</label>
+              <select id="volume" name="volume">
+                <option>Under 100</option>
+                <option selected>100 to 500</option>
+                <option>500 to 2,000</option>
+                <option>More than 2,000</option>
+              </select>
+            </div>
           </div>
           <div class="field">
-            <label for="email">Work email</label>
-            <input id="email" name="email" type="email" autocomplete="email" required />
+            <label for="message">What's the biggest headache in your finance inbox? <span class="optional">(optional)</span></label>
+            <textarea id="message" name="message" rows="4"></textarea>
+          </div>
+        </fieldset>
+
+        <div class="form-foot">
+          <div class="consent">
+            <input id="consent" name="consent" type="checkbox" required />
+            <label for="consent">I agree that {site.legalName} can use these details to contact me about the founding programme, as described in the <a href="/privacy">privacy notice</a>.</label>
+          </div>
+          <div class="submit-row">
+            <button class="btn btn-primary btn-submit" type="submit">Apply for a founding place <Icon name="arrow" size={18} /></button>
+            <p class="submit-note">We reply within two working days.</p>
           </div>
         </div>
-        <div class="row">
-          <div class="field">
-            <label for="company">Company</label>
-            <input id="company" name="company" autocomplete="organization" required />
-          </div>
-          <div class="field">
-            <label for="role">Your role</label>
-            <input id="role" name="role" autocomplete="organization-title" placeholder="e.g. Finance Director" />
-          </div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label for="country">Country</label>
-            <select id="country" name="country">
-              <option>United Kingdom</option>
-              <option>India</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="ledger">Accounting system</label>
-            <select id="ledger" name="ledger">
-              <option>Xero</option>
-              <option>Zoho Books</option>
-              <option>Tally</option>
-              <option>SAP</option>
-              <option>QuickBooks</option>
-              <option>Sage</option>
-              <option>Other</option>
-            </select>
-          </div>
-        </div>
-        <div class="field">
-          <label for="volume">Supplier invoices per month</label>
-          <select id="volume" name="volume">
-            <option>Under 100</option>
-            <option selected>100 to 500</option>
-            <option>500 to 2,000</option>
-            <option>More than 2,000</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="message">What's the biggest headache in your finance inbox? <span class="optional">(optional)</span></label>
-          <textarea id="message" name="message" rows="4"></textarea>
-        </div>
-        <div class="consent">
-          <input id="consent" name="consent" type="checkbox" required />
-          <label for="consent">I agree that {site.legalName} can use these details to contact me about the founding programme, as described in the <a href="/privacy">privacy notice</a>.</label>
-        </div>
-        <button class="btn btn-primary" type="submit">Apply for a founding place</button>
       </form>
     </div>
   </section>
@@ -145,36 +190,279 @@ const action = site.formEndpoint || '/thanks';
 </script>
 
 <style>
-  .three {
-    display: grid;
-    gap: 40px;
+  /* Glean-style marker: a hand-drawn loop draws itself round the number of places. */
+  .circled {
+    position: relative;
+    display: inline-block;
   }
 
-  @media (min-width: 900px) {
-    .three {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 48px;
+  .circled svg {
+    position: absolute;
+    left: -0.5em;
+    top: -0.3em;
+    width: calc(100% + 1.15em);
+    height: calc(100% + 0.6em);
+    max-width: none;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .circled path {
+    fill: none;
+    stroke: #5fd39a;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+
+  :global(.js) .circled path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 1.3s cubic-bezier(0.6, 0, 0.3, 1) 0.5s forwards;
+  }
+
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
     }
   }
 
-  .three h2 {
-    font-size: var(--step-2);
-    margin-bottom: 18px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--ink);
+  .fp-head {
+    align-items: center;
   }
 
-  .audit-steps {
-    padding-left: 1.4em;
+  .fp-text {
     display: grid;
-    gap: 10px;
+    gap: 20px;
   }
 
-  .audit-steps li::marker {
-    font-weight: 700;
-    color: var(--tick);
+  .fp-head h1 {
+    max-width: 17ch;
   }
 
+  @media (min-width: 1060px) {
+    .fp-head {
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 56px;
+    }
+  }
+
+  /* A day-14 report card on the dark band: the thing the audit hands over, in money. */
+  .report {
+    display: grid;
+    gap: 16px;
+    padding: clamp(20px, 2.6vw, 28px);
+    border-radius: 24px;
+    background: var(--surface);
+    box-shadow: 0 30px 60px -28px rgba(0, 0, 0, 0.6);
+    transform: rotate(1.2deg);
+  }
+
+  .page-head .report p {
+    margin: 0;
+    max-width: none;
+  }
+
+  .report-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .page-head .report .report-title {
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 1.125rem;
+  }
+
+  .page-head .report .report-sub,
+  .page-head .report .report-foot {
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+  }
+
+  .report-list {
+    list-style: none;
+    display: grid;
+    border-top: 1px solid var(--line);
+  }
+
+  .report-list li {
+    display: grid;
+    grid-template-columns: 96px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.9375rem;
+    color: var(--ink);
+  }
+
+  .report-list strong {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .tag-r {
+    justify-self: start;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .tag-r--red {
+    background: #fdecea;
+    color: #b0352b;
+  }
+
+  .tag-r--purple {
+    background: #f1ebfc;
+    color: #6e3fc4;
+  }
+
+  .tag-r--amber {
+    background: #fdf3e2;
+    color: #8a4d08;
+  }
+
+  @media (max-width: 480px) {
+    .report-list li {
+      grid-template-columns: 1fr auto;
+    }
+    .report-what {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .keep {
+      white-space: nowrap;
+    }
+  }
+
+  .fp-head .actions {
+    margin-top: 8px;
+  }
+
+  /* What you get / what we ask: one card, dark on the giving side, white on the asking side. */
+  .deal {
+    position: relative;
+    display: grid;
+    border-radius: 28px;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+  }
+
+  @media (min-width: 860px) {
+    .deal {
+      grid-template-columns: 1.2fr 1fr;
+    }
+  }
+
+  .side {
+    display: grid;
+    gap: 28px;
+    align-content: start;
+    padding: clamp(28px, 4.5vw, 56px);
+  }
+
+  .side h3 {
+    font-size: clamp(1.6rem, 2.8vw, 2.25rem);
+    letter-spacing: -0.025em;
+  }
+
+  .side--get {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(520px 300px at 100% 0%, rgba(34, 181, 115, 0.25), transparent 65%),
+      linear-gradient(160deg, #0f3326, var(--dark));
+    color: #c3d6cc;
+  }
+
+  .side--get::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--dots);
+    -webkit-mask-image: radial-gradient(60% 70% at 0% 100%, #000 5%, transparent 70%);
+    mask-image: radial-gradient(60% 70% at 0% 100%, #000 5%, transparent 70%);
+    opacity: 0.6;
+  }
+
+  .side--get h3 {
+    color: #fff;
+  }
+
+  .deal-list {
+    list-style: none;
+    counter-reset: item;
+    display: grid;
+  }
+
+  .deal-list li {
+    counter-increment: item;
+    display: grid;
+    grid-template-columns: 2.4em 1fr;
+    gap: 12px;
+    align-items: baseline;
+    padding-block: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 1.125rem;
+    color: var(--ink);
+  }
+
+  .deal-list li::before {
+    content: counter(item, decimal-leading-zero);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--brand);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .side--get .deal-list li {
+    border-color: rgba(195, 214, 204, 0.18);
+    color: #fff;
+    font-size: 1.25rem;
+  }
+
+  .side--get .deal-list li::before {
+    color: #5fd39a;
+  }
+
+  .seam {
+    position: absolute;
+    z-index: 2;
+    display: none;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+    color: var(--brand);
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  @media (min-width: 860px) {
+    .seam {
+      display: grid;
+      left: calc(1.2 / 2.2 * 100%);
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  /* Application */
   .apply {
     display: grid;
     gap: 40px;
@@ -186,20 +474,25 @@ const action = site.formEndpoint || '/thanks';
       grid-template-columns: 0.8fr 1.2fr;
       gap: 72px;
     }
+    .apply-head {
+      position: sticky;
+      top: calc(var(--header-h) + 32px);
+    }
   }
 
   .form {
     display: grid;
-    gap: 20px;
+    gap: 28px;
     background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 12px;
-    padding: clamp(20px, 4vw, 36px);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: clamp(22px, 4vw, 44px);
+    box-shadow: var(--shadow-card);
   }
 
   .row {
     display: grid;
-    gap: 20px;
+    gap: 18px;
   }
 
   @media (min-width: 640px) {
@@ -208,28 +501,112 @@ const action = site.formEndpoint || '/thanks';
     }
   }
 
+  @media (min-width: 640px) {
+    .row--3 .field:last-child {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .group {
+    border: 0;
+    margin: 0;
+    padding: 28px 0 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .group legend {
+    float: left;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    font-size: 1.125rem;
+    color: var(--ink);
+  }
+
+  .group legend span {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--tint);
+    color: var(--brand-deep);
+    font-size: 0.875rem;
+  }
+
+  .field input:hover,
+  .field select:hover,
+  .field textarea:hover {
+    border-color: #a9c4b7;
+  }
+
   .type {
     border: 0;
     padding: 0;
     margin: 0;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .tiles {
     display: grid;
     gap: 10px;
   }
 
-  .type label {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    font-weight: 500;
+  @media (min-width: 640px) {
+    .tiles {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 
-  .type input,
+  .field .tile {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    min-height: 64px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1.35;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .field .tile:hover {
+    border-color: #a9c4b7;
+  }
+
+  .field .tile:has(:checked) {
+    border-color: var(--brand);
+    background: #f2faf5;
+    box-shadow: 0 0 0 3px rgba(34, 181, 115, 0.14);
+  }
+
+  .tile:has(:focus-visible) {
+    outline: 3px solid var(--brand-bright);
+    outline-offset: 3px;
+  }
+
+  .field .tile input,
   .consent input {
     width: 20px;
     height: 20px;
     min-height: 0;
     flex: none;
+    padding: 0;
     accent-color: var(--tick);
+  }
+
+  .tile input:focus {
+    box-shadow: none;
   }
 
   .optional {
@@ -237,18 +614,46 @@ const action = site.formEndpoint || '/thanks';
     color: var(--ink-soft);
   }
 
+  .form-foot {
+    display: grid;
+    gap: 22px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+
   .consent {
     display: flex;
     gap: 12px;
     align-items: start;
     font-size: 0.9375rem;
+    color: var(--ink-soft);
   }
 
   .consent input {
     margin-top: 3px;
   }
 
-  .form .btn {
-    justify-self: start;
+  .submit-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 20px;
+  }
+
+  .btn-submit {
+    min-height: 56px;
+    padding-inline: 28px;
+    font-size: 1.0625rem;
+  }
+
+  .submit-note {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 639px) {
+    .btn-submit {
+      width: 100%;
+    }
   }
 </style>

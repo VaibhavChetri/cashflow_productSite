@@ -1,11 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import AuditSteps from '../components/AuditSteps.astro';
 import { site } from '../data/site';
 ---
 
 <Layout title="Application received" description="Thanks for applying to the founding programme.">
   <section class="wrap page-head done">
-    <svg width="64" height="64" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13.5l5 5L20 6" fill="none" stroke="#2c7a4e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <svg class="tick" width="64" height="64" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13.5l5 5L20 6" fill="none" stroke="#5fd39a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
     <h1>Application received</h1>
     <p class="lede">
       We'll reply within two working days to book a 20-minute call. If anything is urgent, email <a href={`mailto:${site.email}`}>{site.email}</a>.
@@ -14,11 +15,31 @@ import { site } from '../data/site';
       <a class="btn btn-quiet" href="/product">Explore the product while you wait</a>
     </div>
   </section>
+
+  <section class="section" aria-labelledby="next-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="next-title">What happens next</h2>
+        <p class="lede">The leakage audit runs on your own inbox and books, so the first thing you see is real money.</p>
+      </div>
+      <AuditSteps />
+    </div>
+  </section>
 </Layout>
 
 <style>
   .done {
     min-height: 60vh;
     align-content: center;
+  }
+
+  /* A light tick in a soft ring, so it reads on the dark band */
+  .tick {
+    width: 72px;
+    height: 72px;
+    padding: 16px;
+    border-radius: 50%;
+    background: rgba(95, 211, 154, 0.12);
+    box-shadow: inset 0 0 0 1.5px rgba(95, 211, 154, 0.45);
   }
 </style>

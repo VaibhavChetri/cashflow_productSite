@@ -1,10 +1,18 @@
 ---
 import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
-import ExceptionBanner from '../components/ExceptionBanner.astro';
+import ClientPortfolio from '../components/ClientPortfolio.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
 import practice from '../assets/img/practice.png';
+
+// Timings come from this page and the founding programme page. CONFIRM: audit length and access model (same as founding-programme.astro).
+const partnerSteps = [
+  { time: 'Within two working days', title: 'Apply as a firm', body: 'Tell us about your practice. We reply to book the first call.' },
+  { time: '20 minutes', title: 'A call about your practice', body: 'Which clients, ledgers and inboxes you work with, and which two or three clients could try it.' },
+  { time: 'Two weeks', title: 'Leakage audits for selected clients', body: `${site.name} runs on each client's real data, and you review what it finds together with us.` },
+  { time: 'About an hour a month', title: 'Shape the product', body: 'Honest feedback on what helps your team, and a say in what we build next.' },
+];
 ---
 
 <Layout title="For accounting and CA firms" description={`${site.name} for accounting and CA firms: your team reviews exceptions instead of re-keying invoices and matching statements by hand.`}>
@@ -20,7 +28,15 @@ import practice from '../assets/img/practice.png';
         <a class="btn btn-primary" href="/founding-programme?type=firm#apply">Apply as a design partner</a>
       </div>
     </div>
-    <Image src={practice} alt="Two accountants at a shared desk reviewing a spreadsheet on two monitors, with box files on the shelves behind them" widths={[480, 800, 1200]} sizes="(min-width: 920px) 45vw, 100vw" class="photo" loading="eager" />
+    <div class="head-visual">
+      <Image src={practice} alt="Two accountants at a shared desk reviewing a spreadsheet on two monitors, with box files on the shelves behind them" widths={[480, 800, 1200]} sizes="(min-width: 920px) 45vw, 100vw" class="photo" loading="eager" />
+      <div class="brief">
+        <p class="brief-top"><span>Morning brief</span><span class="brief-demo">Demo data</span></p>
+        <p class="brief-big">8 exceptions across 3 clients</p>
+        <p class="brief-row"><span class="dot dot--red"></span>Pinecrest PM-1190 held, already paid</p>
+        <p class="brief-row"><span class="dot dot--amber"></span>Kestrel says paid, nothing in the bank</p>
+      </div>
+    </div>
   </section>
 
   <section class="section band" aria-labelledby="change-title">
@@ -38,57 +54,71 @@ import practice from '../assets/img/practice.png';
   </section>
 
   <section class="section" aria-labelledby="see-title">
-    <div class="wrap split split--text-wide">
+    <div class="wrap">
       <div class="section-head">
         <h2 id="see-title">Exceptions your clients will thank you for</h2>
         <p class="lede">
           Each flag explains itself in plain English, so you can pass it to a client without rewriting it. Source data is never changed behind
-          anyone's back.
+          anyone's back. Pick a client to see their morning.
         </p>
       </div>
-      <ExceptionBanner
-        tone="info"
-        title="15 of 52 payments have no bill attached"
-        body="Usually advances, retainers or on-account payments. Check whether each one is intentional or a missing bill link."
-        action="Show only payments with no bill"
-      />
+      <ClientPortfolio />
+      <p class="demo-note">All product screens show demo data.</p>
     </div>
   </section>
 
   <section class="section band" aria-labelledby="partner-title">
-    <div class="wrap">
-      <div class="section-head">
+    <div class="wrap partner">
+      <div class="section-head partner-head">
         <h2 id="partner-title">The design partner programme</h2>
         <p class="lede">
           We're working with a small number of firms to shape how {site.name} fits into practice life, starting with tools that let you see every
           client's exceptions in one place.
         </p>
+        <a class="btn btn-primary" href="/founding-programme?type=firm#apply">Apply as a design partner</a>
       </div>
-      <div class="two-col">
-        <div>
-          <h3>What partner firms get</h3>
-          <ul class="ticks">
-            <li>Early access for your clients, with onboarding done with you</li>
-            <li>Leakage audits for selected clients, run together</li>
-            <li>A referral or reseller arrangement agreed with each firm</li>
-            <li>A direct line to the product team and a say in the roadmap</li>
-          </ul>
-        </div>
-        <div>
-          <h3>What we ask</h3>
-          <ul class="ticks">
-            <li>Two or three clients willing to try it</li>
-            <li>Honest feedback, about an hour a month</li>
-            <li>Permission to share results, if you're happy with them</li>
-          </ul>
+
+      <div class="partner-body">
+        <ol class="timeline" data-anim>
+          {
+            partnerSteps.map((s, n) => (
+              <li style={`--n:${n}`}>
+                <p class="when">{s.time}</p>
+                <div class="what">
+                  <h3>{s.title}</h3>
+                  <p>{s.body}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="deal">
+          <div class="deal-side deal-get">
+            <h3>What partner firms get</h3>
+            <ul class="ticks">
+              <li>Early access for your clients, with onboarding done with you</li>
+              <li>Leakage audits for selected clients, run together</li>
+              <li>A referral or reseller arrangement agreed with each firm</li>
+              <li>A direct line to the product team and a say in the roadmap</li>
+            </ul>
+          </div>
+          <div class="deal-side">
+            <h3>What we ask</h3>
+            <ul class="ticks">
+              <li>Two or three clients willing to try it</li>
+              <li>Honest feedback, about an hour a month</li>
+              <li>Permission to share results, if you're happy with them</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <section class="section" aria-labelledby="faq-title">
-    <div class="wrap">
-      <div class="section-head"><h2 id="faq-title">Questions from firms</h2></div>
+    <div class="wrap faq-split">
+      <div class="section-head faq-head"><h2 id="faq-title">Questions from firms</h2></div>
       <div class="faq">
         <details>
           <summary>Does this replace our bookkeeping service?</summary>
@@ -130,19 +160,272 @@ import practice from '../assets/img/practice.png';
     gap: 20px;
   }
 
-  .two-col {
+  /* The photo sits on the dark band in a light hairline frame, with a Mysa-style floating product card over its corner. */
+  .head-visual {
+    position: relative;
+    padding-bottom: 28px;
+  }
+
+  .head-visual .photo {
+    border: 1px solid rgba(195, 214, 204, 0.22);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+    aspect-ratio: 3 / 2;
+  }
+
+  .brief {
+    position: absolute;
+    left: clamp(-36px, -3vw, -12px);
+    bottom: 0;
+    width: min(320px, 82%);
+    display: grid;
+    gap: 8px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.55);
+    animation: brief-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.4s backwards;
+  }
+
+  .page-head .brief p {
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+    max-width: none;
+  }
+
+  .page-head .brief p + p {
+    margin-top: 0;
+  }
+
+  .brief-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .page-head .brief .brief-demo {
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--bg-soft);
+    font-size: 0.75rem;
+  }
+
+  .page-head .brief .brief-big {
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .brief-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .dot--red {
+    background: #c23b30;
+  }
+
+  .dot--amber {
+    background: #e0a03a;
+  }
+
+  @keyframes brief-in {
+    from {
+      transform: translateY(14px);
+    }
+  }
+
+  /* Narrow screens: the card tucks under the photo instead of covering it */
+  @media (max-width: 919px) {
+    .head-visual {
+      padding-bottom: 0;
+    }
+    .brief {
+      position: relative;
+      left: auto;
+      width: auto;
+      margin: -36px 16px 0;
+    }
+  }
+
+  .demo-note {
+    margin-top: 24px;
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+
+  /* Design partner programme: heading and call to action stay put while the steps scroll past. */
+  .partner {
+    display: grid;
+    gap: 8px;
+  }
+
+  .partner-head {
+    justify-items: start;
+  }
+
+  @media (min-width: 980px) {
+    .partner {
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 64px;
+      align-items: start;
+    }
+    .partner-head {
+      position: sticky;
+      top: calc(var(--header-h) + 32px);
+    }
+  }
+
+  .partner-body {
     display: grid;
     gap: 40px;
   }
 
-  @media (min-width: 860px) {
-    .two-col {
-      grid-template-columns: 1fr 1fr;
-      gap: 64px;
+  /* Glean-style steps: a time badge per step on a rail that fills as the section plays. */
+  .timeline {
+    --rail: 2px;
+    list-style: none;
+    position: relative;
+    display: grid;
+    gap: 14px;
+  }
+
+  .timeline::before,
+  .timeline::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 13px;
+    bottom: 24px;
+    width: var(--rail);
+    border-radius: 2px;
+    background: var(--line-strong);
+  }
+
+  .timeline::after {
+    background: var(--brand-bright);
+    transform-origin: top;
+  }
+
+  .timeline li {
+    position: relative;
+    display: grid;
+    gap: 10px;
+    padding-left: 48px;
+  }
+
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    left: 9px;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--brand-bright);
+    box-shadow: 0 0 0 5px var(--bg-soft);
+  }
+
+  .what {
+    display: grid;
+    gap: 6px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+  }
+
+  .what p {
+    color: var(--ink-soft);
+  }
+
+  .when {
+    justify-self: start;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  :global(.js) .timeline::after {
+    transform: scaleY(0);
+    transition: transform 2.4s linear 0.2s;
+  }
+
+  :global(.js) .timeline li::before {
+    background: var(--surface);
+    box-shadow: 0 0 0 5px var(--bg-soft), inset 0 0 0 2px var(--line-strong);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition-delay: calc(var(--n) * 0.7s + 0.2s);
+  }
+
+  :global(.js) .timeline.in::after {
+    transform: none;
+  }
+
+  :global(.js) .timeline.in li::before {
+    background: var(--brand-bright);
+    box-shadow: 0 0 0 5px var(--bg-soft);
+  }
+
+  /* What partner firms get, and what we ask, as one two-sided card */
+  .deal {
+    display: grid;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  @media (min-width: 700px) {
+    .deal {
+      grid-template-columns: 1.15fr 1fr;
     }
   }
 
-  .two-col h3 {
-    margin-bottom: 18px;
+  .deal-side {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+    padding: clamp(24px, 3vw, 32px);
+  }
+
+  .deal-get {
+    background: var(--dark);
+    color: #c3d6cc;
+  }
+
+  .deal-get h3 {
+    color: #fff;
+  }
+
+  .deal-get .ticks li::before {
+    border-color: #5fd39a;
+  }
+
+  @media (min-width: 980px) {
+    .faq-split {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 64px;
+      align-items: start;
+    }
+    .faq-head {
+      position: sticky;
+      top: calc(var(--header-h) + 32px);
+    }
   }
 </style>

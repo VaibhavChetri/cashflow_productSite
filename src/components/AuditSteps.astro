@@ -1,0 +1,181 @@
+---
+// Razorpay-style self-playing workflow: the leakage audit's four steps light up in turn when scrolled into view.
+// Steps and timings mirror the founding programme page. CONFIRM: audit length and access model.
+import { site } from '../data/site';
+
+const steps = [
+  { time: '20 minutes', title: 'A call about how your team works', body: 'Which inboxes, ledger and approval tools you use, and where the month-end pain is.' },
+  { time: 'Day 1', title: 'Connect your inbox and ledger', body: `${site.name} links to your finance inbox and your ledger. It never makes payments.` },
+  { time: 'Two weeks', title: 'It runs on your real data', body: 'Every invoice, payment and thread is read and checked, exactly as it would be live.' },
+  { time: 'Day 14', title: 'A report of what it found, in money', body: 'Duplicates, already-paid bills and unproven "we\'ve paid" claims, each with its evidence.' },
+];
+---
+
+<div class="journey" data-anim>
+  <span class="track" aria-hidden="true"><span class="fill"></span></span>
+  <ol>
+    {
+      steps.map((s, n) => (
+        <li style={`--n:${n}`}>
+          <span class="node" aria-hidden="true">{n + 1}</span>
+          <div class="step">
+            <p class="time">{s.time}</p>
+            <h3>{s.title}</h3>
+            <p class="body">{s.body}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .journey {
+    --step: 0.85s;
+    position: relative;
+  }
+
+  .journey ol {
+    list-style: none;
+    display: grid;
+    gap: 20px;
+    position: relative;
+  }
+
+  @media (min-width: 900px) {
+    .journey ol {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+  }
+
+  /* The progress line runs through the numbered nodes: across on desktop, down on mobile. */
+  .track {
+    position: absolute;
+    background: var(--line-strong);
+    border-radius: 2px;
+    overflow: hidden;
+    left: 19px;
+    top: 20px;
+    bottom: 40px;
+    width: 2px;
+  }
+
+  .fill {
+    position: absolute;
+    inset: 0;
+    background: var(--brand-bright);
+    transform-origin: top;
+  }
+
+  @media (min-width: 900px) {
+    .track {
+      left: 20px;
+      right: calc(25% - 20px);
+      top: 19px;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+    }
+    .fill {
+      transform-origin: left;
+    }
+  }
+
+  .journey li {
+    position: relative;
+    display: grid;
+    align-items: start;
+    grid-template-columns: 40px 1fr;
+    gap: 16px;
+  }
+
+  @media (min-width: 900px) {
+    .journey li {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 20px;
+    }
+  }
+
+  .node {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--brand);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 0 0 6px var(--bg);
+  }
+
+  .step {
+    align-self: stretch;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    padding: 22px;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1.5px solid var(--brand-bright);
+    box-shadow: var(--shadow-card);
+  }
+
+  .time {
+    justify-self: start;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: var(--tint);
+    color: var(--brand-deep);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .step h3 {
+    font-size: 1.2rem;
+  }
+
+  .body {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+
+  /* Before it plays: grey and quiet. Then the line fills and each step lights as the line reaches it. */
+  :global(.js) .journey .fill {
+    transform: scale(0);
+    transition: transform calc(var(--step) * 3) linear 0.3s;
+  }
+
+  :global(.js) .journey .node {
+    background: #fff;
+    color: var(--ink-soft);
+    box-shadow: 0 0 0 6px var(--bg), inset 0 0 0 1.5px var(--line-strong);
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    transition-delay: calc(var(--n) * var(--step) + 0.3s);
+  }
+
+  :global(.js) .journey .step {
+    border-color: var(--line);
+    box-shadow: none;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    transition-delay: calc(var(--n) * var(--step) + 0.3s);
+  }
+
+  :global(.js) .journey.in .fill {
+    transform: none;
+  }
+
+  :global(.js) .journey.in .node {
+    background: var(--brand);
+    color: #fff;
+    box-shadow: 0 0 0 6px var(--bg);
+  }
+
+  :global(.js) .journey.in .step {
+    border-color: var(--brand-bright);
+    box-shadow: var(--shadow-card);
+  }
+</style>

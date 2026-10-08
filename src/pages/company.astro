@@ -2,8 +2,10 @@
 import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import CtaBand from '../components/CtaBand.astro';
-import { site } from '../data/site';
+import { site, integrations } from '../data/site';
 import studio from '../assets/img/studio.png';
+
+const liveStack = integrations.filter((i) => i.status === 'available').map((i) => i.name);
 ---
 
 <Layout title="About us" description={`${site.legalName} is an AI consulting and product studio working across the UK and India. We build ${site.name} for finance teams.`}>
@@ -14,48 +16,96 @@ import studio from '../assets/img/studio.png';
     </p>
   </section>
 
-  <section class="section band" aria-labelledby="story-title">
-    <div class="wrap split">
-      <div class="section-head story">
-        <h2 id="story-title">Where it started</h2>
-        <p>
-          A UK property maintenance company asked us to fix their accounts payable. Their finance team was two people. Over a single weekend,
-          more than 200 emails could land in the shared inbox: invoices, reminders, approval chains, and now and then a legal notice.
-        </p>
-        <p>
-          Reading invoices turned out to be the easy part. The hard part was checking each one against the approval tool, the job system and the
-          ledger, and catching what slipped between them. That checking is what {site.name} does.
-        </p>
-        <p>
-          We then built the receivables side for a growing services business in India, where the truth about each unpaid invoice was buried in
-          thousands of email threads, bank lines and gateway settlements.
-        </p>
-      </div>
-      <Image src={studio} alt="A studio table with laptops and sticky notes in front of a whiteboard covered in a hand-drawn flow diagram" widths={[480, 800, 1200]} sizes="(min-width: 920px) 50vw, 100vw" class="photo" />
+  <!-- Xelix-style oversized statement -->
+  <section class="section statement-band" aria-label="What we learned">
+    <div class="wrap">
+      <p class="statement" data-anim>
+        Reading invoices is the easy part. <span class="hi">The hard part is the checking</span>, and catching what slips between the systems.
+      </p>
     </div>
   </section>
 
-  <section class="section" aria-labelledby="believe-title">
+  <section class="section band" aria-labelledby="story-title">
+    <div class="wrap story-grid">
+      <div class="story-side">
+        <h2 id="story-title">Where it started</h2>
+        <Image src={studio} alt="A studio table with laptops and sticky notes in front of a whiteboard covered in a hand-drawn flow diagram" widths={[480, 800, 1200]} sizes="(min-width: 920px) 40vw, 100vw" class="photo" />
+      </div>
+      <ol class="timeline" data-anim>
+        <li style="--n:0">
+          <p class="when">UK · accounts payable</p>
+          <h3>Two people, one shared inbox</h3>
+          <p>
+            A UK property maintenance company asked us to fix their accounts payable. Their finance team was two people. Over a single weekend,
+            more than 200 emails could land in the shared inbox: invoices, reminders, approval chains, and now and then a legal notice.
+          </p>
+        </li>
+        <li style="--n:1">
+          <p class="when">What we found</p>
+          <h3>The checking was the job</h3>
+          <p>
+            Reading invoices turned out to be the easy part. The hard part was checking each one against the approval tool, the job system and the
+            ledger, and catching what slipped between them. That checking is what {site.name} does.
+          </p>
+        </li>
+        <li style="--n:2">
+          <p class="when">India · receivables</p>
+          <h3>Then the other side of the ledger</h3>
+          <p>
+            We then built the receivables side for a growing services business in India, where the truth about each unpaid invoice was buried in
+            thousands of email threads, bank lines and gateway settlements.
+          </p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Principles: four distinct beliefs, not a sequence, so titled cards rather than numbers -->
+  <section class="section night-band on-dark" aria-labelledby="believe-title">
     <div class="wrap">
       <div class="section-head">
         <h2 id="believe-title">How we build</h2>
       </div>
-      <ul class="ledger-list">
-        <li><strong>Exceptions over noise</strong><p>A good finance tool is mostly quiet. If everything matches, your team shouldn't have to look.</p></li>
-        <li><strong>Evidence over guesses</strong><p>Every flag points to its source: the email, the approval, the ledger line, the bank entry.</p></li>
-        <li><strong>Your stack, not ours</strong><p>We connect to the systems you already trust instead of asking you to move.</p></li>
-        <li><strong>Engineered for real money</strong><p>Every module ships with a schema, an audit design, a test plan and a runbook. Finance software doesn't get to be a pile of scripts.</p></li>
+      <ul class="beliefs">
+        <li class="belief">
+          <h3>Exceptions <span>over noise</span></h3>
+          <p>A good finance tool is mostly quiet. If everything matches, your team shouldn't have to look.</p>
+          <div class="viz quiet" aria-hidden="true">
+            <i></i><i></i><i></i><i class="flag">1 needs you</i><i></i><i></i>
+          </div>
+        </li>
+        <li class="belief">
+          <h3>Evidence <span>over guesses</span></h3>
+          <p>Every flag points to its source: the email, the approval, the ledger line, the bank entry.</p>
+          <div class="viz tags" aria-hidden="true">
+            <b>Email</b><b>Approval</b><b>Ledger line</b><b>Bank entry</b>
+          </div>
+        </li>
+        <li class="belief">
+          <h3>Your stack, <span>not ours</span></h3>
+          <p>We connect to the systems you already trust instead of asking you to move.</p>
+          <div class="viz tags" aria-hidden="true">
+            {liveStack.map((n) => <b>{n}</b>)}
+          </div>
+        </li>
+        <li class="belief">
+          <h3>Engineered <span>for real money</span></h3>
+          <p>Every module ships with a schema, an audit design, a test plan and a runbook. Finance software doesn't get to be a pile of scripts.</p>
+          <div class="viz tags tags--ticks" aria-hidden="true">
+            <b>Schema</b><b>Audit design</b><b>Test plan</b><b>Runbook</b>
+          </div>
+        </li>
       </ul>
     </div>
   </section>
 
-  <section class="section band" aria-labelledby="contact-title">
-    <div class="wrap">
+  <section class="section" aria-labelledby="contact-title">
+    <div class="wrap contact">
       <div class="section-head flush">
         <h2 id="contact-title">Talk to us</h2>
         <p class="lede">We work from the UK and India. Email is the fastest way to reach the team.</p>
-        <p><a class="btn btn-quiet" href={`mailto:${site.email}`}>{site.email}</a></p>
       </div>
+      <a class="mail" href={`mailto:${site.email}`}>{site.email}<span aria-hidden="true">→</span></a>
     </div>
   </section>
 
@@ -63,7 +113,265 @@ import studio from '../assets/img/studio.png';
 </Layout>
 
 <style>
-  .story p {
+  /* Statement: oversized, soft ink with the point in full ink */
+  .statement-band {
+    padding-block: clamp(80px, 11vw, 160px);
+  }
+
+  .statement {
+    max-width: 22ch;
+    font-size: clamp(2.2rem, 6.2vw, 5.5rem);
+    font-weight: 500;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
     color: var(--ink-soft);
+    text-wrap: balance;
+  }
+
+  .hi {
+    color: var(--ink);
+    background: linear-gradient(transparent 72%, rgba(34, 181, 115, 0.32) 72%, rgba(34, 181, 115, 0.32) 92%, transparent 92%) no-repeat 0 0 / 100% 100%;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  /* One moment: the highlighter sweeps under the point. */
+  :global(.js) .statement .hi {
+    background-size: 0% 100%;
+    transition: background-size 1.1s cubic-bezier(0.65, 0, 0.35, 1) 0.3s;
+  }
+
+  :global(.js) .statement.in .hi {
+    background-size: 100% 100%;
+  }
+
+  /* Story */
+  .story-grid {
+    display: grid;
+    gap: clamp(36px, 5vw, 80px);
+  }
+
+  @media (min-width: 920px) {
+    .story-grid {
+      grid-template-columns: 0.85fr 1.15fr;
+      align-items: start;
+    }
+    .story-side {
+      position: sticky;
+      top: calc(var(--header-h) + 32px);
+    }
+  }
+
+  .story-side {
+    display: grid;
+    gap: 32px;
+  }
+
+  .timeline {
+    --step: 0.5s;
+    position: relative;
+    list-style: none;
+    display: grid;
+    gap: clamp(36px, 4vw, 56px);
+    padding-left: 44px;
+  }
+
+  /* The line down the left; it draws in on scroll */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 9px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: var(--brand-bright);
+    transform-origin: top;
+  }
+
+  .timeline li {
+    position: relative;
+    display: grid;
+    gap: 10px;
+  }
+
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: -44px;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--brand);
+    box-shadow: 0 0 0 6px var(--bg-soft);
+  }
+
+  .when {
+    font-weight: 500;
+    color: var(--brand);
+  }
+
+  .timeline h3 {
+    font-size: clamp(1.5rem, 2.6vw, 2rem);
+    letter-spacing: -0.02em;
+  }
+
+  .timeline li > p:last-child {
+    color: var(--ink-soft);
+  }
+
+  :global(.js) .timeline::before {
+    transform: scaleY(0);
+    transition: transform calc(var(--step) * 3) linear 0.2s;
+  }
+
+  :global(.js) .timeline li::before {
+    background: var(--bg-soft);
+    box-shadow: 0 0 0 6px var(--bg-soft), inset 0 0 0 2px var(--line-strong);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition-delay: calc(var(--n) * var(--step) + 0.2s);
+  }
+
+  :global(.js) .timeline.in::before {
+    transform: none;
+  }
+
+  :global(.js) .timeline.in li::before {
+    background: var(--brand);
+    box-shadow: 0 0 0 6px var(--bg-soft);
+  }
+
+  /* Beliefs */
+  .night-band h2 {
+    color: #fff;
+    font-size: clamp(2.2rem, 4.6vw, 3.6rem);
+    letter-spacing: -0.035em;
+  }
+
+  .beliefs {
+    list-style: none;
+    display: grid;
+    gap: 20px;
+  }
+
+  @media (min-width: 860px) {
+    .beliefs {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .belief {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 14px;
+    padding: clamp(24px, 3.4vw, 44px);
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .belief h3 {
+    display: grid;
+    color: #fff;
+    font-size: clamp(2rem, 3.8vw, 3rem);
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  .belief h3 span {
+    color: #5fd39a;
+  }
+
+  .belief p {
+    color: #c3d6cc;
+  }
+
+  .viz {
+    align-self: end;
+    margin-top: 14px;
+  }
+
+  .quiet {
+    display: grid;
+    gap: 6px;
+  }
+
+  .quiet i {
+    height: 10px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .quiet i.flag {
+    height: auto;
+    padding: 4px 12px;
+    background: rgba(242, 193, 78, 0.16);
+    color: #f2c14e;
+    font-style: normal;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tags b {
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #e8f0eb;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .tags--ticks b::before {
+    content: '✓ ';
+    color: #5fd39a;
+  }
+
+  /* Contact */
+  .contact {
+    display: grid;
+    gap: 28px;
+  }
+
+  @media (min-width: 900px) {
+    .contact {
+      grid-template-columns: 1fr auto;
+      align-items: end;
+    }
+  }
+
+  .mail {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    justify-self: start;
+    font-size: clamp(1.75rem, 4.6vw, 3.75rem);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--brand-bright);
+    text-underline-offset: 0.18em;
+    overflow-wrap: anywhere;
+  }
+
+  .mail span {
+    color: var(--brand);
+    transition: transform 0.2s ease;
+  }
+
+  .mail:hover {
+    color: var(--brand-deep);
+  }
+
+  .mail:hover span {
+    transform: translateX(6px);
   }
 </style>

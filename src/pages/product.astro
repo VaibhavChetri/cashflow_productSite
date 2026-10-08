@@ -9,6 +9,7 @@ import ApprovalMatch from '../components/ApprovalMatch.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
 
+// The ids are linked from the mega menu. Keep them.
 const parts = [
   { id: 'capture', label: 'Capture' },
   { id: 'payables', label: 'Payables' },
@@ -17,37 +18,142 @@ const parts = [
   { id: 'exceptions', label: 'Exceptions' },
   { id: 'compliance', label: 'Compliance' },
 ];
+const no = (id: string) => String(parts.findIndex((p) => p.id === id) + 1).padStart(2, '0');
 
+// Capture: the order here is the order the fields light up on the document and land in the record.
 const fields = [
   ['Supplier', 'Pinecrest Maintenance', 99],
   ['Invoice number', 'PM-1190', 99],
   ['Amount', '£7,343.66', 98],
   ['Due date', '28 Oct 2026', 97],
   ['PO number', 'PO-44817', 95],
-  ['Job number', 'Not found', 0],
+  ['Job number', 'Not on the invoice', 0],
 ] as const;
+
+// Same invoice lines as the homepage hero (£6,119.72 before VAT).
+const lines = [
+  ['Boiler service visits', '£2,220.00'],
+  ['Emergency call-outs', '£1,443.00'],
+  ['Parts and materials', '£1,550.00'],
+  ['Waste disposal', '£906.72'],
+];
+
+// Payables: a plain-English policy, the check behind it, and what it found in the demo workspace.
+const rules = [
+  {
+    say: 'Never pay the same invoice twice.',
+    check: 'Supplier, invoice number and amount compared with every bill already paid in your ledger, then with the bank feed.',
+    found: 'PM-1190 held. £7,343.66 was paid on 12 Sep.',
+    tone: 'red',
+  },
+  {
+    say: 'Only pay what was approved.',
+    check: 'The amount on the invoice compared with the amount in the approval email.',
+    found: 'PM-1190 differs from its approval by £243.66.',
+    tone: 'amber',
+  },
+  {
+    say: 'No bill without a purchase order.',
+    check: 'The PO number read from each invoice and looked up in your approval tool.',
+    found: 'Halden Logistics: 3 POs missing. Reply drafted.',
+    tone: 'amber',
+  },
+];
 ---
 
 <Layout title="Product" description={`How ${site.name} reads your finance inbox, reconciles payables and receivables against your ledger, approvals and bank, and brings your team only the exceptions.`}>
   <section class="wrap page-head">
+    <p class="kicker">The product</p>
     <h1>One engine, from inbox to ledger</h1>
     <p class="lede">
       {site.name} has three jobs: read everything that arrives in your finance inbox, check it against every system that holds part of the truth, and
       hand your team the short list of things that need a decision.
     </p>
-    <nav class="jump" aria-label="On this page">
-      <ul>
-        {parts.map((p) => <li><a href={`#${p.id}`}>{p.label}</a></li>)}
-      </ul>
-    </nav>
   </section>
 
-  <section class="section band" id="capture" aria-labelledby="capture-title">
-    <div class="wrap split">
-      <div class="section-head">
-        <h2 id="capture-title">Capture: every email becomes a record</h2>
-        <p class="lede">The AI reads email bodies and attachments as they arrive, whatever the layout, and turns each invoice into structured data.</p>
-        <ul class="ticks">
+  <div class="chapters">
+    <!-- Ledge-style chapter bar: sticks under the nav and follows the chapter you're reading -->
+    <nav class="chapnav" aria-label="Product chapters">
+      <ol>
+        {
+          parts.map((p, i) => (
+            <li>
+              <a href={`#${p.id}`}>
+                <span class="chapnav-no">{String(i + 1).padStart(2, '0')}</span>
+                {p.label}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+
+    <section class="section band chapter" id="capture" aria-labelledby="capture-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="chap"><span>{no('capture')}</span>Capture</p>
+          <h2 id="capture-title">Every email becomes a record</h2>
+          <p class="lede">The AI reads email bodies and attachments as they arrive, whatever the layout, and turns each invoice into structured data.</p>
+        </div>
+
+        <!-- Mysa / Nanonets-style moment: each field lights up on the document, then lands in the record with its confidence -->
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="ui x" data-anim>
+              <div class="x-doc">
+                <div class="mail">
+                  <p class="ui-sub">From: accounts@pinecrest-maintenance.example</p>
+                  <p class="subj">Invoice PM-1190 for September works</p>
+                  <p class="ui-sub">1 attachment: PM-1190.pdf</p>
+                </div>
+                <div class="pdf">
+                  <div class="pdf-top">
+                    <p><mark style="--n:0">Pinecrest Maintenance</mark></p>
+                    <p class="ui-sub">Tax invoice</p>
+                  </div>
+                  <dl class="pdf-meta">
+                    <div><dt>Invoice no.</dt><dd><mark style="--n:1">PM-1190</mark></dd></div>
+                    <div><dt>Due date</dt><dd><mark style="--n:3">28 Oct 2026</mark></dd></div>
+                    <div><dt>PO number</dt><dd><mark style="--n:4">PO-44817</mark></dd></div>
+                    <div><dt>Job no.</dt><dd><mark class="miss" style="--n:5"><span class="sr-only">blank</span></mark></dd></div>
+                  </dl>
+                  <ul class="pdf-lines">
+                    {lines.map(([d, a]) => <li><span>{d}</span><span>{a}</span></li>)}
+                    <li class="pdf-vat"><span>VAT at 20%</span><span>£1,223.94</span></li>
+                    <li class="pdf-total"><span>Total due</span><mark style="--n:2">£7,343.66</mark></li>
+                  </ul>
+                </div>
+              </div>
+
+              <span class="x-arrow" aria-hidden="true"></span>
+
+              <div class="x-rec">
+                <div class="x-rec-head">
+                  <p class="x-rec-title">Extracted record</p>
+                  <span class="tag">Demo workspace</span>
+                </div>
+                <ol>
+                  {
+                    fields.map(([f, v, c], n) => (
+                      <li style={`--n:${n}`} class={c === 0 ? 'low' : undefined}>
+                        <span class="x-f">{f}</span>
+                        <strong class="x-v">{v}</strong>
+                        <span class="x-c">
+                          <span class="bar" aria-hidden="true"><i style={`--c:${c}%`}></i></span>
+                          {c === 0 ? <span class="tag tag--amber">J-558, from the PO</span> : <span class="tag tag--green">{c}%</span>}
+                        </span>
+                      </li>
+                    ))
+                  }
+                </ol>
+              </div>
+            </div>
+          </div>
+          <figcaption>Illustration of an extraction, with demo data. The job number isn't on the invoice, so it's looked up from the purchase order.</figcaption>
+        </figure>
+
+        <ul class="ticks catches">
           <li>Extracts supplier, invoice number, amount, due date, PO number and job number</li>
           <li>Sorts every invoice into upcoming, due soon or overdue</li>
           <li>Classifies mail as vendor, payment, quote, reimbursement, client escalation or internal</li>
@@ -55,228 +161,631 @@ const fields = [
           <li>Gives each field a confidence score and sends uncertain ones to a person</li>
         </ul>
       </div>
-      <figure class="shot">
-        <div class="shot-frame">
-          <div class="ui capture">
-            <div class="mail">
-              <p class="ui-sub">From: accounts@pinecrest-maintenance.example</p>
-              <p class="subj">Invoice PM-1190 for September works</p>
-              <p class="ui-sub">1 attachment: PM-1190.pdf</p>
-            </div>
-            <table class="ui-table">
-              <thead>
-                <tr><th scope="col">Field</th><th scope="col">Extracted</th><th scope="col" class="r">Confidence</th></tr>
-              </thead>
-              <tbody>
-                {
-                  fields.map(([f, v, c]) => (
-                    <tr>
-                      <td>{f}</td>
-                      <td class={c === 0 ? 'ui-red' : undefined}><strong>{v}</strong></td>
-                      <td class="r">{c === 0 ? <span class="tag tag--red">Needs review</span> : <span class="tag tag--green">{c}%</span>}</td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
-          </div>
+    </section>
+
+    <section class="section chapter" id="payables" aria-labelledby="pay-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="chap"><span>{no('payables')}</span>Payables</p>
+          <h2 id="pay-title">Four sources, one answer</h2>
+          <p class="lede">
+            An invoice is only safe to pay when what the supplier sent, what was approved, what work was done and what your ledger says all agree.
+            {site.name} checks all four.
+          </p>
         </div>
-        <figcaption>Illustration of an extraction, with demo data. A missing job number goes to the review queue.</figcaption>
-      </figure>
-    </div>
-  </section>
+        <ol class="sources">
+          <li><strong>Inbox</strong><span>What the supplier sent</span></li>
+          <li><strong>Approval tool</strong><span>What was approved</span></li>
+          <li><strong>Job system</strong><span>What work was done</span></li>
+          <li><strong>Ledger and bank</strong><span>What was recorded and paid</span></li>
+        </ol>
 
-  <section class="section" id="payables" aria-labelledby="pay-title">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 id="pay-title">Payables: four sources, one answer</h2>
-        <p class="lede">
-          An invoice is only safe to pay when what the supplier sent, what was approved, what work was done and what your ledger says all agree.
-          {site.name} checks all four.
-        </p>
-      </div>
-      <ol class="sources">
-        <li><strong>Inbox</strong><span>What the supplier sent</span></li>
-        <li><strong>Approval tool</strong><span>What was approved</span></li>
-        <li><strong>Job system</strong><span>What work was done</span></li>
-        <li><strong>Ledger and bank</strong><span>What was recorded and paid</span></li>
-      </ol>
-      <figure class="shot wide-shot">
-        <div class="shot-frame"><VendorRecon /></div>
-        <figcaption>Vendor reconciliation, shown with demo data.</figcaption>
-      </figure>
-      <ul class="ticks catches">
-        <li>Duplicate invoices and invoices that were already paid</li>
-        <li>Partial payments recorded as full</li>
-        <li>Missing PO or job numbers</li>
-        <li>Payments made with no bill behind them</li>
-        <li>Ledger entries the bank can't confirm</li>
-        <li>Payment requests suppliers have sent that nobody answered</li>
-      </ul>
-    </div>
-  </section>
+        <!-- Nanonets-style "policy becomes a rule": what your team says, the check behind it, what it found -->
+        <div class="rules" data-anim>
+          <div class="rules-head" aria-hidden="true">
+            <span>Your policy</span><span>The check {site.name} runs</span><span>What it found</span>
+          </div>
+          <ul>
+            {
+              rules.map((r, n) => (
+                <li style={`--n:${n}`}>
+                  <blockquote>“{r.say}”</blockquote>
+                  <p class="rule-check"><span class="sr-only">The check: </span>{r.check}</p>
+                  <p class={`rule-found ${r.tone}`}><span class="sr-only">What it found: </span>{r.found}</p>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="rules-note">Findings shown with demo data.</p>
+        </div>
 
-  <section class="section band" id="receivables" aria-labelledby="ar-title">
-    <div class="wrap">
-      <div class="section-head">
-        <p><span class="status status--rolling-out">Early access</span></p>
-        <h2 id="ar-title">Receivables: the truth about every unpaid invoice</h2>
-        <p class="lede">
-          Your ledger knows what's unpaid. The email trail knows why. {site.name} reads both, then tells you which invoices are genuinely
-          collectable, which are disputed, and which clients say they've paid when your bank says otherwise.
-        </p>
-      </div>
-      <figure class="shot wide-shot">
-        <div class="shot-frame"><Cockpit /></div>
-        <figcaption>The CFO cockpit: every finance operation in one view, each morning. Demo data.</figcaption>
-      </figure>
-      <figure class="shot wide-shot">
-        <div class="shot-frame"><TrailRows /></div>
-        <figcaption>Each invoice comes with its next action, based on what the emails actually say. Demo data.</figcaption>
-      </figure>
-      <ul class="ticks catches">
-        <li>Matches payments to invoices across your ledger, bank statements and payment gateway</li>
-        <li>Flags "client says paid" claims that the bank can't confirm</li>
-        <li>Spots disputes, pushback and threads that have gone quiet</li>
-        <li>Suggests the next move: hold, send a reminder, or ask for missing documents</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section" id="approvals" aria-labelledby="appr-title">
-    <div class="wrap split">
-      <div class="section-head">
-        <h2 id="appr-title">Approvals: know what's stuck, and with whom</h2>
-        <p class="lede">Multi-level approvals are tracked through email, so you can see exactly who an invoice is waiting on.</p>
-        <ul class="ticks">
-          <li>Tracks each approval step and who holds it</li>
-          <li>Compares the amount on the invoice with the amount in the email</li>
-          <li>Keeps attachments and evidence with the request</li>
+        <figure class="shot wide-shot">
+          <div class="shot-frame"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div><VendorRecon /></div>
+          <figcaption>Vendor reconciliation, shown with demo data.</figcaption>
+        </figure>
+        <h3 class="catches-title">What it catches</h3>
+        <ul class="ticks catches">
+          <li>Duplicate invoices and invoices that were already paid</li>
+          <li>Partial payments recorded as full</li>
+          <li>Missing PO or job numbers</li>
+          <li>Payments made with no bill behind them</li>
+          <li>Ledger entries the bank can't confirm</li>
+          <li>Payment requests suppliers have sent that nobody answered</li>
         </ul>
       </div>
-      <figure class="shot">
-        <div class="shot-frame"><ApprovalMatch /></div>
-        <figcaption>An approval with a mismatch caught before sign-off. Demo data.</figcaption>
-      </figure>
-    </div>
-  </section>
+    </section>
 
-  <section class="section band" id="exceptions" aria-labelledby="exc-title">
-    <div class="wrap split split--text-wide">
-      <div class="section-head">
-        <h2 id="exc-title">Exceptions: one queue, every reason spelled out</h2>
-        <p class="lede">
-          A flag on its own creates work. Each exception says what's wrong, why it matters, and what clears it. When an invoice is late,
-          {site.name} tells you why: a missing reference, a stuck approval, or a supplier error.
-        </p>
-        <p>Your source systems are never changed behind your back. Fix the cause at source, and the flag clears on the next refresh.</p>
+    <section class="section band chapter" id="receivables" aria-labelledby="ar-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="chap"><span>{no('receivables')}</span>Receivables <span class="status status--rolling-out">Early access</span></p>
+          <h2 id="ar-title">The truth about every unpaid invoice</h2>
+          <p class="lede">
+            Your ledger knows what's unpaid. The email trail knows why. {site.name} reads both, then tells you which invoices are genuinely
+            collectable, which are disputed, and which clients say they've paid when your bank says otherwise.
+          </p>
+        </div>
+        <figure class="shot wide-shot">
+          <div class="shot-frame"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div><Cockpit /></div>
+          <figcaption>The CFO cockpit: every finance operation in one view, each morning. Demo data.</figcaption>
+        </figure>
+        <figure class="shot wide-shot">
+          <div class="shot-frame"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div><TrailRows /></div>
+          <figcaption>Each invoice comes with its next action, based on what the emails actually say. Demo data.</figcaption>
+        </figure>
+        <ul class="ticks catches">
+          <li>Matches payments to invoices across your ledger, bank statements and payment gateway</li>
+          <li>Flags "client says paid" claims that the bank can't confirm</li>
+          <li>Spots disputes, pushback and threads that have gone quiet</li>
+          <li>Suggests the next move: hold, send a reminder, or ask for missing documents</li>
+        </ul>
       </div>
-      <div class="banners">
-        <ExceptionBanner
-          title="38 of 412 payments have a mode or account mismatch"
-          body="Payment mode is recorded as cash, but the money landed in a bank account. Fix it at source and the flag clears on the next refresh."
-          action="Show only mismatched"
-        />
-        <ExceptionBanner
-          tone="info"
-          title="15 of 52 payments have no bill attached"
-          body="Usually advances, retainers or on-account payments. Check whether each one is intentional or a missing bill link."
-          action="Show only payments with no bill"
-        />
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="section" id="compliance" aria-labelledby="comp-title">
-    <div class="wrap">
-      <div class="section-head">
-        <p><span class="status status--rolling-out">Early access in India</span></p>
-        <h2 id="comp-title">Compliance: reconcile tax returns against your books</h2>
-        <p class="lede">
-          For Indian finance teams, {site.name} matches GSTR-2B and GSTR-1 against your books and explains every mismatch, so input tax credit
-          isn't lost to a missing bill.
-        </p>
-        <p><a href="/india">Read more about {site.name} in India</a></p>
+    <section class="section chapter" id="approvals" aria-labelledby="appr-title">
+      <div class="wrap split">
+        <div class="section-head">
+          <p class="chap"><span>{no('approvals')}</span>Approvals</p>
+          <h2 id="appr-title">Know what's stuck, and with whom</h2>
+          <p class="lede">Multi-level approvals are tracked through email, so you can see exactly who an invoice is waiting on.</p>
+          <ul class="ticks">
+            <li>Tracks each approval step and who holds it</li>
+            <li>Compares the amount on the invoice with the amount in the email</li>
+            <li>Keeps attachments and evidence with the request</li>
+          </ul>
+        </div>
+        <figure class="shot">
+          <div class="shot-frame"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div><ApprovalMatch /></div>
+          <figcaption>An approval with a mismatch caught before sign-off. Demo data.</figcaption>
+        </figure>
       </div>
-      <figure class="shot wide-shot">
-        <div class="shot-frame"><GstRecon /></div>
-        <figcaption>GST reconciliation, shown with demo data.</figcaption>
-      </figure>
-    </div>
-  </section>
+    </section>
+
+    <section class="section band chapter" id="exceptions" aria-labelledby="exc-title">
+      <div class="wrap split split--text-wide">
+        <div class="section-head">
+          <p class="chap"><span>{no('exceptions')}</span>Exceptions</p>
+          <h2 id="exc-title">One queue, every reason spelled out</h2>
+          <p class="lede">
+            A flag on its own creates work. Each exception says what's wrong, why it matters, and what clears it. When an invoice is late,
+            {site.name} tells you why: a missing reference, a stuck approval, or a supplier error.
+          </p>
+          <p>Your source systems are never changed behind your back. Fix the cause at source, and the flag clears on the next refresh.</p>
+        </div>
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="banners">
+              <ExceptionBanner
+                title="38 of 412 payments have a mode or account mismatch"
+                body="Payment mode is recorded as cash, but the money landed in a bank account. Fix it at source and the flag clears on the next refresh."
+                action="Show only mismatched"
+              />
+              <ExceptionBanner
+                tone="info"
+                title="15 of 52 payments have no bill attached"
+                body="Usually advances, retainers or on-account payments. Check whether each one is intentional or a missing bill link."
+                action="Show only payments with no bill"
+              />
+            </div>
+          </div>
+          <figcaption>Exception banners from the payments screen. Demo data.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section chapter" id="compliance" aria-labelledby="comp-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="chap"><span>{no('compliance')}</span>Compliance <span class="status status--rolling-out">Early access in India</span></p>
+          <h2 id="comp-title">Reconcile tax returns against your books</h2>
+          <p class="lede">
+            For Indian finance teams, {site.name} matches GSTR-2B and GSTR-1 against your books and explains every mismatch, so input tax credit
+            isn't lost to a missing bill.
+          </p>
+          <p><a href="/india">Read more about {site.name} in India</a></p>
+        </div>
+        <figure class="shot wide-shot">
+          <div class="shot-frame"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div><GstRecon /></div>
+          <figcaption>GST reconciliation, shown with demo data.</figcaption>
+        </figure>
+      </div>
+    </section>
+  </div>
 
   <CtaBand />
 </Layout>
 
+<script>
+  // Highlight the chapter in view. The band between 40% and 55% from the top decides which one is "current".
+  const nav = document.querySelector<HTMLElement>('.chapnav ol');
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.chapnav a')];
+  if (nav && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          // The page head has no id, so reaching it clears the bar.
+          links.forEach((a) => {
+            const on = e.target.id !== '' && a.hash === `#${e.target.id}`;
+            if (on) {
+              a.setAttribute('aria-current', 'true');
+              // Keep the current chapter visible when the bar scrolls sideways on small screens.
+              nav.scrollTo({ left: a.offsetLeft - (nav.clientWidth - a.offsetWidth) / 2, behavior: 'smooth' });
+            } else a.removeAttribute('aria-current');
+          });
+        }),
+      { rootMargin: '-40% 0px -55% 0px' },
+    );
+    const head = document.querySelector('.page-head');
+    if (head) io.observe(head);
+    links.forEach((a) => {
+      const el = document.getElementById(a.hash.slice(1));
+      if (el) io.observe(el);
+    });
+  }
+</script>
+
 <style>
-  .jump ul {
+  /* Chapter bar: straddles the dark head, then sticks under the floating nav */
+  .chapnav {
+    position: sticky;
+    top: calc(var(--header-h) + 10px);
+    z-index: 40;
+    display: flex;
+    justify-content: center;
+    width: min(100% - 2 * var(--gutter), var(--wrap));
+    margin: -27px auto;
+    pointer-events: none;
+  }
+
+  .chapnav ol {
+    pointer-events: auto;
     list-style: none;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 4px;
+    max-width: 100%;
+    padding: 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    -webkit-backdrop-filter: blur(16px) saturate(170%);
+    backdrop-filter: blur(16px) saturate(170%);
+    border: 1px solid var(--line);
+    box-shadow: 0 14px 34px -18px rgba(15, 51, 38, 0.4);
+    overflow-x: auto;
+    scrollbar-width: none;
   }
 
-  .jump a {
-    display: inline-block;
-    padding: 8px 14px;
-    border: 1px solid var(--rule);
+  .chapnav ol::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chapnav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 16px;
     border-radius: 999px;
     color: var(--ink);
-    text-decoration: none;
-    font-weight: 600;
     font-size: 0.9375rem;
-    background: var(--surface);
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  .jump a:hover {
-    border-color: var(--ink);
+  .chapnav a:hover {
+    background: var(--tint);
+    color: var(--ink);
   }
 
-  .capture {
-    min-width: 420px;
+  .chapnav a:focus-visible {
+    outline-offset: -3px;
+    border-radius: 999px;
+  }
+
+  .chapnav-no {
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--brand);
+  }
+
+  .chapnav a[aria-current] {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .chapnav a[aria-current] .chapnav-no {
+    color: #5fd39a;
+  }
+
+  @media (max-width: 640px) {
+    .chapnav ol {
+      width: 100%;
+    }
+    .chapnav-no {
+      display: none;
+    }
+    .chapnav a {
+      padding: 0 14px;
+    }
+  }
+
+  /* Chapter marker above each heading */
+  .chap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .chap > span:first-child {
     display: grid;
-    gap: 14px;
+    place-items: center;
+    min-width: 34px;
+    height: 34px;
+    padding-inline: 6px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chap .status {
+    margin-left: 4px;
+  }
+
+  /* Capture: document becomes data */
+  .x {
+    display: grid;
+    gap: 20px;
+    align-items: center;
+    padding: clamp(16px, 2.6vw, 32px);
+    background: var(--ui-bg);
+  }
+
+  @media (min-width: 900px) {
+    .x {
+      grid-template-columns: 1fr 44px 1fr;
+      gap: 12px;
+    }
+  }
+
+  .x-doc {
+    display: grid;
+    gap: 12px;
   }
 
   .mail {
     border: 1px solid var(--ui-line);
     border-radius: 10px;
     padding: 12px 14px;
-    background: var(--ui-bg);
+    background: #fff;
     display: grid;
     gap: 2px;
+  }
+
+  .mail .ui-sub {
+    overflow-wrap: anywhere;
   }
 
   .subj {
     font-weight: 700;
   }
 
-  .sources {
+  .pdf {
+    display: grid;
+    gap: 14px;
+    padding: 18px 20px;
+    background: #fff;
+    border: 1px solid var(--ui-line);
+    border-radius: 4px;
+    box-shadow: 0 12px 24px -18px rgba(28, 36, 48, 0.45);
+  }
+
+  .pdf-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--ui-ink);
+    font-weight: 700;
+  }
+
+  .pdf-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    margin: 0;
+  }
+
+  .pdf-meta dt {
+    color: var(--ui-soft);
+    font-size: 0.75rem;
+  }
+
+  .pdf-meta dd {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .pdf-lines {
     list-style: none;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pdf-lines li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--ui-line);
+  }
+
+  .pdf-vat {
+    color: var(--ui-soft);
+  }
+
+  .pdf-total {
+    border-bottom: 0 !important;
+    padding-top: 8px !important;
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+
+  /* Highlights on the document. The text is always readable; only the highlight arrives. */
+  .x mark {
+    color: inherit;
+    background: rgba(34, 181, 115, 0.2);
+    box-shadow: 0 0 0 2px rgba(34, 181, 115, 0.55);
+    border-radius: 3px;
+    padding: 0 3px;
+  }
+
+  .x mark.miss {
+    display: inline-block;
+    min-width: 72px;
+    height: 1.2em;
+    vertical-align: middle;
+    background: var(--ui-red-bg);
+    box-shadow: 0 0 0 1.5px var(--ui-red);
+  }
+
+  .x-arrow {
+    justify-self: center;
+    width: 2px;
+    height: 32px;
+    background: var(--line-strong);
+    position: relative;
+  }
+
+  .x-arrow::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -2px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid var(--line-strong);
+    border-bottom: 2px solid var(--line-strong);
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  @media (min-width: 900px) {
+    .x-arrow {
+      width: 100%;
+      height: 2px;
+    }
+    .x-arrow::after {
+      left: auto;
+      right: 0;
+      bottom: 50%;
+      transform: translateY(50%) rotate(-45deg);
+    }
+  }
+
+  .x-rec {
+    background: #fff;
+    border: 1px solid var(--ui-line);
+    border-radius: 12px;
+    box-shadow: 0 12px 24px -18px rgba(28, 36, 48, 0.45);
+    overflow: hidden;
+  }
+
+  .x-rec-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--ui-line);
+  }
+
+  .x-rec-title {
+    font-weight: 700;
+  }
+
+  .x-rec ol {
+    list-style: none;
+  }
+
+  .x-rec li {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    border-top: 2px solid var(--ink);
-    margin-bottom: clamp(32px, 5vw, 48px);
+    grid-template-columns: 7.5em 1fr;
+    gap: 4px 12px;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--ui-line);
+    border-left: 3px solid var(--ui-green);
   }
 
-  .sources li {
-    display: grid;
-    gap: 4px;
-    padding: 18px 20px 18px 0;
-    border-bottom: 1px solid var(--rule);
+  .x-rec li:last-child {
+    border-bottom: 0;
   }
 
-  .sources span {
-    color: var(--ink-soft);
+  .x-rec li.low {
+    border-left-color: var(--ui-red);
+    background: #fffafa;
   }
 
-  .wide-shot + .wide-shot {
+  .x-f {
+    color: var(--ui-soft);
+    font-size: 0.8125rem;
+  }
+
+  .x-v {
+    overflow-wrap: anywhere;
+  }
+
+  .low .x-v {
+    color: var(--ui-red);
+  }
+
+  .x-c {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bar {
+    flex: 1;
+    height: 6px;
+    border-radius: 99px;
+    background: #eef1f4;
+    overflow: hidden;
+  }
+
+  .bar i {
+    display: block;
+    width: var(--c);
+    height: 100%;
+    background: var(--ui-green);
+    border-radius: inherit;
+    transform-origin: left;
+  }
+
+  .x-c .tag {
+    min-width: 44px;
+    text-align: center;
+  }
+
+  @media (min-width: 1100px) {
+    .x-rec li {
+      grid-template-columns: 7.5em 1fr 150px;
+    }
+    .x-c {
+      grid-column: auto;
+    }
+  }
+
+  /* The moment: one field at a time, highlight on the page, then the value lands in the record */
+  .x {
+    --step: 0.5s;
+  }
+
+  :global(.js) .x mark {
+    background: transparent;
+    box-shadow: 0 0 0 2px transparent;
+    transition: background-color 0.35s ease, box-shadow 0.35s ease;
+    transition-delay: calc(var(--n) * var(--step) + 0.3s);
+  }
+
+  :global(.js) .x mark.miss {
+    background: transparent;
+    box-shadow: 0 0 0 1.5px var(--ui-line);
+  }
+
+  :global(.js) .x-rec li {
+    border-left-color: var(--ui-line);
+    transition: border-color 0.3s ease;
+    transition-delay: calc(var(--n) * var(--step) + 0.55s);
+  }
+
+  :global(.js) .x-v,
+  :global(.js) .x-c .tag {
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: calc(var(--n) * var(--step) + 0.55s);
+  }
+
+  :global(.js) .x .bar i {
+    transform: scaleX(0);
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: calc(var(--n) * var(--step) + 0.6s);
+  }
+
+  :global(.js) .x.in mark {
+    background: rgba(34, 181, 115, 0.2);
+    box-shadow: 0 0 0 2px rgba(34, 181, 115, 0.55);
+  }
+
+  :global(.js) .x.in mark.miss {
+    background: var(--ui-red-bg);
+    box-shadow: 0 0 0 1.5px var(--ui-red);
+  }
+
+  :global(.js) .x.in .x-rec li {
+    border-left-color: var(--ui-green);
+  }
+
+  :global(.js) .x.in .x-rec li.low {
+    border-left-color: var(--ui-red);
+  }
+
+  :global(.js) .x.in .x-v,
+  :global(.js) .x.in .x-c .tag {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(.js) .x.in .bar i {
+    transform: none;
+  }
+
+  /* Shared bits */
+  .wide-shot + .wide-shot,
+  .rules + .wide-shot {
     margin-top: 32px;
   }
 
   .catches {
     margin-top: 36px;
+  }
+
+  .catches-title {
+    margin-top: 48px;
+  }
+
+  .catches-title + .catches {
+    margin-top: 18px;
   }
 
   @media (min-width: 860px) {
@@ -286,12 +795,158 @@ const fields = [
     }
   }
 
-  .banners {
+  /* Payables: four sources */
+  .sources {
+    list-style: none;
     display: grid;
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    border-top: 2px solid var(--ink);
+    margin-bottom: clamp(32px, 5vw, 48px);
+    counter-reset: src;
   }
 
-  .section-head .status {
-    margin-bottom: -4px;
+  .sources li {
+    counter-increment: src;
+    display: grid;
+    gap: 4px;
+    padding: 18px 20px 18px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .sources li::before {
+    content: counter(src);
+    color: var(--brand);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sources span {
+    color: var(--ink-soft);
+  }
+
+  /* Payables: policy becomes a rule */
+  .rules {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+
+  .rules-head {
+    display: none;
+  }
+
+  .rules ul {
+    list-style: none;
+  }
+
+  .rules li {
+    position: relative;
+    display: grid;
+    gap: 12px;
+    padding: 22px clamp(18px, 3vw, 28px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rules blockquote {
+    margin: 0;
+    font-size: var(--step-1);
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  .rule-check {
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+  }
+
+  .rule-found {
+    justify-self: start;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .rule-found.red {
+    background: #fdecea;
+    color: #b0352b;
+  }
+
+  .rule-found.amber {
+    background: #fdf3e2;
+    color: var(--amber);
+  }
+
+  .rules-note {
+    padding: 14px clamp(18px, 3vw, 28px);
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+
+  @media (min-width: 900px) {
+    .rules-head,
+    .rules li {
+      display: grid;
+      grid-template-columns: 0.9fr 1.3fr 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+    .rules-head {
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-soft);
+      font-size: 0.875rem;
+      color: var(--ink-soft);
+    }
+    /* Arrows between the three columns */
+    .rule-check,
+    .rule-found {
+      position: relative;
+    }
+    .rule-check::before,
+    .rule-found::before {
+      content: '';
+      position: absolute;
+      left: -40px;
+      top: 50%;
+      width: 24px;
+      height: 2px;
+      background: var(--line-strong);
+    }
+    .rule-check::after,
+    .rule-found::after {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--line-strong);
+      border-right: 2px solid var(--line-strong);
+      transform: translate(0, -50%) rotate(45deg);
+    }
+  }
+
+  /* The moment: each finding lands after its rule */
+  :global(.js) .rules .rule-found {
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: calc(var(--n) * 0.45s + 0.3s);
+  }
+
+  :global(.js) .rules.in .rule-found {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Exceptions */
+  .banners {
+    display: grid;
+    gap: 16px;
+    padding: clamp(14px, 2vw, 22px);
   }
 </style>

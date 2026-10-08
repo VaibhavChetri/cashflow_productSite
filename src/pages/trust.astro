@@ -2,10 +2,30 @@
 import Layout from '../layouts/Layout.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
+
+// Confidence table. Demo data, field reads only: the AI reads, rules do the matching.
+// The threshold is the demo workspace's setting, not a product fact.
+const threshold = 90;
+const reads = [
+  { doc: 'Pinecrest PM-1190', field: 'Amount', value: '£7,343.66', c: 98 },
+  { doc: 'Pinecrest PM-1190', field: 'Due date', value: '28 Oct 2026', c: 97 },
+  { doc: 'Pinecrest PM-1190', field: 'PO number', value: 'PO-44817', c: 95 },
+  { doc: 'Kestrel Hospitality email', field: 'Date they say they paid', value: '"Friday"', c: 64 },
+  { doc: 'Halden Logistics invoice', field: 'PO number', value: 'Not found', c: 0 },
+];
+
+// Audit trail for one invoice. Same story and times as the homepage hero.
+const trail = [
+  { t: '06:02', who: 'AI', tag: 'blue', title: 'Read from the finance inbox', body: 'Supplier, amount, due date and PO number extracted, each with a confidence score.', src: 'Finance inbox' },
+  { t: '06:02', who: 'Rules', tag: 'green', title: 'Matched to PO-44817 and job J-558', body: 'Four lines, £6,119.72 before VAT, agree with the order and the job.', src: 'Approval tool and job system' },
+  { t: '09:14', who: 'Person', tag: 'purple', title: 'Approved by Sarah K.', body: 'Signed off by the operations manager in your approval tool.', src: 'Approval tool' },
+  { t: '09:15', who: 'Rules', tag: 'green', bad: true, title: 'Held: already paid on 12 Sep', body: '£7,343.66 was paid to Pinecrest on 12 Sep and cleared at the bank.', src: 'Ledger and bank feed' },
+];
 ---
 
 <Layout title="AI and your data" description={`How ${site.name} uses AI, what it never does on its own, and how your financial data is handled.`}>
   <section class="wrap page-head">
+    <p class="kicker">AI and your data</p>
     <h1>AI reads. Rules reconcile. You decide.</h1>
     <p class="lede">
       Finance teams are right to be careful about AI near money. Here is exactly where {site.name} uses it, where it doesn't, and what happens to
@@ -13,9 +33,11 @@ import { site } from '../data/site';
     </p>
   </section>
 
-  <section class="section band" aria-labelledby="does-title">
-    <div class="wrap two-col">
-      <div>
+  <!-- Two-sided contrast: what the AI does, and what stays with your people -->
+  <section class="section band" aria-label="What the AI does and doesn't do">
+    <div class="wrap duo">
+      <div class="side side--does">
+        <p class="side-label"><span class="dot" aria-hidden="true"></span>The AI</p>
         <h2 id="does-title">What the AI does</h2>
         <ul class="ticks">
           <li>Reads emails and attachments, whatever the layout</li>
@@ -25,7 +47,8 @@ import { site } from '../data/site';
           <li>Suggests a next action for each exception</li>
         </ul>
       </div>
-      <div>
+      <div class="side side--never on-dark">
+        <p class="side-label"><span class="dot" aria-hidden="true"></span>Your team</p>
         <h2>What it never does on its own</h2>
         {/* CONFIRM each line with Shreyas & Varun before launch */}
         <ul class="nevers">
@@ -38,10 +61,71 @@ import { site } from '../data/site';
     </div>
   </section>
 
-  <section class="section" aria-labelledby="data-title">
+  <!-- Nanonets-style confidence threshold -->
+  <section class="section" aria-labelledby="conf-title">
     <div class="wrap">
       <div class="section-head">
+        <h2 id="conf-title">Confident, or it asks</h2>
+        <p class="lede">
+          Every field the AI reads gets a confidence score. Above the line, the read goes on to be checked against your ledger, approvals and bank.
+          Below it, a person looks at the document first.
+        </p>
+      </div>
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="ui conf" data-anim style={`--t:${threshold}%;--t-num:${threshold / 100}`}>
+            <div class="conf-head">
+              <p class="conf-title">Field reads</p>
+              <p class="conf-key"><span class="line-key" aria-hidden="true"></span>Threshold in this demo workspace: {threshold}%</p>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Document</th>
+                  <th scope="col">Field</th>
+                  <th scope="col">Read as</th>
+                  <th scope="col" class="th-conf">Confidence <span class="th-line" aria-hidden="true">{threshold}%</span></th>
+                  <th scope="col">Outcome</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  reads.map((r, n) => {
+                    const ok = r.c >= threshold;
+                    return (
+                      <tr style={`--n:${n}`} class={ok ? 'ok' : 'ask'}>
+                        <td class="c-doc">{r.doc}</td>
+                        <td class="c-field">{r.field}</td>
+                        <td class="c-val"><strong>{r.value}</strong></td>
+                        <td class="c-conf">
+                          <span class="track" aria-hidden="true"><i style={`--c:${r.c}%`}></i></span>
+                          <span class="pct">{r.c === 0 ? 'No read' : `${r.c}%`}</span>
+                        </td>
+                        <td class="c-out">
+                          <span class={`tag ${ok ? 'tag--green' : 'tag--amber'}`}>{ok ? 'Cleared on its own' : 'Asked a person'}</span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <figcaption>
+          Demo data. The {threshold}% line is this demo workspace's setting. Below it, {site.name} never guesses or forces a match: the field waits
+          for a person.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section band" aria-labelledby="data-title">
+    <div class="wrap data-split">
+      <div class="section-head data-head">
         <h2 id="data-title">Your data</h2>
+        <p class="lede">Where it goes, who sees it, and what happens when you leave.</p>
       </div>
       {/* CONFIRM: model tier and terms, hosting regions, retention period, encryption details. Do not publish until each is true. */}
       <ul class="ledger-list">
@@ -69,23 +153,71 @@ import { site } from '../data/site';
     </div>
   </section>
 
-  <section class="section band" aria-labelledby="audit-title">
-    <div class="wrap split split--text-wide">
-      <div class="section-head">
-        <h2 id="audit-title">A trail your auditors will like</h2>
-        <p class="lede">
-          Every invoice can be traced from the email it arrived in, through each approval, to the ledger entry and the bank line. Every decision on
-          an exception records who made it and when.
-        </p>
+  <section class="section" aria-labelledby="audit-title">
+    <div class="wrap split split--text-wide audit-split">
+      <div class="audit-text">
+        <div class="section-head flush">
+          <h2 id="audit-title">A trail your auditors will like</h2>
+          <p class="lede">
+            Every invoice can be traced from the email it arrived in, through each approval, to the ledger entry and the bank line. Every decision on
+            an exception records who made it and when.
+          </p>
+        </div>
+        <div class="panel panel--lead gov">
+          <h3>Built by governance people</h3>
+          <p>
+            {site.legalName} works alongside Beam Global Services, our managed IT and governance, risk and compliance practice. Segregation of duties
+            and audit trails are where we started, not features we added later.
+          </p>
+          <p>Have a security questionnaire? <a href={`mailto:${site.email}?subject=Security%20questionnaire`}>Send it to us</a> and we'll answer every question.</p>
+        </div>
       </div>
-      <div class="section-head">
-        <h2>Built by governance people</h2>
-        <p>
-          {site.legalName} works alongside Beam Global Services, our managed IT and governance, risk and compliance practice. Segregation of duties
-          and audit trails are where we started, not features we added later.
-        </p>
-        <p>Have a security questionnaire? <a href={`mailto:${site.email}?subject=Security%20questionnaire`}>Send it to us</a> and we'll answer every question.</p>
-      </div>
+
+      <!-- Vertical audit trail for one invoice: each step lights as the line reaches it -->
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="ui trail" data-anim>
+            <div class="trail-head">
+              <div>
+                <p class="trail-title">Pinecrest Maintenance, PM-1190</p>
+                <p class="ui-sub">£7,343.66. Audit trail, Tuesday</p>
+              </div>
+              <span class="tag tag--red">Held</span>
+            </div>
+            <ol>
+              {
+                trail.map((s, n) => (
+                  <li style={`--n:${n}`} class={s.bad ? 'bad' : undefined}>
+                    <time>{s.t}</time>
+                    <span class="node" aria-hidden="true"></span>
+                    <div class="ev">
+                      <p class="ev-top">
+                        <span class={`tag tag--${s.tag}`}>{s.who}</span>
+                        <strong>{s.title}</strong>
+                      </p>
+                      <p class="ev-body">{s.body}</p>
+                      <p class="ev-src">Source: {s.src}</p>
+                    </div>
+                  </li>
+                ))
+              }
+              <li class="you" style={`--n:${trail.length}`}>
+                <time>Next</time>
+                <span class="node" aria-hidden="true"></span>
+                <div class="ev">
+                  <p class="ev-top">
+                    <span class="tag">You</span>
+                    <strong>Release or keep on hold</strong>
+                  </p>
+                  <p class="ev-body">Whoever decides, and when, is added to this trail.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <figcaption>One invoice's trail, shown with demo data.</figcaption>
+      </figure>
     </div>
   </section>
 
@@ -93,32 +225,101 @@ import { site } from '../data/site';
 </Layout>
 
 <style>
-  .two-col {
+  /* Two-sided contrast */
+  .duo {
     display: grid;
-    gap: 48px;
+    gap: 20px;
   }
 
-  @media (min-width: 860px) {
-    .two-col {
+  @media (min-width: 900px) {
+    .duo {
       grid-template-columns: 1fr 1fr;
-      gap: 72px;
+      gap: 24px;
     }
   }
 
-  .two-col h2 {
+  .side {
+    display: grid;
+    gap: 20px;
+    align-content: start;
+    padding: clamp(28px, 4vw, 52px);
+    border-radius: 28px;
+  }
+
+  .side h2 {
     font-size: var(--step-3);
-    margin-bottom: 24px;
+  }
+
+  .side-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .side--does {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+  }
+
+  .side--does .side-label {
+    color: var(--brand);
+  }
+
+  .side--does .dot {
+    background: var(--brand-bright);
+  }
+
+  .side--never {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: #c3d6cc;
+    background:
+      radial-gradient(600px 320px at 100% 0%, rgba(34, 181, 115, 0.2), transparent 65%),
+      linear-gradient(170deg, #0f3326, var(--dark));
+  }
+
+  .side--never::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--dots);
+    -webkit-mask-image: radial-gradient(70% 80% at 100% 100%, #000 5%, transparent 70%);
+    mask-image: radial-gradient(70% 80% at 100% 100%, #000 5%, transparent 70%);
+    opacity: 0.6;
+  }
+
+  .side--never h2 {
+    color: #fff;
+  }
+
+  .side--never .side-label {
+    color: #5fd39a;
+  }
+
+  .side--never .dot {
+    background: #5fd39a;
   }
 
   .nevers {
     list-style: none;
     display: grid;
-    gap: 12px;
   }
 
   .nevers li {
     position: relative;
-    padding-left: 30px;
+    padding: 14px 0 14px 34px;
+    color: #e8f0eb;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   .nevers li::before,
@@ -126,14 +327,404 @@ import { site } from '../data/site';
     content: '';
     position: absolute;
     left: 3px;
-    top: 0.75em;
-    width: 14px;
+    top: calc(14px + 0.8em);
+    width: 15px;
     height: 2.5px;
-    background: var(--audit);
+    background: #ff8a7a;
     transform: rotate(45deg);
   }
 
   .nevers li::after {
     transform: rotate(-45deg);
+  }
+
+  /* Confidence table */
+  .conf {
+    display: grid;
+    gap: 14px;
+  }
+
+  .conf-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px 20px;
+  }
+
+  .conf-title {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .conf-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ui-soft);
+    font-size: 0.8125rem;
+  }
+
+  .line-key {
+    width: 2px;
+    height: 16px;
+    background: var(--ui-ink);
+  }
+
+  .conf table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .conf th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ui-soft);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ui-line);
+    white-space: nowrap;
+  }
+
+  .conf td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--ui-line);
+    vertical-align: middle;
+  }
+
+  .conf tr:last-child td {
+    border-bottom: 0;
+  }
+
+  /* Label the threshold line where it crosses the header */
+  .th-conf {
+    position: relative;
+  }
+
+  .th-line {
+    position: absolute;
+    left: calc(12px + (100% - 88px) * var(--t-num));
+    bottom: 6px;
+    transform: translateX(-50%);
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--ui-ink);
+    color: #fff;
+    font-size: 0.6875rem;
+  }
+
+  .c-doc,
+  .c-field {
+    color: var(--ui-soft);
+  }
+
+  .c-conf {
+    width: 34%;
+    white-space: nowrap;
+  }
+
+  .track {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    width: calc(100% - 64px);
+    height: 8px;
+    border-radius: 99px;
+    background: #eef1f4;
+  }
+
+  .track i {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--c);
+    border-radius: inherit;
+    background: var(--ui-green);
+    transform-origin: left;
+  }
+
+  .ask .track i {
+    background: #e0a43a;
+  }
+
+  /* The threshold line, drawn at the same place on every row */
+  .track::after {
+    content: '';
+    position: absolute;
+    left: var(--t);
+    top: -6px;
+    bottom: -6px;
+    width: 2px;
+    background: var(--ui-ink);
+  }
+
+  .pct {
+    display: inline-block;
+    min-width: 52px;
+    margin-left: 8px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  .ask .pct {
+    color: var(--ui-amber);
+  }
+
+  @media (max-width: 760px) {
+    .conf thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+    .conf tr {
+      display: grid;
+      /* Fixed second column so the threshold line sits in the same place on every row */
+      grid-template-columns: 1fr 132px;
+      gap: 4px 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--ui-line);
+    }
+    .conf tr:last-child {
+      border-bottom: 0;
+    }
+    .conf td {
+      display: block;
+      padding: 0;
+      border: 0;
+    }
+    .c-doc {
+      grid-column: 1 / -1;
+      font-size: 0.8125rem;
+    }
+    .c-field {
+      grid-column: 1;
+    }
+    .c-val {
+      grid-column: 2;
+      grid-row: 2;
+      text-align: right;
+    }
+    .c-conf {
+      grid-column: 1;
+      width: auto;
+      padding-top: 6px !important;
+    }
+    .c-out {
+      grid-column: 2;
+      align-self: end;
+      justify-self: end;
+    }
+  }
+
+  /* The moment: bars fill to their score, then the outcome lands */
+  :global(.js) .conf .track i {
+    transform: scaleX(0);
+    transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: calc(var(--n) * 0.3s + 0.2s);
+  }
+
+  :global(.js) .conf .c-out .tag {
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    transition-delay: calc(var(--n) * 0.3s + 0.8s);
+  }
+
+  :global(.js) .conf.in .track i,
+  :global(.js) .conf.in .c-out .tag {
+    transform: none;
+    opacity: 1;
+  }
+
+  /* Your data */
+  @media (min-width: 980px) {
+    .data-split {
+      display: grid;
+      grid-template-columns: 0.7fr 1.3fr;
+      gap: 64px;
+      align-items: start;
+    }
+    .data-head {
+      position: sticky;
+      top: calc(var(--header-h) + 32px);
+    }
+  }
+
+  /* Audit trail */
+  .audit-split {
+    align-items: start;
+  }
+
+  .audit-text {
+    display: grid;
+    gap: 32px;
+  }
+
+  .gov {
+    display: grid;
+    gap: 12px;
+    padding: clamp(24px, 3vw, 36px);
+  }
+
+  .gov p {
+    color: var(--ink-soft);
+  }
+
+  .gov p + p {
+    margin-top: 0;
+  }
+
+  .trail-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 12px;
+    padding-bottom: 16px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--ui-line);
+  }
+
+  .trail-title {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .trail ol {
+    --step: 0.6s;
+    list-style: none;
+    position: relative;
+  }
+
+  /* The line runs down through the nodes */
+  .trail ol::before,
+  .trail ol::after {
+    content: '';
+    position: absolute;
+    left: calc(3.4em + 16px + 7px);
+    top: 26px;
+    bottom: 40px;
+    width: 2px;
+    background: var(--ui-line);
+  }
+
+  .trail ol::after {
+    background: var(--brand-bright);
+    transform-origin: top;
+  }
+
+  .trail li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.4em 16px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .trail time {
+    padding-top: 2px;
+    color: var(--ui-soft);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  .node {
+    position: relative;
+    z-index: 1;
+    width: 16px;
+    height: 16px;
+    margin-top: 4px;
+    border-radius: 50%;
+    background: var(--ui-green);
+    box-shadow: 0 0 0 4px #fff;
+  }
+
+  .bad .node {
+    background: var(--ui-red);
+  }
+
+  .you .node {
+    background: #fff;
+    box-shadow: 0 0 0 4px #fff, inset 0 0 0 2px var(--ui-ink);
+  }
+
+  .ev {
+    display: grid;
+    gap: 4px;
+  }
+
+  .ev p + p {
+    margin-top: 0;
+  }
+
+  .ev-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+  }
+
+  .bad .ev-top strong {
+    color: var(--ui-red);
+  }
+
+  .ev-body {
+    color: var(--ui-soft);
+  }
+
+  .ev-src {
+    font-size: 0.75rem;
+    color: var(--ui-soft);
+  }
+
+  @media (max-width: 480px) {
+    .trail li {
+      grid-template-columns: 16px 1fr;
+      gap: 4px 14px;
+    }
+    .trail time {
+      grid-column: 2;
+      padding: 0;
+    }
+    .node {
+      grid-row: 1 / span 2;
+      grid-column: 1;
+    }
+    .ev {
+      grid-column: 2;
+    }
+    .trail ol::before,
+    .trail ol::after {
+      left: 7px;
+    }
+  }
+
+  /* The moment: the line draws down, each node lights as it arrives */
+  :global(.js) .trail ol::after {
+    transform: scaleY(0);
+    transition: transform calc(var(--step) * 4) linear 0.3s;
+  }
+
+  :global(.js) .trail.in ol::after {
+    transform: none;
+  }
+
+  :global(.js) .trail li:not(.you) .node {
+    background: #fff;
+    box-shadow: 0 0 0 4px #fff, inset 0 0 0 2px var(--ui-line);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition-delay: calc(var(--n) * var(--step) + 0.3s);
+  }
+
+  :global(.js) .trail.in li:not(.you) .node {
+    background: var(--ui-green);
+    box-shadow: 0 0 0 4px #fff;
+  }
+
+  :global(.js) .trail.in li.bad .node {
+    background: var(--ui-red);
+    box-shadow: 0 0 0 4px #fff, 0 0 0 9px var(--ui-red-bg);
   }
 </style>

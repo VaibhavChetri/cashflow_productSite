@@ -1,10 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import CtaBand from '../components/CtaBand.astro';
-import LogoGrid from '../components/LogoGrid.astro';
-import { site, integrations, statusLabel } from '../data/site';
+import IntegrationHub from '../components/IntegrationHub.astro';
+import Icon from '../components/Icon.astro';
+import { site, integrations, statusLabel, type Status } from '../data/site';
 
 const groups = [...new Set(integrations.map((i) => i.group))];
+const files = import.meta.glob<string>('../assets/logos/*.svg', { query: '?raw', import: 'default', eager: true });
+const svgFor = (slug?: string) => slug && files[`../assets/logos/${slug}.svg`];
+
+// Filter chips: radio inputs + CSS :has(). "All" is checked by default, so without :has() support everything stays visible.
+const filters: { v: 'all' | Status; label: string }[] = [
+  { v: 'all', label: 'All' },
+  { v: 'available', label: statusLabel.available },
+  { v: 'rolling-out', label: statusLabel['rolling-out'] },
+  { v: 'next', label: statusLabel.next },
+];
+const count = (v: string) => (v === 'all' ? integrations.length : integrations.filter((i) => i.status === v).length);
 ---
 
 <Layout title="Integrations" description={`${site.name} works on top of Xero, Zoho Books, ApprovalMax and your finance inbox. See every connector and its status.`}>
@@ -16,13 +28,46 @@ const groups = [...new Set(integrations.map((i) => i.group))];
     </p>
   </section>
 
-  <section class="section logos-band" aria-label="Featured integrations">
-    <div class="wrap"><LogoGrid /></div>
+  <!-- Xelix/Cashflo-style hub: only live connectors carry data -->
+  <section class="section hub-band" aria-labelledby="hub-title">
+    <div class="wrap">
+      <div class="section-head center">
+        <h2 id="hub-title">One engine in the middle, your systems around it</h2>
+        <p class="lede">Every featured connector, with its honest status. Data only flows along the lines that are live today.</p>
+      </div>
+      <IntegrationHub />
+      <ul class="line-key" aria-hidden="true">
+        <li><i class="k-live"></i>{statusLabel.available}: data flowing</li>
+        <li><i class="k-roll"></i>{statusLabel['rolling-out']}: early-access customers</li>
+        <li><i class="k-next"></i>{statusLabel.next}: nothing flows yet</li>
+      </ul>
+    </div>
   </section>
 
+  <!-- Full directory, filterable by status -->
   <section class="section band" aria-labelledby="list-title">
-    <div class="wrap">
-      <h2 id="list-title" class="sr-only">Connectors and their status</h2>
+    <div class="wrap dir">
+      <div class="dir-head">
+        <div class="section-head flush">
+          <h2 id="list-title">Every connector and its status</h2>
+          <p class="lede">Filter by what you can use today and what's on the way.</p>
+        </div>
+        <fieldset class="filter">
+          <legend class="sr-only">Show connectors by status</legend>
+          {
+            filters.map((f) => (
+              <>
+                <input class="sr-only" type="radio" name="status" id={`f-${f.v}`} value={f.v} checked={f.v === 'all'} />
+                <label class={`chip chip--${f.v}`} for={`f-${f.v}`}>
+                  {f.label}
+                  <span class="n">{count(f.v)}</span>
+                </label>
+              </>
+            ))
+          }
+        </fieldset>
+      </div>
+
       <dl class="legend">
         <div><dt><span class="status status--available">{statusLabel.available}</span></dt><dd>In use with customers today.</dd></div>
         <div><dt><span class="status status--rolling-out">{statusLabel['rolling-out']}</span></dt><dd>Working with early-access customers.</dd></div>
@@ -34,11 +79,14 @@ const groups = [...new Set(integrations.map((i) => i.group))];
           groups.map((g) => (
             <section class="group" aria-label={g}>
               <h3>{g}</h3>
-              <ul>
+              <ul class="cards">
                 {integrations
                   .filter((i) => i.group === g)
                   .map((i) => (
-                    <li>
+                    <li class={`conn s-${i.status}`}>
+                      <span class="mark" style={`--c:${i.color ?? '#0f3326'}`} aria-hidden="true">
+                        {svgFor(i.logo) ? <span class="svg" set:html={svgFor(i.logo)} /> : <span class="mono">{i.mono ?? i.name.slice(0, 3)}</span>}
+                      </span>
                       <span class="name">
                         {i.name}
                         {i.note && <small>{i.note}</small>}
@@ -54,30 +102,40 @@ const groups = [...new Set(integrations.map((i) => i.group))];
     </div>
   </section>
 
+  <!-- Razorpay-style connected flow: one invoice, traced through the four connections -->
   <section class="section" aria-labelledby="how-title">
-    <div class="wrap split split--text-wide">
+    <div class="wrap">
       <div class="section-head">
         <h2 id="how-title">How connections work</h2>
         <p class="lede">We start with read access. Whether {site.name} ever writes back to your ledger is agreed with you, account by account.</p>
       </div>
-      <ul class="ledger-list">
-        {/* CONFIRM: access model and write-back policy with Shreyas & Varun before launch */}
-        <li><strong>Inbox</strong><p>A connection to your finance mailbox in Microsoft 365 or Gmail. Your team keeps using it as normal.</p></li>
-        <li><strong>Ledger</strong><p>Read access to invoices, bills, payments and contacts, using the accounting system's official connection.</p></li>
-        <li><strong>Approvals and jobs</strong><p>Read access to approval status and job references, so every invoice can be traced to the work behind it.</p></li>
-        <li><strong>Bank and payments</strong><p>Statement and settlement data, so a payment only counts as made when the money has actually moved.</p></li>
-      </ul>
+      <div class="flow" data-anim>
+        <span class="rail" aria-hidden="true"><span class="fill"></span></span>
+        <ul class="flow-steps">
+          {/* CONFIRM: access model and write-back policy with Shreyas & Varun before launch */}
+          <li style="--n:0"><span class="node" aria-hidden="true"><Icon name="mail" size={20} /></span><div class="step"><span class="tag">Where the invoice arrives</span><strong>Inbox</strong><p>A connection to your finance mailbox in Microsoft 365 or Gmail. Your team keeps using it as normal.</p></div></li>
+          <li style="--n:1"><span class="node" aria-hidden="true"><Icon name="file" size={20} /></span><div class="step"><span class="tag">Where it's booked</span><strong>Ledger</strong><p>Read access to invoices, bills, payments and contacts, using the accounting system's official connection.</p></div></li>
+          <li style="--n:2"><span class="node" aria-hidden="true"><Icon name="users" size={20} /></span><div class="step"><span class="tag">Who signed it off</span><strong>Approvals and jobs</strong><p>Read access to approval status and job references, so every invoice can be traced to the work behind it.</p></div></li>
+          <li style="--n:3"><span class="node" aria-hidden="true"><Icon name="bank" size={20} /></span><div class="step"><span class="tag">Whether money moved</span><strong>Bank and payments</strong><p>Statement and settlement data, so a payment only counts as made when the money has actually moved.</p></div></li>
+        </ul>
+        <p class="flow-end"><span class="end-mark" aria-hidden="true"><img src="/logo-green.png" alt="" width="17" height="21" /></span>{site.name} reads all four side by side and checks the gaps between them.</p>
+      </div>
     </div>
   </section>
 
   <section class="section band" aria-labelledby="missing-title">
-    <div class="wrap">
+    <div class="wrap missing">
       <div class="section-head flush">
         <h2 id="missing-title">Don't see your system?</h2>
         <p class="lede">
           Tell us what you run. New connectors plug into the same core, so adding one doesn't change how the product works for you.
         </p>
         <p><a class="btn btn-quiet" href={`mailto:${site.email}?subject=Connector%20request`}>Email us your stack</a></p>
+      </div>
+      <div class="slot" aria-hidden="true">
+        <span class="slot-core"><img src="/logo-green.png" alt="" width="26" height="32" /></span>
+        <span class="slot-line"></span>
+        <span class="slot-card"><span class="plus">+</span>Your system</span>
       </div>
     </div>
   </section>
@@ -86,15 +144,131 @@ const groups = [...new Set(integrations.map((i) => i.group))];
 </Layout>
 
 <style>
-  .logos-band {
-    padding-top: 8px;
+  /* Hub */
+  .hub-band {
+    padding-bottom: clamp(56px, 7vw, 96px);
+  }
+
+  .line-key {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .line-key {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px 32px;
+      margin-top: 28px;
+      font-size: 0.9375rem;
+      color: var(--ink-soft);
+    }
+    .line-key li {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .line-key i {
+      width: 28px;
+      height: 0;
+      border-top: 2px dashed;
+    }
+    .k-live {
+      color: var(--brand-bright);
+    }
+    .k-roll {
+      color: #e0a63a;
+    }
+    .k-next {
+      color: var(--line-strong);
+    }
+  }
+
+  /* Directory */
+  .dir-head {
+    display: grid;
+    gap: 28px;
+    align-items: end;
+  }
+
+  @media (min-width: 980px) {
+    .dir-head {
+      grid-template-columns: 1fr auto;
+    }
+  }
+
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    position: relative;
+  }
+
+  /* No :has() support means the filter can't work, so hide the chips and show everything. */
+  @supports not selector(:has(*)) {
+    .filter {
+      display: none;
+    }
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 8px 8px 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .chip:hover {
+    border-color: var(--ink);
+  }
+
+  .n {
+    display: grid;
+    place-items: center;
+    min-width: 28px;
+    height: 28px;
+    padding-inline: 6px;
+    border-radius: 999px;
+    background: var(--bg-soft);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem;
+  }
+
+  input:checked + .chip {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+
+  input:checked + .chip .n {
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  input:focus-visible + .chip {
+    outline: 3px solid var(--brand-bright);
+    outline-offset: 3px;
   }
 
   .legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px 32px;
-    margin: 0 0 40px;
+    gap: 10px 28px;
+    margin: 36px 0 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line-strong);
   }
 
   .legend div {
@@ -111,42 +285,366 @@ const groups = [...new Set(integrations.map((i) => i.group))];
 
   .groups {
     display: grid;
-    gap: 40px 48px;
   }
 
-  @media (min-width: 860px) {
-    .groups {
-      grid-template-columns: 1fr 1fr;
+  .group {
+    display: grid;
+    gap: 16px;
+    padding-block: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  @media (min-width: 900px) {
+    .group {
+      grid-template-columns: 240px 1fr;
+      gap: 32px;
     }
   }
 
   .group h3 {
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--ink);
+    padding-top: 14px;
   }
 
-  .group ul {
+  .cards {
     list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: 14px;
   }
 
-  .group li {
-    display: flex;
-    justify-content: space-between;
+  .conn {
+    display: grid;
+    grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--rule);
+    gap: 6px 14px;
+    padding: 16px;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: 0 1px 2px rgba(15, 51, 38, 0.04);
+  }
+
+  .conn .status {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  /* Honest status in the card itself: live cards lift, scheduled ones are dashed placeholders. */
+  .s-available {
+    box-shadow: 0 1px 2px rgba(15, 51, 38, 0.04), 0 18px 32px -26px rgba(15, 51, 38, 0.45);
+  }
+
+  .s-next {
+    background: transparent;
+    border: 1.5px dashed var(--line-strong);
+    box-shadow: none;
+  }
+
+  .mark {
+    grid-row: span 2;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid var(--line);
+  }
+
+  .svg {
+    display: block;
+    width: 28px;
+    height: 28px;
+    color: var(--c);
+  }
+
+  .svg :global(svg) {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+
+  .svg :global(title) {
+    display: none;
+  }
+
+  .mono {
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: -0.02em;
+    color: var(--c);
   }
 
   .name {
     display: grid;
-    font-weight: 650;
+    font-weight: 500;
     font-size: var(--step-1);
+    line-height: 1.25;
+    color: var(--ink);
   }
 
   .name small {
     font-weight: 400;
     font-size: 0.875rem;
     color: var(--ink-soft);
+  }
+
+  /* Phones: two compact cards per row, so the directory doesn't become a long scroll */
+  @media (max-width: 599px) {
+    .cards {
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .conn {
+      grid-template-columns: 1fr;
+      align-content: start;
+      gap: 8px;
+      padding: 14px;
+    }
+    .mark {
+      grid-row: auto;
+      width: 44px;
+      height: 44px;
+    }
+    .conn .status {
+      grid-column: 1;
+    }
+    .name {
+      font-size: 1.0625rem;
+    }
+  }
+
+  /* The filter itself */
+  .dir:has(#f-available:checked) .conn:not(.s-available),
+  .dir:has(#f-rolling-out:checked) .conn:not(.s-rolling-out),
+  .dir:has(#f-next:checked) .conn:not(.s-next),
+  .dir:has(#f-available:checked) .group:not(:has(.s-available)),
+  .dir:has(#f-rolling-out:checked) .group:not(:has(.s-rolling-out)),
+  .dir:has(#f-next:checked) .group:not(:has(.s-next)) {
+    display: none;
+  }
+
+  /* Flow */
+  .flow {
+    --step: 0.7s;
+    position: relative;
+  }
+
+  .flow-steps {
+    list-style: none;
+    display: grid;
+    gap: 20px;
+  }
+
+  @media (min-width: 960px) {
+    .flow-steps {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .flow-steps li {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  @media (min-width: 960px) {
+    .flow-steps li {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 20px;
+    }
+  }
+
+  .rail {
+    position: absolute;
+    left: 21px;
+    top: 22px;
+    bottom: 88px;
+    width: 2px;
+    background: var(--line-strong);
+    overflow: hidden;
+  }
+
+  .fill {
+    position: absolute;
+    inset: 0;
+    background: var(--brand-bright);
+    transform-origin: top;
+  }
+
+  @media (min-width: 960px) {
+    .rail {
+      left: 22px;
+      right: calc((100% - 60px) / 4 - 22px); /* stops at the last node */
+      top: 21px;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+    }
+    .fill {
+      transform-origin: left;
+    }
+  }
+
+  .node {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--ink);
+    color: #fff;
+    box-shadow: 0 0 0 6px var(--bg);
+  }
+
+  .step {
+    align-self: stretch;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    padding: 22px;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+  }
+
+  .tag {
+    justify-self: start;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: var(--tint);
+    color: var(--brand-deep);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .step strong {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .step p {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+
+  .flow-end {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: none;
+    margin-top: 24px;
+    padding: 16px 22px;
+    border-radius: 18px;
+    background: var(--dark);
+    color: #e8f0eb;
+    font-weight: 500;
+  }
+
+  .end-mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(95, 211, 154, 0.14);
+  }
+
+  /* One moment: the rail fills from the inbox to the bank; each connection lights as the line reaches it. */
+  :global(.js) .flow .fill {
+    transform: scale(0);
+    transition: transform calc(var(--step) * 4) linear 0.2s;
+  }
+
+  :global(.js) .flow .node {
+    background: #fff;
+    color: var(--ink-soft);
+    box-shadow: 0 0 0 6px var(--bg), inset 0 0 0 1.5px var(--line-strong);
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    transition-delay: calc(var(--n) * var(--step) + 0.2s);
+  }
+
+  :global(.js) .flow .end-mark {
+    transition: box-shadow 0.4s ease calc(var(--step) * 4 + 0.2s);
+  }
+
+  :global(.js) .flow.in .fill {
+    transform: none;
+  }
+
+  :global(.js) .flow.in .node {
+    background: var(--ink);
+    color: #fff;
+    box-shadow: 0 0 0 6px var(--bg);
+  }
+
+  :global(.js) .flow.in .end-mark {
+    box-shadow: 0 0 0 6px rgba(95, 211, 154, 0.18);
+  }
+
+  /* Missing system */
+  .missing {
+    display: grid;
+    gap: 48px;
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .missing {
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+  }
+
+  .slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slot-core {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 84px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, #1a4a38, var(--dark));
+  }
+
+  .slot-line {
+    flex: 1;
+    max-width: 120px;
+    border-top: 2px dashed var(--line-strong);
+  }
+
+  .slot-card {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 22px 26px;
+    border-radius: 20px;
+    border: 1.5px dashed var(--ink-soft);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .plus {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--tint);
+    color: var(--brand);
+    font-size: 1.5rem;
+    line-height: 1;
   }
 </style>

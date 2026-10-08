@@ -1,0 +1,233 @@
+---
+// Xelix/Cashflo-style hub: every featured connector sits on a ring around the engine.
+// Live connectors have data flowing in along their line; "rolling out" lines pulse slowly; "next" lines are still, because nothing flows yet.
+// Below 900px the ring doesn't fit, so the plain logo grid shows instead.
+import LogoGrid from './LogoGrid.astro';
+import { integrations, statusLabel, site } from '../data/site';
+
+const files = import.meta.glob<string>('../assets/logos/*.svg', { query: '?raw', import: 'default', eager: true });
+const svgFor = (slug: string) => files[`../assets/logos/${slug}.svg`];
+const shown = integrations.filter((i) => i.featured);
+const nodes = shown.map((i, n) => {
+  const a = (-90 + (n * 360) / shown.length) * (Math.PI / 180);
+  return { ...i, x: 50 + 40 * Math.cos(a), y: 50 + 39 * Math.sin(a) };
+});
+---
+
+<div class="hub-wrap">
+  <div class="hub" aria-label={`${site.name} and the systems it connects to`} role="img">
+    <svg class="lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      {nodes.map((i) => <path class={`line line--${i.status}`} d={`M${i.x.toFixed(2)} ${i.y.toFixed(2)} L50 50`} />)}
+    </svg>
+
+    <div class="core" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring ring-2"></span>
+      <img src="/logo-green.png" alt="" width="34" height="42" />
+      <span class="core-name">{site.name}</span>
+    </div>
+
+    {
+      nodes.map((i) => (
+        <div class="node" style={`left:${i.x.toFixed(2)}%;top:${i.y.toFixed(2)}%;--c:${i.color ?? '#0f3326'}`} aria-hidden="true">
+          <span class="mark">{i.logo && svgFor(i.logo) ? <span class="svg" set:html={svgFor(i.logo)} /> : <span class="mono">{i.mono ?? i.name}</span>}</span>
+          <span class="name">{i.name}</span>
+          <span class={`state state--${i.status}`}>{statusLabel[i.status]}</span>
+        </div>
+      ))
+    }
+  </div>
+
+  <ul class="sr-only">
+    {shown.map((i) => <li>{i.name}: {statusLabel[i.status]}</li>)}
+  </ul>
+
+  <div class="hub-grid">
+    <LogoGrid />
+  </div>
+</div>
+
+<style>
+  .hub {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .hub {
+      position: relative;
+      display: block;
+      aspect-ratio: 1.85;
+      max-width: 1100px;
+      margin-inline: auto;
+    }
+    .hub-grid {
+      display: none;
+    }
+  }
+
+  .lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .line {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+
+  .line--available {
+    stroke: var(--brand-bright);
+    stroke-dasharray: 3 9;
+    animation: flow 1.2s linear infinite;
+  }
+
+  .line--rolling-out {
+    stroke: #e0a63a;
+    stroke-dasharray: 3 9;
+    animation: flow 3.6s linear infinite;
+    opacity: 0.8;
+  }
+
+  .line--next {
+    stroke: var(--line-strong);
+    stroke-dasharray: 2 7;
+  }
+
+  @keyframes flow {
+    from {
+      stroke-dashoffset: 24;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* The engine in the middle */
+  .core {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 6px;
+    width: 148px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, #1a4a38, var(--dark));
+    box-shadow: 0 30px 60px -24px rgba(11, 42, 31, 0.7);
+    color: #fff;
+  }
+
+  .core img {
+    width: 34px;
+    height: auto;
+  }
+
+  .core-name {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(34, 181, 115, 0.5);
+    animation: pulse 3s ease-out infinite;
+  }
+
+  .ring-2 {
+    animation-delay: 1.5s;
+  }
+
+  @keyframes pulse {
+    from {
+      transform: scale(1);
+      opacity: 0.9;
+    }
+    to {
+      transform: scale(1.7);
+      opacity: 0;
+    }
+  }
+
+  /* Connector nodes */
+  .node {
+    position: absolute;
+    translate: -50% -50%;
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    width: 140px;
+    text-align: center;
+  }
+
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: 0 14px 30px -20px rgba(15, 51, 38, 0.5);
+  }
+
+  .svg {
+    display: block;
+    width: 36px;
+    height: 36px;
+    color: var(--c);
+  }
+
+  .svg :global(svg) {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+
+  .svg :global(title) {
+    display: none;
+  }
+
+  .mono {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .name {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .state {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 2px 9px;
+    border-radius: 999px;
+  }
+
+  .state--available {
+    background: #dcf1e4;
+    color: var(--brand-deep);
+  }
+
+  .state--rolling-out {
+    background: #f7ead2;
+    color: var(--amber);
+  }
+
+  .state--next {
+    background: #e8eeeb;
+    color: var(--ink-soft);
+  }
+</style>

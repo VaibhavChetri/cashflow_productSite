@@ -1,0 +1,177 @@
+---
+// Nanonets-style context graph: each clause of the story is linked to the evidence behind it.
+// Hover, tap or tab to a clause and its source card lights up. Pure CSS (:has), so it works without JavaScript.
+// Demo data, the same Pinecrest invoice as the hero.
+const cards = [
+  { k: 1, tone: 'green', source: 'ApprovalMax and Reflex', title: 'Purchase order and job', body: 'PO-44817 and job J-558. Four lines, £6,119.72 before VAT.' },
+  { k: 2, tone: 'purple', source: 'ApprovalMax', title: 'Approval', body: 'Approved by Sarah K., operations manager, at 09:14.' },
+  { k: 3, tone: 'amber', source: 'Finance inbox', title: 'Email thread', body: 'Revised quote sent on 16 Sep for £7,100.00. The invoice is £243.66 higher.' },
+  { k: 4, tone: 'red', source: 'Xero and bank feed', title: 'Ledger and bank', body: '£7,343.66 paid to Pinecrest on 12 Sep and cleared at the bank.' },
+];
+---
+
+<div class="cg">
+  <div class="cg-story">
+    <p class="cg-lead">
+      Pinecrest's invoice PM-1190 asks for £7,343.66.
+      <span class="cl cl-1 green" tabindex="0">It matches its purchase order and job</span>, and
+      <span class="cl cl-2 purple" tabindex="0">Sarah approved it this morning</span>. But
+      <span class="cl cl-3 amber" tabindex="0">the email thread quoted £7,100</span>, and
+      <span class="cl cl-4 red" tabindex="0">Xero shows this invoice already paid on 12 Sep</span>. Should you pay it?
+    </p>
+  </div>
+
+  <ul class="cg-cards" aria-label="The evidence behind the decision">
+    {
+      cards.map((c) => (
+        <li class={`card k-${c.k} ${c.tone}`}>
+          <p class="c-src">{c.source}</p>
+          <p class="c-title">{c.title}</p>
+          <p class="c-body">{c.body}</p>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .cg {
+    --green: #1f7a4a;
+    --purple: #6e3fc4;
+    --amber: #a65d07;
+    --red: #c23b30;
+    display: grid;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: start;
+  }
+
+  @media (min-width: 980px) {
+    .cg {
+      grid-template-columns: 1.15fr 0.85fr;
+    }
+  }
+
+  .green {
+    --c: var(--green);
+  }
+  .purple {
+    --c: var(--purple);
+  }
+  .amber {
+    --c: var(--amber);
+  }
+  .red {
+    --c: var(--red);
+  }
+
+  .cg-story {
+    display: grid;
+    gap: 36px;
+  }
+
+  .cg-lead {
+    max-width: 30ch;
+    font-size: clamp(1.5rem, 2.7vw, 2.15rem);
+    line-height: 1.42;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .cl {
+    text-decoration: underline;
+    text-decoration-color: var(--c);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .cl:hover,
+  .cl:focus {
+    outline: none;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 11%, transparent);
+  }
+
+  /* Focus shows as colour, tint and a thicker underline, which survive line wraps better than an outline box. */
+  .cl:focus-visible {
+    text-decoration-thickness: 3px;
+  }
+
+  .cg p + p {
+    margin-top: 0;
+  }
+
+  /* Evidence cards */
+  .cg-cards {
+    list-style: none;
+    display: grid;
+    gap: 14px;
+  }
+
+  .card {
+    position: relative;
+    display: grid;
+    gap: 4px;
+    padding: 18px 20px 18px 24px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    transition: opacity 0.25s ease, transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    bottom: 16px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--c);
+  }
+
+  .c-src {
+    font-size: 0.8125rem;
+    color: var(--c);
+    font-weight: 500;
+  }
+
+  .c-title {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .c-body {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+
+  /* The link: one clause active, its card lifts and the rest step back. */
+  .cg:has(.cl:hover, .cl:focus) .card {
+    opacity: 0.45;
+  }
+
+  .cg:has(.cl-1:hover, .cl-1:focus) .k-1,
+  .cg:has(.cl-2:hover, .cl-2:focus) .k-2,
+  .cg:has(.cl-3:hover, .cl-3:focus) .k-3,
+  .cg:has(.cl-4:hover, .cl-4:focus) .k-4 {
+    opacity: 1;
+    transform: translateX(-6px);
+    border-color: color-mix(in srgb, var(--c) 45%, transparent);
+    background: color-mix(in srgb, var(--c) 6%, #fff);
+    box-shadow: var(--shadow-card);
+  }
+
+  @media (max-width: 979px) {
+    .cg:has(.cl-1:hover, .cl-1:focus) .k-1,
+    .cg:has(.cl-2:hover, .cl-2:focus) .k-2,
+    .cg:has(.cl-3:hover, .cl-3:focus) .k-3,
+    .cg:has(.cl-4:hover, .cl-4:focus) .k-4 {
+      transform: none;
+    }
+  }
+</style>
