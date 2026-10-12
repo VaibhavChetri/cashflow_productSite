@@ -65,10 +65,6 @@ const rules = [
   <section class="wrap page-head">
     <p class="kicker">The product</p>
     <h1>One engine, from inbox to ledger</h1>
-    <p class="lede">
-      {site.name} has three jobs: read everything that arrives in your finance inbox, check it against every system that holds part of the truth, and
-      hand your team the short list of things that need a decision.
-    </p>
   </section>
 
   <div class="chapters">
@@ -218,7 +214,7 @@ const rules = [
     <section class="section band chapter" id="receivables" aria-labelledby="ar-title">
       <div class="wrap">
         <div class="section-head">
-          <p class="chap"><span>{no('receivables')}</span>Receivables <span class="status status--rolling-out">Early access</span></p>
+          <p class="chap"><span>{no('receivables')}</span>Receivables</p>
           <h2 id="ar-title">The truth about every unpaid invoice</h2>
           <p class="lede">
             Your ledger knows what's unpaid. The email trail knows why. {site.name} reads both, then tells you which invoices are genuinely
@@ -297,7 +293,7 @@ const rules = [
     <section class="section chapter" id="compliance" aria-labelledby="comp-title">
       <div class="wrap">
         <div class="section-head">
-          <p class="chap"><span>{no('compliance')}</span>Compliance <span class="status status--rolling-out">Early access in India</span></p>
+          <p class="chap"><span>{no('compliance')}</span>Compliance</p>
           <h2 id="comp-title">Reconcile tax returns against your books</h2>
           <p class="lede">
             For Indian finance teams, {site.name} matches GSTR-2B and GSTR-1 against your books and explains every mismatch, so input tax credit
@@ -771,6 +767,11 @@ const rules = [
   }
 
   /* Shared bits */
+  /* The product screens are built at real app size; scale them down so they read as a glance, not a full app. */
+  .chapters .shot :global(.ui) {
+    zoom: 0.8;
+  }
+
   .wide-shot + .wide-shot,
   .rules + .wide-shot {
     margin-top: 32px;

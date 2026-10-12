@@ -1,5 +1,5 @@
 ---
-// Ledge-style switcher for firms: pick one of three demo clients and see that client's exception list.
+// Ledge-style switcher for firms: pick one of six demo clients and see that client's exception list.
 // Same accessible tab pattern as RoleTabs (arrow keys, Home/End, roving tabindex). Without JavaScript every client shows, stacked.
 // Demo data only, reusing the names and figures from the rest of the site.
 import ExceptionBanner from './ExceptionBanner.astro';
@@ -49,6 +49,37 @@ const clients: Client[] = [
     items: [
       { who: 'Nilgiri Foods Pvt Ltd, invoice 812', what: 'GSTR-2B says ₹1,19,271, books say ₹1,12,400. The bill in books is missing the freight line.', amount: '₹6,871', tag: 'Explained', tone: 'green', action: 'Fix the bill' },
       { who: 'Vasant Logistics, invoice 903', what: 'In GSTR-2B but not booked. Input credit is at risk until the bill is recorded.', amount: '₹54,000', tag: 'Not booked', tone: 'red', action: 'Book the bill' },
+    ],
+  },
+  // CONFIRM with Shreyas & Varun that CIS, retentions, gateway payouts and timesheet checks are in scope before launch.
+  {
+    id: 'construction',
+    name: 'Construction firm',
+    meta: 'Xero · UK',
+    items: [
+      { who: 'Brackley Groundworks, INV-2026-0217', what: 'Invoiced £10,000 and £8,000 arrived. Not a short payment: 20% CIS was deducted.', amount: '£2,000', tag: 'Explained', tone: 'green', action: 'Record CIS' },
+      { who: 'Harlow Build Ltd, retention', what: '5% retention due for release since practical completion. Not yet requested.', amount: '£3,250', tag: 'Chase', tone: 'amber', action: 'Request release' },
+      { who: 'Fenwick Plant Hire, HIRE-3381', what: 'The same invoice arrived by email and by post. The second copy is held.', amount: '£1,840', tag: 'Held', tone: 'red', action: 'Keep on hold' },
+    ],
+  },
+  {
+    id: 'shop',
+    name: 'Online shop',
+    meta: 'Zoho Books · India',
+    items: [
+      { who: 'Razorpay settlement, 14 Sep', what: 'Payout of ₹1,18,420 against ₹1,24,900 in orders. The gap is gateway fees, GST on fees and two refunds.', amount: '₹6,480', tag: 'Explained', tone: 'green', action: 'Post the fees' },
+      { who: 'Customer refund, order 50317', what: 'Refunded twice: once through Razorpay and again by bank transfer.', amount: '₹3,299', tag: 'Paid twice', tone: 'red', action: 'Recover' },
+      { who: 'Shree Packaging, invoice 2241', what: "₹18,000 invoice missing from GSTR-2B: the supplier hasn't filed it. The input credit waits until they do.", amount: '₹2,746', tag: 'Credit blocked', tone: 'amber', action: 'Chase supplier' },
+    ],
+  },
+  {
+    id: 'recruitment',
+    name: 'Recruitment agency',
+    meta: 'Xero · UK',
+    items: [
+      { who: 'Northgate Logistics, INV-2026-0533', what: 'Client paid for 37.5 hours at £27.50. The approved timesheet says 40.', amount: '£68.75', tag: 'Short paid', tone: 'amber', action: 'Send timesheet' },
+      { who: 'Calder Health, INV-2026-0541', what: "180 hours billed at last year's £24.00 rate. The agreed rate is now £26.50.", amount: '£450', tag: 'Wrong rate', tone: 'red', action: 'Reissue invoice' },
+      { who: 'Ashby Foods, INV-2026-0498', what: 'Says remittance was sent on 3 Oct. Nothing in the bank.', amount: '£12,600', tag: 'Needs proof', tone: 'purple', action: 'Ask for remittance' },
     ],
   },
 ];
@@ -121,6 +152,9 @@ const count = (c: Client) => c.items.length + (c.banner ? 1 : 0);
         root.querySelector<HTMLElement>(`#${t.getAttribute('aria-controls')}`)!.toggleAttribute('data-on', on);
       });
       if (focus) tab.focus();
+      // Narrow screens: the list is a sideways row, so slide the chosen client into view.
+      const bar = tab.parentElement!;
+      if (bar.scrollWidth > bar.clientWidth) bar.scrollTo({ left: tab.offsetLeft - bar.offsetLeft - 2, behavior: 'smooth' });
     };
     tabs.forEach((tab, i) => {
       tab.addEventListener('click', () => select(tab));
@@ -270,17 +304,21 @@ const count = (c: Client) => c.items.length + (c.banner ? 1 : 0);
     color: var(--ui-ink);
   }
 
+  /* Rows share the list's columns (subgrid), so amounts and buttons line up from row to row. */
   .pf-list {
     list-style: none;
     display: grid;
+    grid-template-columns: 104px minmax(0, 1fr) auto auto;
+    column-gap: 16px;
     border: 1px solid var(--ui-line);
     border-radius: 14px;
   }
 
   .pf-list li {
+    grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: 104px 1fr auto auto;
-    gap: 6px 16px;
+    grid-template-columns: subgrid;
+    row-gap: 6px;
     align-items: center;
     padding: 14px 16px;
     border-bottom: 1px solid var(--ui-line);
@@ -308,14 +346,20 @@ const count = (c: Client) => c.items.length + (c.banner ? 1 : 0);
   }
 
   .pf-amt {
+    justify-self: end;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
+  .pf-list .ui-btn {
+    justify-self: stretch;
+    text-align: center;
+  }
+
   @media (max-width: 720px) {
-    .pf-list li {
-      grid-template-columns: 1fr auto;
+    .pf-list {
+      grid-template-columns: minmax(0, 1fr) auto;
     }
     .pf-what {
       grid-column: 1 / -1;

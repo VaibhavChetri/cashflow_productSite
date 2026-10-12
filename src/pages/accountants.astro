@@ -30,12 +30,6 @@ const partnerSteps = [
     </div>
     <div class="head-visual">
       <Image src={practice} alt="Two accountants at a shared desk reviewing a spreadsheet on two monitors, with box files on the shelves behind them" widths={[480, 800, 1200]} sizes="(min-width: 920px) 45vw, 100vw" class="photo" loading="eager" />
-      <div class="brief">
-        <p class="brief-top"><span>Morning brief</span><span class="brief-demo">Demo data</span></p>
-        <p class="brief-big">8 exceptions across 3 clients</p>
-        <p class="brief-row"><span class="dot dot--red"></span>Pinecrest PM-1190 held, already paid</p>
-        <p class="brief-row"><span class="dot dot--amber"></span>Kestrel says paid, nothing in the bank</p>
-      </div>
     </div>
   </section>
 
@@ -160,101 +154,10 @@ const partnerSteps = [
     gap: 20px;
   }
 
-  /* The photo sits on the dark band in a light hairline frame, with a Mysa-style floating product card over its corner. */
-  .head-visual {
-    position: relative;
-    padding-bottom: 28px;
-  }
-
   .head-visual .photo {
     border: 1px solid rgba(195, 214, 204, 0.22);
     box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
     aspect-ratio: 3 / 2;
-  }
-
-  .brief {
-    position: absolute;
-    left: clamp(-36px, -3vw, -12px);
-    bottom: 0;
-    width: min(320px, 82%);
-    display: grid;
-    gap: 8px;
-    padding: 16px 18px;
-    border-radius: 18px;
-    background: var(--surface);
-    box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.55);
-    animation: brief-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.4s backwards;
-  }
-
-  .page-head .brief p {
-    color: var(--ink-soft);
-    font-size: 0.875rem;
-    max-width: none;
-  }
-
-  .page-head .brief p + p {
-    margin-top: 0;
-  }
-
-  .brief-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .page-head .brief .brief-demo {
-    padding: 0 8px;
-    border-radius: 999px;
-    background: var(--bg-soft);
-    font-size: 0.75rem;
-  }
-
-  .page-head .brief .brief-big {
-    color: var(--ink);
-    font-weight: 600;
-    font-size: 1.125rem;
-    line-height: 1.25;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .brief-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .dot {
-    flex: none;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
-
-  .dot--red {
-    background: #c23b30;
-  }
-
-  .dot--amber {
-    background: #e0a03a;
-  }
-
-  @keyframes brief-in {
-    from {
-      transform: translateY(14px);
-    }
-  }
-
-  /* Narrow screens: the card tucks under the photo instead of covering it */
-  @media (max-width: 919px) {
-    .head-visual {
-      padding-bottom: 0;
-    }
-    .brief {
-      position: relative;
-      left: auto;
-      width: auto;
-      margin: -36px 16px 0;
-    }
   }
 
   .demo-note {

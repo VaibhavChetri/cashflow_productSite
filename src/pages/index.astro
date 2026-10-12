@@ -1,15 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import HeroVideo from '../components/HeroVideo.astro';
-import Cockpit from '../components/Cockpit.astro';
+import HeroDemo from '../components/HeroDemo.astro';
 import IntegrationHub from '../components/IntegrationHub.astro';
 import ModuleCards from '../components/ModuleCards.astro';
 import AgentLog from '../components/AgentLog.astro';
 import ContextGraph from '../components/ContextGraph.astro';
 import RoleTabs from '../components/RoleTabs.astro';
-import AuditSteps from '../components/AuditSteps.astro';
-import CompareToggle from '../components/CompareToggle.astro';
+import CompareTable from '../components/CompareTable.astro';
 import LeadersSection from '../components/LeadersSection.astro';
+import PaceTimeline from '../components/PaceTimeline.astro';
 import CtaBand from '../components/CtaBand.astro';
 import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
@@ -54,7 +54,7 @@ import { site } from '../data/site';
     </div>
   </section>
 
-  <!-- Leaders: the cockpit, in Stampli-style bento panels -->
+  <!-- Leaders: a clickable product demo (Glean-style) that walks the cockpit, cash flow, payments, vendors and approvals -->
   <section class="section" aria-labelledby="cockpit-title">
     <div class="wrap">
       <div class="section-head">
@@ -63,20 +63,10 @@ import { site } from '../data/site';
           With the CFO cockpit, finance leaders see the whole picture at a glance: cash to collect, bills due, payments held, approvals stuck and
           books that don't match the bank. Then drill into any number.
         </p>
+        <a class="panel-link" href="/product">Explore the product <Icon name="arrow" size={16} /></a>
       </div>
 
-      <div class="bento">
-        <div class="panel panel--wide panel--lead">
-          <div class="panel-text">
-            <h3>The CFO cockpit</h3>
-            <p>One screen for payables, receivables, reconciliation and compliance, refreshed before your first meeting.</p>
-            <a class="panel-link" href="/product#receivables">See the cockpit <Icon name="arrow" size={16} /></a>
-          </div>
-          <div class="panel-ui panel-ui--cockpit">
-            <div class="shot-frame"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div><Cockpit /></div>
-          </div>
-        </div>
-      </div>
+      <HeroDemo />
     </div>
   </section>
 
@@ -94,11 +84,11 @@ import { site } from '../data/site';
   <!-- Manual vs AI‑powered reconciliation -->
   <section class="section" aria-labelledby="cmp-title">
     <div class="wrap">
-      <div class="section-head center">
+      <div class="section-head">
         <h2 id="cmp-title">The same month-end, two ways</h2>
-        <p class="lede">Flip the switch to see what changes when the checking happens overnight.</p>
+        <p class="lede">See what changes when the checking happens overnight.</p>
       </div>
-      <CompareToggle />
+      <CompareTable />
     </div>
   </section>
 
@@ -147,16 +137,8 @@ import { site } from '../data/site';
     </div>
   </section>
 
-  <!-- Leakage audit, Razorpay-style self-playing steps -->
-  <section class="section" aria-labelledby="journey-title">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 id="journey-title">From first call to findings in two weeks</h2>
-        <p class="lede">The leakage audit runs on your own inbox and books, so the first thing you see is real money.</p>
-      </div>
-      <AuditSteps />
-    </div>
-  </section>
+  <!-- Onboarding timeline (from the upstream repo) -->
+  <PaceTimeline />
 
   <!-- FAQ -->
   <section class="section band" aria-labelledby="faq-title">
@@ -252,6 +234,11 @@ import { site } from '../data/site';
     display: block;
   }
 
+  /* Room for the pill's padding, so it never clips the descenders (g, y) of the line above. */
+  .h-line + .h-line {
+    margin-top: 0.14em;
+  }
+
   /* Wide screens: the pill sits on the second line and the line re-centres as it resizes. Phones: its own line. */
   .pill-wrap {
     display: inline;
@@ -260,6 +247,7 @@ import { site } from '../data/site';
   @media (max-width: 900px) {
     .pill-wrap {
       display: block;
+      margin-top: 0.14em;
     }
   }
 
@@ -316,70 +304,13 @@ import { site } from '../data/site';
     margin-top: clamp(40px, 5vw, 64px);
   }
 
-  /* Bento panels */
-  .bento {
-    display: grid;
-    gap: 24px;
-  }
-
-  @media (min-width: 900px) {
-    .bento {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    .panel--wide {
-      grid-column: 1 / -1;
-    }
-  }
-
-  .bento .panel {
-    display: grid;
-    align-content: space-between;
-    gap: 28px;
-    padding: clamp(24px, 3.4vw, 44px);
-  }
-
-  .panel-text {
-    display: grid;
-    gap: 12px;
-    align-content: start;
-    justify-items: start;
-  }
-
-  .panel-text h3 {
-    font-size: clamp(1.4rem, 2.2vw, 1.75rem);
-    letter-spacing: -0.02em;
-  }
-
-  .panel-text p {
-    color: var(--ink-soft);
-  }
-
+  /* Link under the cockpit intro, through to the product page */
   .panel-link {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     font-weight: 500;
     text-decoration: none;
-  }
-
-  @media (min-width: 900px) {
-    .panel--wide {
-      grid-template-columns: 0.32fr 0.68fr;
-      align-items: start;
-      padding-right: 0;
-      padding-bottom: 0;
-    }
-    .panel--wide .panel-text {
-      padding-top: 8px;
-    }
-    .panel-ui--cockpit {
-      margin-bottom: -2px;
-    }
-    .panel-ui--cockpit .shot-frame {
-      border-radius: 16px 0 0 0;
-      border-right: 0;
-      border-bottom: 0;
-    }
   }
 
   /* Integrations */

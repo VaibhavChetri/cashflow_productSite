@@ -1,21 +1,12 @@
 ---
-// Ledge-style role switcher: one tab per seat in the finance team, each with its outcome and its own product screen.
+// Ledge-style switcher: AP, AR and GST, each with its outcome and its own product screen.
 // Without JavaScript every panel shows, stacked.
 import Icon from './Icon.astro';
-import VendorRecon from './VendorRecon.astro';
+import GstRecon from './GstRecon.astro';
 import ApprovalMatch from './ApprovalMatch.astro';
 import TrailRows from './TrailRows.astro';
 
 const roles = [
-  {
-    id: 'controller',
-    tab: 'Financial controllers',
-    title: 'Books, bank and bills that agree before month-end',
-    points: ['Vendor balances checked against the bank every day', 'Each mismatch explained in plain English', 'Fix it at source and the flag clears on the next refresh'],
-    cta: 'See reconciliation',
-    layout: 'side',
-    href: '/product#compliance',
-  },
   {
     id: 'ap',
     tab: 'AP teams',
@@ -31,8 +22,17 @@ const roles = [
     title: 'Know who will pay, and who only says they have',
     points: ['Every thread with every client read and summarised', 'Each "we\'ve paid you" checked against the bank', 'A next action on every unpaid invoice'],
     cta: 'See receivables',
-    layout: 'wide',
+    layout: 'side',
     href: '/product#receivables',
+  },
+  {
+    id: 'gst',
+    tab: 'GST',
+    title: 'Both GST returns, checked against your books',
+    points: ['GSTR-2B: every supplier bill, so you claim all your credit', 'GSTR-1: every sales invoice, before you file', 'Every gap comes with the reason'],
+    cta: 'See GST reconciliation',
+    layout: 'wide',
+    href: '/india',
   },
 ];
 ---
@@ -64,7 +64,17 @@ const roles = [
           </div>
         </div>
         <div class="role-ui shot-frame">
-          {r.id === 'controller' && <VendorRecon compact />}
+          {r.id === 'gst' && (
+            <div class="gst-views">
+              <fieldset class="gst-switch">
+                <legend class="sr-only">Choose a GST return</legend>
+                <label><input class="sr-only" type="radio" name="gst-view" value="2b" checked /><strong>GSTR-2B</strong> what you bought</label>
+                <label><input class="sr-only" type="radio" name="gst-view" value="1" /><strong>GSTR-1</strong> what you sold</label>
+              </fieldset>
+              <div class="gst-2b"><GstRecon /></div>
+              <div class="gst-1"><GstRecon return="1" /></div>
+            </div>
+          )}
           {r.id === 'ap' && <ApprovalMatch />}
           {r.id === 'ar' && <TrailRows />}
         </div>
@@ -184,6 +194,63 @@ const roles = [
 
   .role-ui {
     min-width: 0;
+  }
+
+  /* The cash flow table is wide; scale it (like the product page screens) so it fits beside the text without scrolling. */
+  #panel-ar .role-ui :global(.ui) {
+    zoom: 0.8;
+  }
+
+  /* GST: one return at a time. A hidden table's demo cursor stops on its own (it's off screen). Without :has both show. */
+  .gst-views {
+    display: grid;
+  }
+
+  .gst-switch {
+    display: inline-flex;
+    justify-self: start;
+    gap: 4px;
+    padding: 4px;
+    /* lines up with the table's own padding (.ui in ui.css) */
+    margin: clamp(16px, 2.4vw, 28px) clamp(16px, 2.4vw, 28px) 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-soft);
+  }
+
+  .gst-switch label {
+    display: flex;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .gst-switch strong {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .gst-switch label:has(input:checked) {
+    background: var(--ink);
+    color: #c3d6cc;
+  }
+
+  .gst-switch label:has(input:checked) strong {
+    color: #fff;
+  }
+
+  .gst-switch label:has(input:focus-visible) {
+    outline: 2px solid var(--brand-bright);
+    outline-offset: 2px;
+  }
+
+  .gst-views:has([value='1']:checked) .gst-2b,
+  .gst-views:has([value='2b']:checked) .gst-1 {
+    display: none;
   }
 
   /* With JavaScript only the chosen panel takes up room, so short panels don't leave a gap. */

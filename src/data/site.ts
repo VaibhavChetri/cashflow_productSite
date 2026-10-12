@@ -64,8 +64,8 @@ export const productMenu = [
     icon: 'percent',
     href: '/india',
     items: [
-      { label: 'GSTR-2B vs books', icon: 'receipt', href: '/india' },
-      { label: 'GSTR-1 vs invoices', icon: 'file', href: '/india' },
+      { label: 'GSTR-2B vs books', icon: 'receipt', href: '/india#gstr2b' },
+      { label: 'GSTR-1 vs invoices', icon: 'file', href: '/india#gstr1' },
     ],
   },
   {
@@ -118,13 +118,12 @@ export const integrations: {
   { name: 'Xero', group: 'Ledgers', status: 'available', logo: 'xero', color: '#13B5EA', featured: true },
   { name: 'Zoho Books', group: 'Ledgers', status: 'available', logo: 'zoho', color: '#E42527', featured: true },
   { name: 'SAP', group: 'Ledgers', status: 'next', logo: 'sap', color: '#0FAAFF', featured: true },
-  { name: 'Tally', group: 'Ledgers', status: 'next', mono: 'Tally', color: '#1d3a8a', featured: true },
-  { name: 'ApprovalMax', group: 'Approvals and operations', status: 'available', note: 'Invoice approvals', mono: 'AM', color: '#2563eb', featured: true },
+  { name: 'Tally', group: 'Ledgers', status: 'next', logo: 'tally', color: '#1d3a8a', featured: true },
+  { name: 'ApprovalMax', group: 'Approvals and operations', status: 'available', note: 'Invoice approvals', logo: 'approvalmax', color: '#36CF8A', featured: true },
   { name: 'Reflex', group: 'Approvals and operations', status: 'available', note: 'Job management', mono: 'R', color: '#0f766e', featured: true },
   { name: 'Microsoft 365', group: 'Email', status: 'available', logo: 'microsoftoutlook', color: '#0078D4', featured: true },
   { name: 'Gmail', group: 'Email', status: 'rolling-out', logo: 'gmail', color: '#EA4335', featured: true },
   { name: 'Razorpay', group: 'Banks and payments', status: 'rolling-out', logo: 'razorpay', color: '#3395FF', featured: true },
   { name: 'ICICI Bank', group: 'Banks and payments', status: 'rolling-out', logo: 'icicibank', color: '#AE282E', featured: true },
   { name: 'RBL Bank', group: 'Banks and payments', status: 'rolling-out', mono: 'RBL', color: '#b91c1c' },
-  { name: 'GSTR-2B and GSTR-1', group: 'Tax', status: 'rolling-out' },
 ];

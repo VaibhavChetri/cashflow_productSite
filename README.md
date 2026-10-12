@@ -23,7 +23,7 @@ If styles look out of date after a lot of edits, stop the dev server, delete `no
 | Pages (one file per URL) | `src/pages/` |
 | Glass navigation, Products mega menu, footer | `src/layouts/Layout.astro` |
 | Hero film and its synced chapter bar (video files in `public/video/`) | `src/components/HeroVideo.astro` |
-| Homepage and shared moments: agent log, context graph, role tabs, audit steps, compare switch, integrations hub, client switcher | `AgentLog`, `ContextGraph`, `RoleTabs`, `AuditSteps`, `CompareToggle`, `IntegrationHub`, `ClientPortfolio` in `src/components/` |
+| Homepage and shared moments: agent log, context graph, role tabs, audit steps, compare table, integrations hub, client switcher | `AgentLog`, `ContextGraph`, `RoleTabs`, `AuditSteps`, `CompareTable`, `IntegrationHub`, `ClientPortfolio` in `src/components/` |
 | Dark page headers | `src/layouts/Layout.astro`, `.page-head` in `src/styles/global.css` |
 | Design rules for the homepage moments | `DESIGN.md` |
 | Integration logo grid | `src/components/LogoGrid.astro` |

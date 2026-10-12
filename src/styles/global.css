@@ -599,11 +599,10 @@ ol {
   padding-block: clamp(64px, 9vw, 120px) clamp(56px, 7vw, 96px);
   display: grid;
   gap: 20px;
-  color: #c3d6cc;
 }
 
-.page-head::before,
-.page-head::after {
+/* Light head: the page background with a faint green wash, running full width behind the floating nav. */
+.page-head::before {
   content: '';
   position: absolute;
   z-index: -1;
@@ -611,42 +610,13 @@ ol {
   bottom: 0;
   left: calc(50% - 50vw);
   right: calc(50% - 50vw);
-}
-
-.page-head::before {
   background:
-    radial-gradient(900px 480px at 85% 10%, rgba(34, 181, 115, 0.24), transparent 65%),
-    linear-gradient(170deg, #0f3326, var(--dark));
-}
-
-.page-head::after {
-  background: var(--dots);
-  -webkit-mask-image: radial-gradient(70% 90% at 100% 100%, #000 10%, transparent 70%);
-  mask-image: radial-gradient(70% 90% at 100% 100%, #000 10%, transparent 70%);
-  opacity: 0.7;
+    radial-gradient(800px 480px at 0% 30%, rgba(34, 181, 115, 0.07), transparent 70%),
+    var(--bg);
 }
 
 .page-head h1 {
   max-width: 18ch;
-  color: #fff;
-}
-
-.page-head .lede,
-.page-head p {
-  color: #c3d6cc;
-}
-
-.page-head a:not(.btn) {
-  color: #8fe0b5;
-}
-
-.kicker {
-  font-weight: 500;
-  color: var(--brand);
-}
-
-.page-head .kicker {
-  color: #5fd39a;
 }
 
 /* Dark band for the agent log (homepage, India page) */
@@ -657,20 +627,17 @@ ol {
 }
 
 /* Buttons on dark surfaces */
-.on-dark .btn-quiet,
-.page-head .btn-quiet {
+.on-dark .btn-quiet {
   border-color: rgba(232, 240, 235, 0.7);
   color: #e8f0eb;
 }
 
-.on-dark .btn-quiet:hover,
-.page-head .btn-quiet:hover {
+.on-dark .btn-quiet:hover {
   background: #e8f0eb;
   color: var(--ink);
 }
 
-.on-dark :focus-visible,
-.page-head :focus-visible {
+.on-dark :focus-visible {
   outline-color: #7fd1a1;
 }
 

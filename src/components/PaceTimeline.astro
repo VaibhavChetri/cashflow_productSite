@@ -1,0 +1,223 @@
+---
+// Mysa-style onboarding timeline: heading and CTA on the left, a halftone glow top right,
+// and four stepped columns rising from left to right.
+// CONFIRM: day ranges and onboarding promises with Shreyas & Varun before launch.
+const steps = [
+  {
+    day: 'Day 0',
+    title: 'Signed',
+    note: 'No implementation partner needed',
+    text: 'A named onboarding lead and the engineers who built it, from day one.',
+  },
+  {
+    day: 'Day 1–7',
+    title: 'Systems connected',
+    note: 'Read-only from the start',
+    text: 'Inbox, ledger and approval tool linked. Nothing in your systems changes.',
+  },
+  {
+    day: 'Day 7–21',
+    title: 'Tuned on your data',
+    note: 'Your vendors. Your exceptions.',
+    text: 'Matching rules checked against your real invoices and bank lines.',
+  },
+  {
+    day: 'Day 21–30',
+    title: 'Live and improving',
+    note: 'No disruption to month-end',
+    text: "The same team keeps tuning rules and reporting what's been caught.",
+  },
+];
+---
+
+<section class="pace-section" aria-labelledby="pace-title">
+  <div class="wrap pace">
+    <span class="halftone" aria-hidden="true"></span>
+
+    <div class="pace-head">
+      <h2 id="pace-title">You keep closing the books. We do the setup.</h2>
+      <a class="pace-cta" href="/founding-programme#apply">Talk to us</a>
+    </div>
+
+    <ol class="steps-rise">
+      {
+        steps.map((s, i) => (
+          <li style={`--step:${i}; --d:${i * 0.12}s`} data-reveal>
+            <span class="day">{s.day}</span>
+            <h3>{s.title}</h3>
+            <p class="note">{s.note}</p>
+            <p class="text">{s.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .pace-section {
+    padding-top: clamp(16px, 3vw, 32px);
+    background: #fff;
+  }
+
+  .pace {
+    position: relative;
+    isolation: isolate;
+    padding: clamp(28px, 3.4vw, 48px) 0 0;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  /* Halftone glow: a teal-to-green gradient seen through a dot screen, faded at the edges */
+  .halftone {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    width: min(60%, 800px);
+    height: clamp(200px, 22vw, 320px);
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(100deg, #7fd9c3 0%, #3fcb98 28%, #2fbf6a 60%, #5fd35a 100%);
+    /* A dot screen, intersected with a soft diagonal band that rises from the left and falls at the right edge */
+    --band:
+      radial-gradient(ellipse 18% 30% at 12% 58%, rgba(0, 0, 0, 0.55) 0%, transparent 72%),
+      radial-gradient(ellipse 22% 34% at 30% 40%, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 75%),
+      radial-gradient(ellipse 24% 32% at 52% 26%, #000 0%, rgba(0, 0, 0, 0.7) 50%, transparent 78%),
+      radial-gradient(ellipse 22% 36% at 74% 24%, #000 0%, rgba(0, 0, 0, 0.75) 50%, transparent 80%),
+      radial-gradient(ellipse 14% 52% at 95% 52%, #000 0%, rgba(0, 0, 0, 0.6) 50%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle, #000 1.5px, transparent 1.9px), var(--band);
+    -webkit-mask-size: 7px 7px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    -webkit-mask-composite: source-in, source-over, source-over, source-over, source-over;
+    mask-image: radial-gradient(circle, #000 1.5px, transparent 1.9px), var(--band);
+    mask-size: 7px 7px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    mask-composite: intersect, add, add, add, add;
+  }
+
+  .pace-head {
+    display: grid;
+    gap: 22px;
+    justify-items: start;
+    padding-inline: clamp(20px, 3vw, 34px);
+    max-width: 760px;
+  }
+
+  .pace-head h2 {
+    font-size: clamp(1.7rem, 2.8vw, 2.4rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: #141a17;
+  }
+
+  .pace-cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 11px 22px;
+    border-radius: 14px;
+    background: #1f5c4b;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+
+  .pace-cta:hover {
+    background: #174a3c;
+    color: #fff;
+  }
+
+  /* Four columns that rise from left to right */
+  .steps-rise {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 8px;
+  }
+
+  .steps-rise li {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 0 clamp(16px, 2vw, 28px) 36px;
+    padding-top: calc((3 - var(--step)) * clamp(26px, 3vw, 40px) + 8px);
+  }
+
+  .steps-rise li + li {
+    border-left: 1px solid var(--line);
+  }
+
+  .day {
+    justify-self: start;
+    padding: 4px 13px;
+    border-radius: 999px;
+    background: #ddf3ec;
+    color: #173d32;
+    font-size: 0.9375rem;
+    margin-bottom: 8px;
+  }
+
+  .steps-rise h3 {
+    font-size: clamp(1.25rem, 1.7vw, 1.6rem);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    color: #141a17;
+  }
+
+  .note {
+    font-style: italic;
+    color: #50605a;
+    font-size: 0.9375rem;
+    margin: 0 0 6px;
+  }
+
+  .text {
+    margin: 0;
+    color: #5a6762;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  /* Tablets: two by two, still stepped within each row */
+  @media (max-width: 1000px) {
+    .steps-rise {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      min-height: 0;
+    }
+    .steps-rise li {
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+    }
+    .steps-rise li:nth-child(3) {
+      border-left: 0;
+    }
+    .halftone {
+      width: 70%;
+      opacity: 0.55;
+    }
+  }
+
+  /* Phones: one column, no stepping */
+  @media (max-width: 620px) {
+    .steps-rise {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .steps-rise li {
+      border-left: 0 !important;
+      padding-top: 24px;
+      padding-bottom: 26px;
+    }
+    .day {
+      margin-bottom: 8px;
+    }
+    .halftone {
+      width: 90%;
+      height: 220px;
+      opacity: 0.7;
+    }
+  }
+</style>

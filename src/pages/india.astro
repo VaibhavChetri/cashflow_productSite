@@ -2,14 +2,14 @@
 import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import GstRecon from '../components/GstRecon.astro';
-import AgentLog from '../components/AgentLog.astro';
 import Icon from '../components/Icon.astro';
+import AgentLog from '../components/AgentLog.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site, integrations, statusLabel, type Status } from '../data/site';
 import indiaFinance from '../assets/img/india-finance.png';
 
 const indiaStack = integrations.filter((i) =>
-  ['Zoho Books', 'Tally', 'SAP', 'ICICI Bank', 'RBL Bank', 'Razorpay', 'GSTR-2B and GSTR-1', 'Gmail', 'Microsoft 365'].includes(i.name),
+  ['Zoho Books', 'Tally', 'SAP', 'ICICI Bank', 'RBL Bank', 'Razorpay', 'Gmail', 'Microsoft 365'].includes(i.name),
 );
 const columns: Status[] = ['available', 'rolling-out', 'next'];
 const files = import.meta.glob<string>('../assets/logos/*.svg', { query: '?raw', import: 'default', eager: true });
@@ -28,19 +28,33 @@ const nightLines = [
   { t: '03:40', text: 'Vasant Logistics invoice 903, ₹54,000, arrived by email but isn’t booked yet', state: 'Book it', tone: 'warn' as const },
 ];
 
+const checks = [
+  { icon: 'receipt', label: 'GSTR-2B', title: 'Claim all the GST you paid', body: 'You can only claim GST on a bill if your supplier reported it too. We check every bill and show the ones that don’t match.' },
+  { icon: 'file', label: 'GSTR-1', title: 'Report your sales correctly', body: 'We check that the sales you report to GST match the invoices you sent, so your customers can claim their GST and pay you on time.' },
+  { icon: 'clock', label: 'Small suppliers', title: 'Pay small suppliers on time', body: 'Pay a registered small business late and you can’t count that bill against your tax. We warn you before the deadline.' },
+  { icon: 'bank', label: 'Customer payments', title: 'Know which invoices are paid', body: 'Customers keep back some tax, and the bank shows many payments as one. We work out which invoices each payment covers.' },
+];
+
+// GSTR-1 flow: one demo sale (₹2,00,000 + 18% GST) missing from the return, caught before filing.
+const gstr1Flow = [
+  { title: 'Your invoices', status: statusOf('Zoho Books'), body: 'Every sales invoice you sent, from Zoho Books.', k: 'Kaveri Retail · 1047', v: '₹2,36,000' },
+  { title: 'Your GSTR-1', body: 'The sales you are about to report to GST.', k: 'Invoice 1047', v: 'Not in GSTR-1' },
+  { title: 'Mismatch, with the reason', body: 'A missing invoice, a wrong amount, or the wrong customer GSTIN.', k: 'Missing from GSTR-1', v: 'Add it before filing', bad: true },
+  { title: 'Your customer gets their credit', body: 'Once filed, the invoice shows up in their GSTR-2B.', k: 'Kaveri Retail', v: 'Can claim ₹36,000 GST' },
+];
+
 // Razorpay-style GST flow, traced with the same demo rows as the GST screen below.
 const gstFlow = [
-  { title: 'GSTR-2B', status: statusOf('GSTR-2B and GSTR-1'), body: 'What your suppliers filed, invoice by invoice.', k: 'Nilgiri Foods · 812', v: '₹1,19,271' },
+  { title: 'GSTR-2B', body: 'What your suppliers filed, invoice by invoice.', k: 'Nilgiri Foods · 812', v: '₹1,19,271' },
   { title: 'Your books', status: statusOf('Zoho Books'), body: 'The same bill as it sits in Zoho Books.', k: 'Bill 812', v: '₹1,12,400' },
   { title: 'Mismatch, with the reason', body: 'Matched, amount mismatch, missing on either side, or a bill without a GSTIN.', k: 'Diff ₹6,871', v: 'Freight line missing', bad: true },
   { title: 'Supplier follow-up', body: 'Filter to the ones that cost you credit and send them to the vendor.', k: 'In books, not in 2B', v: '174 bills · ₹20.9L' },
 ];
 ---
 
-<Layout title="For finance teams in India" description={`${site.name} for Indian finance teams: GSTR-2B reconciliation, MSME payment deadlines, and receipts matched across Zoho Books, banks and Razorpay.`}>
+<Layout title="For finance teams in India" description={`${site.name} for Indian finance teams: GSTR-2B and GSTR-1 reconciliation, MSME payment deadlines, and receipts matched across Zoho Books, banks and Razorpay.`}>
   <section class="wrap page-head head-split">
     <div class="head-text">
-      <p><span class="status status--rolling-out">Early access in India</span></p>
       <h1>From GST to bank, every rupee accounted for</h1>
       <p class="lede">
         Indian finance teams reconcile more sources than most: books, banks, payment gateways and tax returns. {site.name} matches them every day
@@ -56,25 +70,19 @@ const gstFlow = [
   <section class="section" aria-labelledby="pain-title">
     <div class="wrap">
       <div class="section-head">
-        <h2 id="pain-title">Three reconciliations that cost real money</h2>
+        <h2 id="pain-title">Four checks that save you real money</h2>
       </div>
       {/* CONFIRM: MSME prioritisation and TDS-net receipt matching with Shreyas & Varun */}
       <ul class="pains">
-        <li class="panel panel--lead">
-          <span class="pain-top"><span class="pain-icon"><Icon name="receipt" size={22} /></span><span class="pain-chip">GSTR-2B vs books</span></span>
-          <h3>Input tax credit</h3>
-          <p>Bills that appear in GSTR-2B but not in your books, or in your books but not in 2B, put credit at risk every month. Each one is listed with the reason.</p>
-        </li>
-        <li class="panel">
-          <span class="pain-top"><span class="pain-icon"><Icon name="clock" size={22} /></span><span class="pain-chip">Section 43B(h)</span></span>
-          <h3>Payments to micro and small suppliers</h3>
-          <p>Under Section 43B(h) of the Income Tax Act, amounts owed to registered micro and small enterprises are only deductible if paid on time. Every supplier invoice is tracked against its due date, so MSME payments can be prioritised.</p>
-        </li>
-        <li class="panel">
-          <span class="pain-top"><span class="pain-icon"><Icon name="bank" size={22} /></span><span class="pain-chip">Ledger, gateway, bank</span></span>
-          <h3>Receipts that never quite match</h3>
-          <p>Customers pay net of TDS, gateways settle in batches a day or two later, and banks show one credit for many invoices. Receipts are matched across your ledger, gateway settlements and bank.</p>
-        </li>
+        {
+          checks.map((c, n) => (
+            <li class={n === 0 ? 'panel panel--lead' : 'panel'}>
+              <span class="pain-top"><span class="pain-icon"><Icon name={c.icon} size={22} /></span><span class="pain-chip">{c.label}</span></span>
+              <h3>{c.title}</h3>
+              <p>{c.body}</p>
+            </li>
+          ))
+        }
       </ul>
     </div>
   </section>
@@ -93,7 +101,7 @@ const gstFlow = [
     </div>
   </section>
 
-  <section class="section band" aria-labelledby="gst-title">
+  <section class="section band" id="gstr2b" aria-labelledby="gst-title">
     <div class="wrap">
       <div class="section-head">
         <h2 id="gst-title">GSTR-2B against your books, with the reason for every gap</h2>
@@ -124,6 +132,41 @@ const gstFlow = [
       <figure class="shot gst-shot">
         <div class="shot-frame"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div><GstRecon /></div>
         <figcaption>GST reconciliation, shown with demo data.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" id="gstr1" aria-labelledby="gstr1-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="gstr1-title">GSTR-1: make sure every sale you report is right</h2>
+        <p class="lede">GSTR-1 is where you tell GST what you sold. If an invoice is missing or wrong there, your customer can’t claim their GST, and they may hold your payment until it’s fixed. {site.name} checks every invoice before you file.</p>
+      </div>
+      {/* CONFIRM: GSTR-1 connector status and this demo invoice with Shreyas & Varun */}
+      <ol class="gflow" data-anim aria-label="How a missing sale is found before you file GSTR-1">
+        {
+          gstr1Flow.map((s, n) => (
+            <li style={`--n:${n}`}>
+              <div class="g-card">
+                <p class="g-top">
+                  <span class="g-n" aria-hidden="true">{n + 1}</span>
+                  {s.status && <span class={`status status--${s.status}`}>{statusLabel[s.status]}</span>}
+                </p>
+                <h3>{s.title}</h3>
+                <p class="g-body">{s.body}</p>
+                <p class={`g-row ui ${s.bad ? 'g-row--bad' : ''}`}>
+                  <span>{s.k}</span>
+                  <strong>{s.v}</strong>
+                </p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <figure class="shot gst-shot">
+        <div class="shot-frame"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div><GstRecon return="1" /></div>
+        <figcaption>GSTR-1 reconciliation, shown with demo data.</figcaption>
       </figure>
     </div>
   </section>
@@ -176,16 +219,16 @@ const gstFlow = [
     gap: 20px;
   }
 
-  /* Three pains: distinct titled cards, not a sequence */
+  /* Four checks: distinct titled cards, not a sequence */
   .pains {
     list-style: none;
     display: grid;
     gap: 20px;
   }
 
-  @media (min-width: 900px) {
+  @media (min-width: 720px) {
     .pains {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 

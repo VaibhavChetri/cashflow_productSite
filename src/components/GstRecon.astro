@@ -1,41 +1,97 @@
 ---
-// Rebuilt from the GST Reconciliation screen (GSTR-2B vs books). Demo data only.
-const chips = [
-  { t: 'Matched', n: '1,512', c: 'var(--ui-green)', on: true },
-  { t: 'Amount mismatch', n: '71', c: '#e39a2d' },
-  { t: 'In 2B, not in books', n: '382', v: '₹32.2L', c: '#9aa6b2' },
-  { t: 'In books, not in 2B', n: '174', v: '₹20.9L', c: 'var(--ui-red)' },
-  { t: 'Bill without GSTIN', n: '40', v: '₹2.3L', c: '#e39a2d' },
+// Rebuilt from the GST Reconciliation screen. Demo data only. return="2b" (default) is GSTR-2B vs books, return="1" is GSTR-1 vs invoices.
+// Each status chip is a radio; picking one shows that status's rows (pure CSS, via :has).
+// A demo cursor clicks through the chips on its own (like the homepage product demo). A real click holds it for a while;
+// keyboard focus pauses it, and it only runs on screen.
+interface Props {
+  return?: '2b' | '1';
+}
+const { return: ret = '2b' } = Astro.props;
+
+const chips2b = [
+  { k: 'matched', t: 'Matched', n: '1,512', c: 'var(--ui-green)', noun: 'matched invoices' },
+  { k: 'mismatch', t: 'Amount mismatch', n: '71', c: '#e39a2d', noun: 'amount mismatches' },
+  { k: 'in2b', t: 'In 2B, not in books', n: '382', v: '₹32.2L', c: '#9aa6b2', noun: 'invoices missing from books' },
+  { k: 'inbooks', t: 'In books, not in 2B', n: '174', v: '₹20.9L', c: 'var(--ui-red)', noun: 'bills missing from GSTR-2B' },
+  { k: 'nogstin', t: 'Bill without GSTIN', n: '40', v: '₹2.3L', c: '#e39a2d', noun: 'bills without a GSTIN' },
 ];
-const rows = [
-  { inv: '745', party: 'Sahyadri Hospitality', gstin: '27AA•••••1Z4', date: '19 Jan 26', twoB: '₹3,274', books: '₹3,274', diff: '', why: 'Invoice number and amount agree between GSTR-2B and books.' },
-  { inv: '812', party: 'Nilgiri Foods Pvt Ltd', gstin: '33AB•••••1Z9', date: '3 Feb 26', twoB: '₹1,19,271', books: '₹1,12,400', diff: '₹6,871', why: 'Amounts differ. The bill in books is missing the freight line.' },
-  { inv: '903', party: 'Vasant Logistics', gstin: '29AC•••••1Z2', date: '21 Feb 26', twoB: '₹54,000', books: '', diff: '', why: 'In GSTR-2B but not booked. Input credit is at risk until the bill is recorded.' },
+const rows2b = [
+  { k: 'matched', inv: '745', party: 'Sahyadri Hospitality', gstin: '27AA•••••1Z4', date: '19 Jan 26', filed: '₹3,274', books: '₹3,274', why: 'Invoice number and amount agree between GSTR-2B and books.' },
+  { k: 'matched', inv: '1188', party: 'Kaveri Packaging', gstin: '29AD•••••1Z7', date: '6 Feb 26', filed: '₹48,560', books: '₹48,560', why: 'Matched on GSTIN, invoice number and amount.' },
+  { k: 'matched', inv: '2207', party: 'Deccan Office Supplies', gstin: '36AF•••••1Z1', date: '12 Mar 26', filed: '₹9,912', books: '₹9,912', why: 'Matched. Input credit can be claimed in full.' },
+  { k: 'mismatch', inv: '812', party: 'Nilgiri Foods Pvt Ltd', gstin: '33AB•••••1Z9', date: '3 Feb 26', filed: '₹1,19,271', books: '₹1,12,400', diff: '₹6,871', why: 'Amounts differ. The bill in books is missing the freight line.' },
+  { k: 'mismatch', inv: '4410', party: 'Malabar Spices Co', gstin: '32AG•••••1Z5', date: '14 Feb 26', filed: '₹27,140', books: '₹24,140', diff: '₹3,000', why: 'Keying error: ₹27,140 was booked as ₹24,140.' },
+  { k: 'mismatch', inv: '377', party: 'Coastal Freight Lines', gstin: '27AH•••••1Z8', date: '2 Mar 26', filed: '₹81,900', books: '₹86,900', diff: '₹5,000', why: 'Books show more than the supplier filed. Check for a credit note.' },
+  { k: 'in2b', inv: '903', party: 'Vasant Logistics', gstin: '29AC•••••1Z2', date: '21 Feb 26', filed: '₹54,000', why: 'In GSTR-2B but not booked. Input credit is at risk until the bill is recorded.' },
+  { k: 'in2b', inv: '1562', party: 'Aravalli Electricals', gstin: '08AJ•••••1Z3', date: '9 Mar 26', filed: '₹1,36,400', why: 'Filed by the supplier, but no bill in books or in the inbox. Ask the supplier for a copy.' },
+  { k: 'in2b', inv: '88', party: 'Hooghly Prints', gstin: '19AK•••••1Z6', date: '25 Mar 26', filed: '₹12,980', why: 'The bill is sitting in the finance inbox, unbooked. Book it to claim the credit.' },
+  { k: 'inbooks', inv: '6031', party: 'Konkan Traders', gstin: '27AL•••••1Z2', date: '11 Jan 26', books: '₹2,14,600', why: "The supplier hasn't filed this invoice. Credit is blocked until they do." },
+  { k: 'inbooks', inv: '219', party: 'Satpura Engineering', gstin: '23AM•••••1Z9', date: '28 Feb 26', books: '₹64,350', why: 'Filed under a different GSTIN. Ask the supplier to amend their GSTR-1.' },
+  { k: 'inbooks', inv: '7702', party: 'Brahmaputra Tea Estates', gstin: '18AN•••••1Z4', date: '17 Mar 26', books: '₹18,720', why: "Filed late. Expected in next month's GSTR-2B." },
+  { k: 'nogstin', inv: 'BL-114', party: 'Sharma Repairs', date: '4 Feb 26', books: '₹8,850', why: 'No GSTIN on the bill, so no input credit. Request a corrected invoice.' },
+  { k: 'nogstin', inv: 'BL-131', party: 'City Courier Services', date: '19 Feb 26', books: '₹2,360', why: 'The supplier may be unregistered. Confirm before claiming credit.' },
+  { k: 'nogstin', inv: 'BL-140', party: 'Green Leaf Caterers', date: '8 Mar 26', books: '₹15,400', why: "The GSTIN is missing from the bill but appears in the supplier's email signature. Update the bill." },
 ];
+// GSTR-1: your own sales invoices against what you reported. Kaveri Retail 1047 is the same demo sale as the flow on the India page.
+const chips1 = [
+  { k: 'matched', t: 'Matched', n: '2,046', c: 'var(--ui-green)', noun: 'matched invoices' },
+  { k: 'mismatch', t: 'Amount mismatch', n: '38', v: '₹4.1L', c: '#e39a2d', noun: 'amount mismatches' },
+  { k: 'missing', t: 'In books, not in GSTR-1', n: '57', v: '₹18.6L', c: 'var(--ui-red)', noun: 'invoices missing from GSTR-1' },
+  { k: 'extra', t: 'In GSTR-1, not in books', n: '12', v: '₹3.4L', c: '#9aa6b2', noun: 'reported invoices missing from books' },
+  { k: 'gstin', t: 'Wrong customer GSTIN', n: '23', v: '₹6.8L', c: '#e39a2d', noun: 'invoices with the wrong GSTIN' },
+];
+const rows1 = [
+  { k: 'matched', inv: '1012', party: 'Godavari Mart', gstin: '37AB•••••1Z3', date: '8 Jan 26', filed: '₹42,480', books: '₹42,480', why: 'Invoice number, GSTIN and amount agree.' },
+  { k: 'matched', inv: '1031', party: 'Shivalik Hotels', gstin: '05AC•••••1Z8', date: '22 Jan 26', filed: '₹1,18,000', books: '₹1,18,000', why: 'Matched. Your customer can claim this GST in full.' },
+  { k: 'matched', inv: '1066', party: 'Narmada Distributors', gstin: '24AD•••••1Z1', date: '4 Mar 26', filed: '₹7,670', books: '₹7,670', why: 'Matched on GSTIN, invoice number and amount.' },
+  { k: 'mismatch', inv: '1024', party: 'Chambal Agro', gstin: '23AE•••••1Z5', date: '17 Jan 26', filed: '₹59,000', books: '₹65,490', diff: '₹6,490', why: 'Reported less than the invoice. Correct it in your next GSTR-1.' },
+  { k: 'mismatch', inv: '1049', party: 'Thar Textiles', gstin: '08AF•••••1Z2', date: '9 Feb 26', filed: '₹31,860', books: '₹38,160', diff: '₹6,300', why: 'Typing error when filing: ₹38,160 was reported as ₹31,860.' },
+  { k: 'mismatch', inv: '1058', party: 'Sundarban Seafoods', gstin: '19AG•••••1Z7', date: '26 Feb 26', filed: '₹2,12,400', books: '₹2,00,600', diff: '₹11,800', why: "A credit note in books wasn't reported. Add it to GSTR-1." },
+  { k: 'missing', inv: '1047', party: 'Kaveri Retail', gstin: '29AH•••••1Z4', date: '12 Feb 26', books: '₹2,36,000', why: "Not reported. Your customer can't claim ₹36,000 GST until you add it." },
+  { k: 'missing', inv: '1053', party: 'Malwa Pharma', gstin: '23AJ•••••1Z6', date: '20 Feb 26', books: '₹88,500', why: "Raised after the return was filed. Add it to next month's GSTR-1." },
+  { k: 'missing', inv: '1070', party: 'Kosi Builders', gstin: '10AK•••••1Z9', date: '18 Mar 26', books: '₹4,72,000', why: 'Left out of the upload. Report it before the 11th.' },
+  { k: 'extra', inv: '1039', party: 'Vindhya Motors', gstin: '23AL•••••1Z3', date: '3 Feb 26', filed: '₹1,47,500', why: 'Reported, but the invoice was cancelled in books. Issue a credit note.' },
+  { k: 'extra', inv: '1044', party: 'Palar Ceramics', gstin: '33AM•••••1Z1', date: '7 Feb 26', filed: '₹25,960', why: 'Reported twice by mistake. Remove the duplicate.' },
+  { k: 'extra', inv: '1061', party: 'Aravali Stone', gstin: '08AN•••••1Z5', date: '1 Mar 26', filed: '₹1,65,200', why: 'No matching invoice in books. Check if it was booked under another number.' },
+  { k: 'gstin', inv: '1028', party: 'Tapti Foods', gstin: '27AP•••••1Z2', bad: true, date: '19 Jan 26', filed: '₹53,100', books: '₹53,100', why: "Filed under the customer's old GSTIN. They won't see it in their GSTR-2B." },
+  { k: 'gstin', inv: '1050', party: 'Mahanadi Steel', gstin: '21AQ•••••1Z8', bad: true, date: '13 Feb 26', filed: '₹3,06,800', books: '₹3,06,800', why: 'One digit off in the GSTIN. Amend it so the credit reaches your customer.' },
+  { k: 'gstin', inv: '1068', party: 'Periyar Rubber', gstin: '32AR•••••1Z4', bad: true, date: '11 Mar 26', filed: '₹21,240', books: '₹21,240', why: "GSTIN of the customer's other branch. Use the one on their order." },
+];
+
+type Row = { k: string; inv: string; party: string; gstin?: string; bad?: boolean; date: string; filed?: string; books?: string; diff?: string; why: string };
+const { title, col, who, chips, rows } =
+  ret === '1'
+    ? { title: 'GST reconciliation: GSTR-1 vs invoices', col: 'GSTR-1', who: 'Customer', chips: chips1, rows: rows1 as Row[] }
+    : { title: 'GST reconciliation: GSTR-2B vs books', col: 'GSTR-2B', who: 'Party', chips: chips2b, rows: rows2b as Row[] };
+// Status chips map to slots s0–s4, so the CSS filter works for any data set.
+// ponytail: five slots in the CSS below; add a rule there if a screen ever needs a sixth status.
+const slot = (k: string) => `s${chips.findIndex((c) => c.k === k)}`;
 ---
 
-<div class="ui gst">
+<div class="ui gst" data-gst>
   <div class="gst-head">
-    <p class="ui-title">GST reconciliation: GSTR-2B vs books</p>
-    <p class="ui-sub">1 Apr 2025 to 31 Mar 2026</p>
+    <p class="ui-title">{title}</p>
+    <p class="ui-sub">1 Apr 2025 to 31 Mar 2026 · <span class="hint">Click a status to see its invoices</span></p>
   </div>
-  <div class="chips" aria-hidden="true">
+  <fieldset class="chips">
+    <legend class="sr-only">Show invoices by status</legend>
     {
-      chips.map((c) => (
-        <span class={`ui-chip ${c.on ? 'ui-chip--on' : ''}`}>
+      chips.map((c, i) => (
+        <label class="ui-chip">
+          <input class="sr-only" type="radio" name={`gst-status-${ret}`} value={slot(c.k)} checked={i === 0} />
           <i style={`background:${c.c}`} />
           {c.t} ({c.n}){c.v && <span class="v">{c.v}</span>}
-        </span>
+        </label>
       ))
     }
-  </div>
+  </fieldset>
   <table class="ui-table">
     <thead>
       <tr>
         <th scope="col">Invoice</th>
-        <th scope="col">Party</th>
+        <th scope="col">{who}</th>
         <th scope="col">Date</th>
-        <th scope="col" class="r">GSTR-2B</th>
+        <th scope="col" class="r">{col}</th>
         <th scope="col" class="r">Books</th>
         <th scope="col" class="r">Diff</th>
         <th scope="col">Why</th>
@@ -44,14 +100,14 @@ const rows = [
     <tbody>
       {
         rows.map((r) => (
-          <tr>
+          <tr data-k={slot(r.k)}>
             <td>{r.inv}</td>
             <td>
               <span class="party">{r.party}</span>
-              <span class="gstin">{r.gstin}</span>
+              <span class={`gstin ${r.gstin && !r.bad ? '' : 'ui-red'}`}>{r.gstin || 'No GSTIN'}</span>
             </td>
             <td class="nowrap">{r.date}</td>
-            <td class="r nowrap">{r.twoB}</td>
+            <td class="r nowrap">{r.filed || '—'}</td>
             <td class="r nowrap">{r.books || '—'}</td>
             <td class={`r nowrap ${r.diff ? 'ui-red' : ''}`}>{r.diff || '—'}</td>
             <td class="why">{r.why}</td>
@@ -60,13 +116,155 @@ const rows = [
       }
     </tbody>
   </table>
+  {chips.map((c) => <p class="ui-sub" data-k={slot(c.k)}>Showing 3 of {c.n} {c.noun}.</p>)}
+  <span class="cursor" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 2.5l15 9.2-6.6 1.3 3.9 7.2-2.8 1.5-3.9-7.2L4.9 19z" fill="#fff" stroke="#101614" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+  </span>
 </div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-gst]').forEach((root) => {
+    const cursor = root.querySelector<HTMLElement>('.cursor')!;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return cursor.remove();
+    const inputs = [...root.querySelectorAll<HTMLInputElement>('input[type="radio"]')];
+    const HOLD = 1700; // time on each status before the cursor moves on
+    const AFTER_CLICK = 8000; // a visitor's own pick stays put this long
+    let paused = false;
+    let inView = false;
+    let placed = false;
+    let timer = 0;
+
+    // The product page scales its screenshots with CSS zoom; convert screen pixels back to the table's own pixels.
+    const scale = () => root.getBoundingClientRect().width / root.offsetWidth || 1;
+    const pointAt = (el: HTMLElement) => {
+      const a = root.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      const k = scale();
+      cursor.style.transform = `translate(${(r.left - a.left + r.width * 0.5) / k}px, ${(r.top - a.top + r.height * 0.6) / k}px)`;
+    };
+    const chipOf = (i: HTMLInputElement) => i.closest('label')!;
+
+    const step = () => {
+      if (paused || !inView) return;
+      const next = inputs[(inputs.findIndex((i) => i.checked) + 1) % inputs.length];
+      pointAt(chipOf(next));
+      timer = window.setTimeout(() => {
+        cursor.classList.add('click');
+        timer = window.setTimeout(() => {
+          cursor.classList.remove('click');
+          next.checked = true;
+          schedule();
+        }, 180);
+      }, 700);
+    };
+
+    const schedule = (wait = HOLD) => {
+      clearTimeout(timer);
+      if (!placed) {
+        // First time in view: put the cursor on the current chip without animating, then show it.
+        cursor.classList.add('jump');
+        pointAt(chipOf(inputs.find((i) => i.checked) ?? inputs[0]));
+        void cursor.offsetWidth;
+        cursor.classList.remove('jump');
+        root.classList.add('cursor-on');
+        placed = true;
+      }
+      timer = window.setTimeout(step, wait);
+    };
+
+    const pause = () => {
+      paused = true;
+      clearTimeout(timer);
+    };
+    const resume = () => {
+      paused = false;
+      if (inView) schedule();
+    };
+    root.addEventListener('focusin', (e) => (e.target as HTMLElement).matches(':focus-visible') && pause());
+    root.addEventListener('focusout', () => paused && resume());
+    // A real pick (click or tap) moves the cursor there and holds it, so the visitor can read.
+    // (click, not change: picking the chip that's already selected should hold it too)
+    root.addEventListener('click', (e) => {
+      const input = e.target as HTMLElement;
+      if (!(input instanceof HTMLInputElement) || input.type !== 'radio') return;
+      pointAt(chipOf(input));
+      if (!paused) schedule(AFTER_CLICK);
+    });
+
+    new IntersectionObserver(
+      ([e]) => {
+        inView = e.isIntersecting;
+        inView && !paused ? schedule() : clearTimeout(timer);
+      },
+      { threshold: 0.4 },
+    ).observe(root);
+  });
+</script>
 
 <style>
   .gst {
+    position: relative;
     min-width: 820px;
     display: grid;
     gap: 14px;
+  }
+
+  /* Demo cursor, styled like the homepage product demo's */
+  .cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+    opacity: 0;
+    transition: transform 0.7s cubic-bezier(0.45, 0.05, 0.25, 1), opacity 0.3s ease;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+  }
+
+  .gst.cursor-on .cursor {
+    opacity: 1;
+  }
+
+  .cursor.jump {
+    transition: none;
+  }
+
+  .cursor svg {
+    transition: transform 0.15s ease;
+  }
+
+  .cursor.click svg {
+    transform: scale(0.85);
+  }
+
+  .cursor::after {
+    content: '';
+    position: absolute;
+    left: -9px;
+    top: -9px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(34, 181, 115, 0.4);
+    opacity: 0;
+    transform: scale(0.2);
+  }
+
+  .cursor.click::after {
+    animation: ripple 0.45s ease-out;
+  }
+
+  @keyframes ripple {
+    from {
+      opacity: 1;
+      transform: scale(0.2);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.6);
+    }
   }
 
   .gst-head {
@@ -74,10 +272,71 @@ const rows = [
     gap: 2px;
   }
 
+  .hint {
+    color: var(--ui-green);
+    font-weight: 500;
+  }
+
   .chips {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .chips .ui-chip {
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .chips .ui-chip:hover {
+    border-color: var(--ui-soft);
+  }
+
+  .chips .ui-chip:has(input:checked) {
+    border-color: var(--ui-green);
+    color: var(--ui-green);
+    background: var(--ui-green-bg);
+  }
+
+  .chips .ui-chip:has(input:focus-visible) {
+    outline: 2px solid var(--ui-green);
+    outline-offset: 2px;
+  }
+
+  /* The filter: only the rows and count line for the checked status show. Browsers without :has show every row. */
+  .gst:has([value='s0']:checked) [data-k]:not([data-k='s0']),
+  .gst:has([value='s1']:checked) [data-k]:not([data-k='s1']),
+  .gst:has([value='s2']:checked) [data-k]:not([data-k='s2']),
+  .gst:has([value='s3']:checked) [data-k]:not([data-k='s3']),
+  .gst:has([value='s4']:checked) [data-k]:not([data-k='s4']) {
+    display: none;
+  }
+
+  /* Each switch slides the rows in one after another, like the homepage product demo */
+  tbody tr {
+    animation: row-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  tbody tr:nth-child(3n + 2) {
+    animation-delay: 0.07s;
+  }
+
+  tbody tr:nth-child(3n) {
+    animation-delay: 0.14s;
+  }
+
+  [data-k].ui-sub {
+    animation: row-in 0.45s ease 0.18s both;
+  }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
   }
 
   .v {
@@ -96,6 +355,10 @@ const rows = [
     color: var(--ui-soft);
     font-size: 0.75rem;
     letter-spacing: 0.04em;
+  }
+
+  .gstin.ui-red {
+    color: var(--ui-red);
   }
 
   .nowrap {

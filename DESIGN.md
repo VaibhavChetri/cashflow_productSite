@@ -32,7 +32,7 @@ General Sans for everything. Numbers in logs and tables use `font-variant-numeri
 |---|---|---|
 | `AgentLog` | Timestamped lines that type in on scroll. Props: `lines`, `heading`, `headingId`, `lede`, `caption`, `final` | Nanonets reconciliation |
 | `ContextGraph` | Hover/tap a clause, its evidence card lights up (CSS `:has`) | Nanonets AP |
-| `CompareToggle` | Manual vs Radlabs switch, flips once on scroll | Nanonets reconciliation |
+| `CompareTable` | Manual vs Radlabs, side by side | Upstream repo table |
 | `RoleTabs` | Accessible tabs, one per role, own screen per tab | Ledge roles |
 | `AuditSteps` | Self-playing four-step timeline | Razorpay AP workflow, Glean time badges |
 | `IntegrationHub` | Connectors on a ring; only live ones flow | Xelix, Cashflo |

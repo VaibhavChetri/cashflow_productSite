@@ -20,19 +20,11 @@ const count = (v: string) => (v === 'all' ? integrations.length : integrations.f
 ---
 
 <Layout title="Integrations" description={`${site.name} works on top of Xero, Zoho Books, ApprovalMax and your finance inbox. See every connector and its status.`}>
-  <section class="wrap page-head">
-    <h1>Works on top of what you already run</h1>
-    <p class="lede">
-      {site.name} doesn't replace your ledger, approval tool or inbox. It connects to them and checks the gaps between them. The core engine is
-      the same for every customer; connectors handle the systems that differ.
-    </p>
-  </section>
-
   <!-- Xelix/Cashflo-style hub: only live connectors carry data -->
   <section class="section hub-band" aria-labelledby="hub-title">
     <div class="wrap">
       <div class="section-head center">
-        <h2 id="hub-title">One engine in the middle, your systems around it</h2>
+        <h1 id="hub-title">One engine in the middle, your systems around it</h1>
         <p class="lede">Every featured connector, with its honest status. Data only flows along the lines that are live today.</p>
       </div>
       <IntegrationHub />
@@ -107,18 +99,17 @@ const count = (v: string) => (v === 'all' ? integrations.length : integrations.f
     <div class="wrap">
       <div class="section-head">
         <h2 id="how-title">How connections work</h2>
-        <p class="lede">We start with read access. Whether {site.name} ever writes back to your ledger is agreed with you, account by account.</p>
+        <p class="lede">{site.name} starts by only reading your data. It changes nothing unless you say so.</p>
       </div>
       <div class="flow" data-anim>
         <span class="rail" aria-hidden="true"><span class="fill"></span></span>
         <ul class="flow-steps">
           {/* CONFIRM: access model and write-back policy with Shreyas & Varun before launch */}
-          <li style="--n:0"><span class="node" aria-hidden="true"><Icon name="mail" size={20} /></span><div class="step"><span class="tag">Where the invoice arrives</span><strong>Inbox</strong><p>A connection to your finance mailbox in Microsoft 365 or Gmail. Your team keeps using it as normal.</p></div></li>
-          <li style="--n:1"><span class="node" aria-hidden="true"><Icon name="file" size={20} /></span><div class="step"><span class="tag">Where it's booked</span><strong>Ledger</strong><p>Read access to invoices, bills, payments and contacts, using the accounting system's official connection.</p></div></li>
-          <li style="--n:2"><span class="node" aria-hidden="true"><Icon name="users" size={20} /></span><div class="step"><span class="tag">Who signed it off</span><strong>Approvals and jobs</strong><p>Read access to approval status and job references, so every invoice can be traced to the work behind it.</p></div></li>
-          <li style="--n:3"><span class="node" aria-hidden="true"><Icon name="bank" size={20} /></span><div class="step"><span class="tag">Whether money moved</span><strong>Bank and payments</strong><p>Statement and settlement data, so a payment only counts as made when the money has actually moved.</p></div></li>
+          <li style="--n:0"><span class="node" aria-hidden="true"><Icon name="mail" size={20} /></span><div class="step"><strong>Inbox</strong><p>We see invoices as they land in Gmail or Outlook.</p></div></li>
+          <li style="--n:1"><span class="node" aria-hidden="true"><Icon name="file" size={20} /></span><div class="step"><strong>Ledger</strong><p>We read your bills, invoices and payments.</p></div></li>
+          <li style="--n:2"><span class="node" aria-hidden="true"><Icon name="users" size={20} /></span><div class="step"><strong>Approvals</strong><p>We check who approved each invoice.</p></div></li>
+          <li style="--n:3"><span class="node" aria-hidden="true"><Icon name="bank" size={20} /></span><div class="step"><strong>Bank</strong><p>We confirm the money actually left.</p></div></li>
         </ul>
-        <p class="flow-end"><span class="end-mark" aria-hidden="true"><img src="/logo-green.png" alt="" width="17" height="21" /></span>{site.name} reads all four side by side and checks the gaps between them.</p>
       </div>
     </div>
   </section>
@@ -449,6 +440,12 @@ const count = (v: string) => (v === 'all' ? integrations.length : integrations.f
     align-items: start;
   }
 
+  /* The last step sits over the rail, so the line stops at the bank instead of running on below it. */
+  .flow-steps li:last-child {
+    position: relative;
+    background: var(--bg);
+  }
+
   @media (min-width: 960px) {
     .flow-steps li {
       grid-template-columns: 1fr;
@@ -513,16 +510,6 @@ const count = (v: string) => (v === 'all' ? integrations.length : integrations.f
     box-shadow: var(--shadow-card);
   }
 
-  .tag {
-    justify-self: start;
-    padding: 3px 12px;
-    border-radius: 999px;
-    background: var(--tint);
-    color: var(--brand-deep);
-    font-size: 0.8125rem;
-    font-weight: 500;
-  }
-
   .step strong {
     font-size: 1.25rem;
     font-weight: 500;
@@ -532,30 +519,6 @@ const count = (v: string) => (v === 'all' ? integrations.length : integrations.f
   .step p {
     font-size: 0.9375rem;
     color: var(--ink-soft);
-  }
-
-  .flow-end {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    max-width: none;
-    margin-top: 24px;
-    padding: 16px 22px;
-    border-radius: 18px;
-    background: var(--dark);
-    color: #e8f0eb;
-    font-weight: 500;
-  }
-
-  .end-mark {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(95, 211, 154, 0.14);
   }
 
   /* One moment: the rail fills from the inbox to the bank; each connection lights as the line reaches it. */
@@ -572,10 +535,6 @@ const count = (v: string) => (v === 'all' ? integrations.length : integrations.f
     transition-delay: calc(var(--n) * var(--step) + 0.2s);
   }
 
-  :global(.js) .flow .end-mark {
-    transition: box-shadow 0.4s ease calc(var(--step) * 4 + 0.2s);
-  }
-
   :global(.js) .flow.in .fill {
     transform: none;
   }
@@ -584,10 +543,6 @@ const count = (v: string) => (v === 'all' ? integrations.length : integrations.f
     background: var(--ink);
     color: #fff;
     box-shadow: 0 0 0 6px var(--bg);
-  }
-
-  :global(.js) .flow.in .end-mark {
-    box-shadow: 0 0 0 6px rgba(95, 211, 154, 0.18);
   }
 
   /* Missing system */

@@ -1,0 +1,1465 @@
+---
+// Glean-style demo stage (from the upstream hero): a looping background video behind a glass frame holding the product itself.
+// Visitors can click the sidebar or the screen tabs; it auto-advances otherwise and pauses on hover.
+// An app window (rebuilt from the real dashboard, demo data) cycles through its screens while a cursor clicks the sidebar.
+import fs from 'node:fs';
+import { Image, getImage } from 'astro:assets';
+import Icon from './Icon.astro';
+import heroBg from '../assets/img/hero-bg.png';
+
+const poster = await getImage({ src: heroBg, width: 1600, format: 'webp', quality: 78 });
+const hasVideo = fs.existsSync('public/hero/hero-loop.mp4');
+
+const meta = [
+  { tab: 'CFO cockpit', title: 'CFO cockpit', sub: 'Every finance operation in one view. Updated 06:00.' },
+  { tab: 'Cash flow', title: 'Cash flow', sub: '776 invoices, payment status verified from the email trail' },
+  { tab: 'Payments', title: 'Payments received', sub: '412 payments this month' },
+  { tab: 'Bills', title: 'Bills', sub: '64 bills due this week, each checked before payment' },
+  { tab: 'Vendors', title: 'Vendor reconciliation', sub: '579 vendors, books against bank' },
+  { tab: 'GST', title: 'GST reconciliation', sub: 'India entity · GSTR-2B against Zoho Books' },
+  { tab: 'Approvals', title: 'Approval board', sub: 'Payment requests across every site' },
+];
+
+const trail = [
+  { inv: 'INV-2026-0412', next: 'Client must send 3 missing POs before they pay', client: 'Halden Logistics', amt: '£40,100', tag: ['Disputed', 'red'], act: 'no proof, 41d quiet', btn: ['Hold', 'green'] },
+  { inv: 'INV-2026-0388', next: 'Ask for remittance: client says paid on 12 Sep', client: 'Kestrel Hospitality', amt: '£9,400', tag: ['Client says paid', 'purple'], act: '6 emails, not in bank', btn: ['Send', 'amber'] },
+  { inv: 'INV-2026-0451', next: 'Chase second approver, out of office', client: 'Arden Property', amt: '£7,050', tag: ['Chase', 'amber'], act: '11 emails, 19d quiet', btn: ['Send', 'amber'] },
+];
+
+const ready = [
+  { inv: 'INV-2026-0399', next: 'Overdue 12 days, no dispute. Send a reminder', client: 'Meridian Foods', amt: '£14,200', tag: ['Overdue', 'amber'], act: '3 emails, no reply', btn: ['Send', 'amber'] },
+  { inv: 'INV-2026-0371', next: 'Paid in full, matched to bank line on 6 Oct', client: 'Brightwater Catering', amt: '£10,400', tag: ['Reconciled', 'green'], act: 'remittance matched', btn: ['Done', 'green'] },
+];
+
+const payments = [
+  { date: '06 Oct', no: '3840', who: 'Brightwater Catering', amt: '£33,991.92', mode: 'Cash', flag: true },
+  { date: '06 Oct', no: '3839', who: 'Kestrel Hospitality', amt: '£21,151.39', mode: 'Bank transfer', flag: false },
+  { date: '05 Oct', no: '3838', who: 'Meridian Foods', amt: '£4,500.00', mode: 'Cash', flag: true },
+  { date: '05 Oct', no: '3837', who: 'Arden Property Services', amt: '£7,050.00', mode: 'Bank transfer', flag: false },
+  { date: '04 Oct', no: '3835', who: 'Halden Logistics', amt: '£18,240.00', mode: 'Bank transfer', flag: false },
+];
+
+// Bills due: the held ones reuse the site's demo story (Pinecrest already paid, Fenwick duplicate).
+const bills = [
+  { who: 'Pinecrest Maintenance', no: 'PM-1190', due: '28 Oct', amt: '£7,343.66', check: ['Already paid 12 Sep', 'red'], status: ['Held', 'red'] },
+  { who: 'Fenwick Plant Hire', no: 'HIRE-3381', due: '30 Oct', amt: '£1,840.00', check: ['Duplicate', 'red'], status: ['Held', 'red'] },
+  { who: 'Halden Logistics', no: 'HL-7720', due: '31 Oct', amt: '£12,480.00', check: ['PO matched', 'green'], status: ['2nd approver', 'blue'] },
+  { who: 'Brightwater Catering', no: 'BC-2214', due: '1 Nov', amt: '£1,265.50', check: ['PO + approval', 'green'], status: ['Ready to pay', 'green'] },
+  { who: 'Thornbury Electrical', no: 'TE-1187', due: '3 Nov', amt: '£3,960.00', check: ['Price differs from PO', 'amber'], status: ['Query sent', 'amber'] },
+];
+
+// GSTR-2B vs books: same demo rows and totals as the GST table on the India and product pages.
+const gst = [
+  { inv: '812', who: 'Nilgiri Foods Pvt Ltd', gstin: '33AB•••••1Z9', twoB: '₹1,19,271', books: '₹1,12,400', tag: ['Freight line missing', 'amber'] },
+  { inv: '903', who: 'Vasant Logistics', gstin: '29AC•••••1Z2', twoB: '₹54,000', books: '—', tag: ['Not booked', 'red'] },
+  { inv: '6031', who: 'Konkan Traders', gstin: '27AL•••••1Z2', twoB: '—', books: '₹2,14,600', tag: ['Supplier not filed', 'red'] },
+  { inv: '745', who: 'Sahyadri Hospitality', gstin: '27AA•••••1Z4', twoB: '₹3,274', books: '₹3,274', tag: ['Matched', 'green'] },
+];
+
+const vendors = [
+  { name: 'Pinecrest Maintenance', dot: 'red', tags: [['Overdue', 'red'], ['Requests ignored', 'amber'], ['Books ≠ bank', 'red']], bills: '12', out: '£29,380', over: '£29,380' },
+  { name: 'Meridian Foods', dot: 'red', tags: [['Overdue', 'red'], ['Books ≠ bank', 'red']], bills: '137', out: '£28,820', over: '£27,930' },
+  { name: 'Halden Logistics', dot: 'amber', tags: [['Overdue', 'red'], ['Requests ignored', 'amber']], bills: '32', out: '£7,500', over: '£5,440' },
+];
+---
+
+<div class="stage" data-demo data-meta={JSON.stringify(meta.map(({ title, sub }) => ({ title, sub })))}>
+  <Image src={heroBg} alt="" widths={[800, 1280, 1920]} sizes="100vw" class="bg" loading="eager" fetchpriority="high" />
+  {
+    hasVideo && (
+      <video class="bg bg-video" muted loop playsinline preload="auto" poster={poster.src} aria-hidden="true" tabindex="-1">
+        <source src="/hero/hero-loop.mp4" type="video/mp4" />
+      </video>
+    )
+  }
+
+  <div class="frame">
+    <p class="sr-only">
+      Product preview with demo data: the CFO cockpit, cash flow, payments received, bills, vendor reconciliation, GST reconciliation and approval board.
+    </p>
+    <div class="app" aria-hidden="true">
+      <div class="app-in">
+        <aside class="side">
+          <p class="brand"><img src="/logo-green.png" alt="" width="14" height="17" />Radlabs</p>
+          <p class="grp">Cashflow</p>
+          <span class="nav on" data-nav="0"><Icon name="chart" size={16} />CFO cockpit</span>
+          <span class="nav" data-nav="1"><Icon name="mail" size={16} />Cash flow</span>
+          <p class="grp">Finances</p>
+          <span class="nav" data-nav="2"><Icon name="cash" size={16} />Payments received</span>
+          <span class="nav" data-nav="3"><Icon name="file" size={16} />Bills</span>
+          <p class="grp">Reconciliation</p>
+          <span class="nav" data-nav="4"><Icon name="scale" size={16} />Vendors</span>
+          <span class="nav" data-nav="5"><Icon name="receipt" size={16} />GST</span>
+          <p class="grp">Approvals</p>
+          <span class="nav" data-nav="6"><Icon name="users" size={16} />Approval board</span>
+          <p class="me"><span class="avatar">SK</span><span><strong>Sarah K.</strong><small>Finance Director</small></span></p>
+        </aside>
+
+        <div class="main">
+          <header class="top">
+            <div>
+              <p class="title" data-title>{meta[0].title}</p>
+              <p class="sub" data-sub>{meta[0].sub}</p>
+            </div>
+            <span class="refresh"><Icon name="refresh" size={15} /><span>Refresh from Xero</span></span>
+          </header>
+
+          <div class="screens">
+            {/* CFO cockpit */}
+            <section class="screen on">
+              <div class="kpis">
+                <p class="kpi"><span class="lbl">Cash to collect</span><span class="num">£1.42m</span><span class="hint">141 invoices outstanding</span></p>
+                <p class="kpi"><span class="lbl">Bills due this week</span><span class="num">£318k</span><span class="hint">9 awaiting approval</span></p>
+                <p class="kpi"><span class="lbl">Held before payment</span><span class="num red" data-count="21850" data-pre="£">£21,850</span><span class="hint">5 duplicates and already-paid</span></p>
+                <p class="kpi"><span class="lbl">Books ≠ bank</span><span class="num amber" data-count="96200" data-pre="£">£96,200</span><span class="hint">58 payments to fix</span></p>
+              </div>
+              <div class="moves">
+                <p class="move green"><span class="lbl">Collectable now</span><span class="num" data-count="148200" data-pre="£">£148,200</span><span class="hint">proven overdue, ready to chase</span></p>
+                <p class="move red"><span class="lbl">At risk</span><span class="num" data-count="264900" data-pre="£">£264,900</span><span class="hint">90+ days and disputed</span></p>
+                <p class="move blue"><span class="lbl">Decisions waiting</span><span class="num" data-count="31">31</span><span class="hint">holds, approvals, disputes</span></p>
+              </div>
+              <p class="lbl aging-lbl">Receivables by age</p>
+              <div class="aging">
+                <span style="flex:45;background:#cfd6de"></span><span style="flex:15;background:#4cbf86"></span><span style="flex:13;background:#f2c14e"></span><span style="flex:11;background:#ef8a3c"></span><span style="flex:16;background:#e2504a"></span>
+              </div>
+              <p class="legend">
+                <span><i style="background:#cfd6de"></i>Not due <b>£640k</b></span>
+                <span><i style="background:#4cbf86"></i>0–30d <b>£221k</b></span>
+                <span><i style="background:#f2c14e"></i>30–60d <b>£187k</b></span>
+                <span><i style="background:#ef8a3c"></i>60–90d <b>£142k</b></span>
+                <span><i style="background:#e2504a"></i>90+ d <b>£230k</b></span>
+              </p>
+              <p class="overnight">
+                <b>Overnight</b>
+                <span><b>2,640</b> finance threads read</span>
+                <span><b>412</b> payments matched</span>
+                <span><b class="red">55</b> disputes with pushback</span>
+              </p>
+            </section>
+
+            {/* Cash flow */}
+            <section class="screen">
+              <p class="pills"><span>Group by</span><b>Amount</b><b class="on">State</b><b>Client</b><b>Aging</b><b>Risk</b></p>
+              <div class="list">
+                <p class="lrow lhead trail-row"><span>Invoice and next action</span><span class="c-client">Client</span><span class="r">Amount</span><span>Tags</span><span class="c-act">Activity</span><span class="c-btn">Action</span></p>
+                <p class="lrow group"><span><strong>Needs a decision</strong> <i class="count">3</i></span><span class="r total">£56,550</span></p>
+                {
+                  trail.map((t, i) => (
+                    <p class="lrow trail-row anim edge" style={`--i:${i}`}>
+                      <span class="inv"><strong>{t.inv}</strong><small>→ {t.next}</small></span>
+                      <span class="c-client">{t.client}</span>
+                      <span class="r strong">{t.amt}</span>
+                      <span><i class={`t t-${t.tag[1]}`}>{t.tag[0]}</i></span>
+                      <span class="c-act muted-red">{t.act}</span>
+                      <span class={`btn-mini c-btn b-${t.btn[1]}`}>{t.btn[0]}</span>
+                    </p>
+                  ))
+                }
+                <p class="lrow group"><span><strong>Ready to chase</strong> <i class="count">2</i></span><span class="r total">£24,600</span></p>
+                {
+                  ready.map((t, i) => (
+                    <p class="lrow trail-row anim" style={`--i:${i + 3}`}>
+                      <span class="inv"><strong>{t.inv}</strong><small>→ {t.next}</small></span>
+                      <span class="c-client">{t.client}</span>
+                      <span class="r strong">{t.amt}</span>
+                      <span><i class={`t t-${t.tag[1]}`}>{t.tag[0]}</i></span>
+                      <span class="c-act muted">{t.act}</span>
+                      <span class={`btn-mini c-btn b-${t.btn[1]}`}>{t.btn[0]}</span>
+                    </p>
+                  ))
+                }
+              </div>
+            </section>
+
+            {/* Payments received */}
+            <section class="screen">
+              <div class="banner">
+                <span class="bang">!</span>
+                <span>
+                  <strong>38 of 412 payments have a mode or account mismatch</strong>
+                  <small>Payment mode is recorded as cash, but the money landed in a bank account. Fix it at source and the flag clears on the next refresh.</small>
+                  <i class="ghost-btn">Show only mismatched</i>
+                </span>
+              </div>
+              <div class="list">
+                <p class="lrow lhead pay-row"><span>Date</span><span class="c-no">Payment</span><span>Customer</span><span class="r">Amount</span><span class="c-acct">Account</span><span>Mode</span></p>
+                {
+                  payments.map((p, i) => (
+                    <p class:list={['lrow', 'pay-row', 'anim', { flagged: p.flag }]} style={`--i:${i}`}>
+                      <span>{p.date}</span>
+                      <span class="c-no">{p.no}</span>
+                      <span class="strong">{p.who}</span>
+                      <span class="r strong">{p.amt}</span>
+                      <span class="c-acct muted">Current account ••0406</span>
+                      <span>{p.flag ? <i class="t t-amber">{p.mode} ⚠</i> : <i class="t t-grey">{p.mode}</i>}</span>
+                    </p>
+                  ))
+                }
+              </div>
+            </section>
+
+            {/* Bills */}
+            <section class="screen">
+              <div class="kpis kpis-3">
+                <p class="kpi"><span class="lbl">Due this week</span><span class="num">£318k</span><span class="hint">64 bills</span></p>
+                <p class="kpi"><span class="lbl">Held before payment</span><span class="num red" data-count="21850" data-pre="£">£21,850</span><span class="hint">5 duplicates and already-paid</span></p>
+                <p class="kpi"><span class="lbl">Awaiting approval</span><span class="num amber" data-count="9">9</span><span class="hint">stuck ones chased by email</span></p>
+              </div>
+              <p class="chips"><b>All</b><b class="on">● Due this week</b><b>Held</b><b>Needs approval</b></p>
+              <div class="list">
+                <p class="lrow lhead bill-row"><span>Supplier and bill</span><span class="c-due">Due</span><span class="r">Amount</span><span>Check</span><span>Status</span></p>
+                {
+                  bills.map((b, i) => (
+                    <p class="lrow bill-row anim" style={`--i:${i}`}>
+                      <span class="vend"><strong>{b.who}</strong><small>{b.no}</small></span>
+                      <span class="c-due">{b.due}</span>
+                      <span class="r strong">{b.amt}</span>
+                      <span><i class={`t t-${b.check[1]}`}>{b.check[0]}</i></span>
+                      <span><i class={`t t-${b.status[1]}`}>{b.status[0]}</i></span>
+                    </p>
+                  ))
+                }
+              </div>
+            </section>
+
+            {/* Vendor reconciliation */}
+            <section class="screen">
+              <div class="kpis kpis-3">
+                <p class="kpi">
+                  <span class="lbl">Payments bank-verified</span><span class="num" data-count="67" data-suf="%">67%</span>
+                  <span class="meter"><i></i></span>
+                </p>
+                <p class="kpi"><span class="lbl">Unverified value</span><span class="num red" data-count="412800" data-pre="£">£412,800</span><span class="hint">awaiting bank confirmation</span></p>
+                <p class="kpi"><span class="lbl">Clean vendors</span><span class="num green">125 / 579</span><span class="hint">no open exceptions</span></p>
+              </div>
+              <p class="chips"><b>All</b><b>Paid, no bill</b><b>Overdue + email</b><b class="on">● Books ≠ bank</b></p>
+              <div class="list">
+                <p class="lrow lhead vend-row"><span>Vendor</span><span class="r c-bills">Bills</span><span class="r">Outstanding</span><span class="r">Overdue</span></p>
+                {
+                  vendors.map((v, i) => (
+                    <p class="lrow vend-row anim" style={`--i:${i}`}>
+                      <span class="vend">
+                        <strong><i class={`dot d-${v.dot}`} />{v.name}</strong>
+                        <span class="tags">{v.tags.map(([t, c]) => <i class={`t t-${c}`}>{t}</i>)}</span>
+                      </span>
+                      <span class="r c-bills">{v.bills}</span>
+                      <span class="r strong">{v.out}</span>
+                      <span class="r muted-red">{v.over}</span>
+                    </p>
+                  ))
+                }
+              </div>
+            </section>
+
+            {/* GST reconciliation */}
+            <section class="screen">
+              <div class="kpis kpis-3">
+                <p class="kpi"><span class="lbl">Matched</span><span class="num green" data-count="1512">1,512</span><span class="hint">invoice and amount agree</span></p>
+                <p class="kpi"><span class="lbl">Amount mismatches</span><span class="num amber" data-count="71">71</span><span class="hint">each with the reason</span></p>
+                <p class="kpi"><span class="lbl">Credit at risk</span><span class="num red">₹20.9L</span><span class="hint">174 bills not in GSTR-2B</span></p>
+              </div>
+              <p class="chips"><b>All</b><b class="on">● Needs action</b><b>Not in books</b><b>Not in 2B</b></p>
+              <div class="list">
+                <p class="lrow lhead gst-row"><span class="c-inv">Invoice</span><span>Supplier</span><span class="r">GSTR-2B</span><span class="r">Books</span><span>Why</span></p>
+                {
+                  gst.map((g, i) => (
+                    <p class="lrow gst-row anim" style={`--i:${i}`}>
+                      <span class="c-inv">{g.inv}</span>
+                      <span class="vend"><strong>{g.who}</strong><small>{g.gstin}</small></span>
+                      <span class="r strong">{g.twoB}</span>
+                      <span class="r">{g.books}</span>
+                      <span><i class={`t t-${g.tag[1]}`}>{g.tag[0]}</i></span>
+                    </p>
+                  ))
+                }
+              </div>
+            </section>
+
+            {/* Approval board */}
+            <section class="screen" data-approvals>
+              <div class="cards4">
+                <p class="sc amber"><span>Pending approval</span><strong data-count="18" data-after="17">18</strong></p>
+                <p class="sc green"><span>Approved</span><strong data-count="41" data-after="42">41</strong></p>
+                <p class="sc blue"><span>Paid</span><strong data-count="36">36</strong></p>
+                <p class="sc yellow"><span>Needs recheck</span><strong data-count="3">3</strong></p>
+              </div>
+              <div class="list">
+                <p class="lrow lhead appr-row"><span>Counterparty</span><span class="r">Amount</span><span class="c-appr">Approval</span><span>Where</span></p>
+                <p class="lrow appr-row anim" style="--i:0" data-flip>
+                  <span class="vend"><strong>Pinecrest Maintenance</strong><small>Bristol North depot</small></span>
+                  <span class="r strong">£7,343.66</span>
+                  <span class="c-appr"><i class="t t-grey p-wait">Pending</i><i class="t t-green p-ok">Approved</i></span>
+                  <span><i class="t t-blue p-wait">Waiting: 1st approver</i><i class="t t-green p-ok">Approved by Sarah K.</i></span>
+                </p>
+                <p class="lrow appr-row anim" style="--i:1">
+                  <span class="vend"><strong>Halden Logistics</strong><small>Leeds depot</small></span>
+                  <span class="r strong">£12,480.00</span>
+                  <span class="c-appr"><i class="t t-grey">Pending</i></span>
+                  <span><i class="t t-blue">Waiting: 2nd approver</i></span>
+                </p>
+                <p class="lrow appr-row anim" style="--i:2">
+                  <span class="vend"><strong>Brightwater Catering</strong><small>Head office</small></span>
+                  <span class="r strong">£1,265.50</span>
+                  <span class="c-appr"><i class="t t-green">Approved</i></span>
+                  <span><i class="t t-grey">Paid by finance</i></span>
+                </p>
+                <p class="lrow appr-row anim" style="--i:3">
+                  <span class="vend"><strong>Copperleaf Interiors</strong><small>Head office</small></span>
+                  <span class="r strong">£7,400.00</span>
+                  <span class="c-appr"><i class="t t-red">On hold</i></span>
+                  <span><i class="t t-red">Already paid on 12 Sep</i></span>
+                </p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <span class="cursor">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 2.5l15 9.2-6.6 1.3 3.9 7.2-2.8 1.5-3.9-7.2L4.9 19z" fill="#fff" stroke="#101614" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+      </span>
+    </div>
+
+    <div class="tabs" role="group" aria-label="Choose a product screen">
+      {meta.map((m, i) => <button type="button" class="tab" data-tab={i} aria-pressed={i === 0 ? 'true' : 'false'}>{m.tab}</button>)}
+    </div>
+  </div>
+
+  <button type="button" class="pause" aria-label="Pause animation" data-pause>
+    <svg class="i-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>
+    <svg class="i-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"></path></svg>
+  </button>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-demo]');
+  if (root) {
+    const meta: { title: string; sub: string }[] = JSON.parse(root.dataset.meta || '[]');
+    const app = root.querySelector<HTMLElement>('.app')!;
+    const side = root.querySelector<HTMLElement>('.side')!;
+    const screens = [...root.querySelectorAll<HTMLElement>('.screen')];
+    const navs = [...root.querySelectorAll<HTMLElement>('[data-nav]')];
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const title = root.querySelector<HTMLElement>('[data-title]')!;
+    const sub = root.querySelector<HTMLElement>('[data-sub]')!;
+    const cursor = root.querySelector<HTMLElement>('.cursor')!;
+    const pauseBtn = root.querySelector<HTMLButtonElement>('[data-pause]')!;
+    const video = root.querySelector<HTMLVideoElement>('.bg-video');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fmt = new Intl.NumberFormat('en-GB');
+    const HOLD = 4600;
+
+    let current = 0;
+    let timers: number[] = [];
+    let hovering = false;
+    let stopped = reduce;
+    let inView = true;
+    let pending = false;
+
+    const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
+    const clear = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+    };
+
+    const setNumber = (el: HTMLElement, value: number) => {
+      el.textContent = (el.dataset.pre || '') + fmt.format(value) + (el.dataset.suf || '');
+    };
+
+    const countUp = (scope: HTMLElement) =>
+      scope.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
+        const end = Number(el.dataset.count);
+        if (reduce) return setNumber(el, end);
+        const start = performance.now();
+        const tick = (now: number) => {
+          const p = Math.min(1, (now - start) / 900);
+          setNumber(el, Math.round(end * (1 - Math.pow(1 - p, 3))));
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+
+    // On the approval board, the first request gets approved while you watch.
+    const approve = (scope: HTMLElement) => {
+      const row = scope.querySelector<HTMLElement>('[data-flip]');
+      if (!row) return;
+      row.classList.remove('flipped');
+      later(() => {
+        row.classList.add('flipped');
+        scope.querySelectorAll<HTMLElement>('[data-after]').forEach((el) => {
+          setNumber(el, Number(el.dataset.after));
+          el.classList.remove('bump');
+          void el.offsetWidth;
+          el.classList.add('bump');
+        });
+      }, 1900);
+    };
+
+    const pointAt = (el: HTMLElement, animate = true) => {
+      const a = app.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      cursor.classList.toggle('jump', !animate);
+      cursor.style.transform = `translate(${r.left - a.left + Math.min(r.width * 0.42, 74)}px, ${r.top - a.top + r.height * 0.5}px)`;
+    };
+
+    const show = (i: number) => {
+      clear();
+      pending = false;
+      current = i;
+      screens.forEach((s) => s.classList.remove('on'));
+      void app.offsetWidth; // restart each screen's entrance animations
+      screens[i].classList.add('on');
+      navs.forEach((n, k) => n.classList.toggle('on', k === i));
+      tabs.forEach((t, k) => t.setAttribute('aria-pressed', String(k === i)));
+      title.textContent = meta[i].title;
+      sub.textContent = meta[i].sub;
+      if (!reduce && getComputedStyle(side).display !== 'none') pointAt(navs[i]);
+      countUp(screens[i]);
+      if (screens[i].hasAttribute('data-approvals') && !reduce) approve(screens[i]);
+      later(advance, HOLD);
+    };
+
+    const advance = () => {
+      if (stopped || hovering || !inView) {
+        pending = true;
+        return;
+      }
+      const next = (current + 1) % screens.length;
+      if (getComputedStyle(side).display === 'none') return show(next);
+      pointAt(navs[next]);
+      later(() => {
+        cursor.classList.add('click');
+        later(() => {
+          cursor.classList.remove('click');
+          show(next);
+        }, 220);
+      }, 900);
+    };
+
+    const resume = () => {
+      if (pending && !stopped && !hovering && inView) advance();
+    };
+
+    app.addEventListener('pointerenter', () => (hovering = true));
+    app.addEventListener('pointerleave', () => {
+      hovering = false;
+      resume();
+    });
+
+    navs.forEach((n, k) => n.addEventListener('click', () => show(k)));
+    tabs.forEach((t, k) => t.addEventListener('click', () => show(k)));
+
+    const setStopped = (value: boolean) => {
+      stopped = value;
+      root.classList.toggle('is-paused', value);
+      pauseBtn.setAttribute('aria-label', value ? 'Play animation' : 'Pause animation');
+      if (video) value ? video.pause() : video.play().catch(() => {});
+      if (!value) resume();
+    };
+    pauseBtn.addEventListener('click', () => setStopped(!stopped));
+
+    if (video) {
+      // Slower than generated for a calmer drift; the clip's first and last frames match, so it loops seamlessly.
+      video.defaultPlaybackRate = video.playbackRate = 0.7;
+      video.addEventListener('playing', () => video.classList.add('ready'));
+      if (!reduce) video.play().catch(() => {});
+    }
+
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (video && !stopped) inView ? video.play().catch(() => {}) : video.pause();
+        if (inView) resume();
+      },
+      { threshold: 0.15 },
+    ).observe(root);
+
+    if (reduce) {
+      setStopped(true);
+      show(0);
+      clear();
+    } else {
+      requestAnimationFrame(() => pointAt(navs[0], false));
+      show(0);
+    }
+  }
+</script>
+
+<style>
+  .stage {
+    position: relative;
+    width: 100%;
+    min-height: clamp(560px, 50vw, 760px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    place-items: center;
+    padding: clamp(18px, 4vw, 64px) clamp(12px, 4vw, 64px) clamp(56px, 6vw, 80px);
+    border-radius: 28px;
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow: 0 50px 90px -60px rgba(15, 51, 38, 0.5);
+  }
+
+  .stage :global(.bg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    transform: scale(1.03); /* the source image and clip carry a few black rows at top and bottom */
+  }
+
+  .bg-video {
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+
+  .bg-video.ready {
+    opacity: 1;
+  }
+
+  /* Glass frame around the product */
+  .frame {
+    width: min(100%, 1140px);
+    min-width: 0;
+    padding: clamp(8px, 1.3vw, 16px);
+    border-radius: 26px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.16));
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+    box-shadow: 0 34px 70px -34px rgba(15, 51, 38, 0.5);
+  }
+
+  /* App window. Sizes are in em and scale with the window width. */
+  .app {
+    position: relative;
+    container-type: inline-size;
+    border-radius: 16px;
+    background: #fff;
+    overflow: hidden;
+    color: #1c2430;
+  }
+
+  .app-in {
+    display: grid;
+    grid-template-columns: 15em minmax(0, 1fr);
+    font-size: clamp(9px, 1.18cqw, 13.5px);
+    line-height: 1.4;
+  }
+
+  .app p {
+    margin: 0;
+    max-width: none;
+  }
+
+  /* Sidebar, as in the real dashboard */
+  .side {
+    display: grid;
+    align-content: start;
+    gap: 0.15em;
+    padding: 1.4em 0.9em;
+    border-right: 1px solid #edf1ef;
+    background: #fbfcfc;
+  }
+
+  .app .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin: 0 0.5em 1.2em;
+    font-weight: 600;
+    font-size: 1.15em;
+    color: var(--ink);
+  }
+
+  .brand img {
+    width: 0.95em;
+    height: auto;
+  }
+
+  .app .grp {
+    margin: 0.9em 0.6em 0.25em;
+    font-size: 0.75em;
+    font-weight: 600;
+    color: #5d6876;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    padding: 0.55em 0.65em;
+    border-radius: 0.6em;
+    font-size: 0.95em;
+    color: #3d4a46;
+    cursor: pointer;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  .nav :global(svg) {
+    width: 1.15em;
+    height: 1.15em;
+    flex: none;
+  }
+
+  .nav.idle {
+    cursor: default;
+    color: #66717c;
+  }
+
+  .nav.on {
+    background: #e8f5ee;
+    color: var(--brand);
+    font-weight: 600;
+  }
+
+  .app .me {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    margin: 1.6em 0.4em 0;
+    padding-top: 1em;
+    border-top: 1px solid #edf1ef;
+  }
+
+  .me strong,
+  .me small {
+    display: block;
+    font-size: 0.85em;
+  }
+
+  .me small {
+    color: #5d6876;
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 2.3em;
+    height: 2.3em;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a6b48, #2fae73);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.85em;
+  }
+
+  /* Main area */
+  .main {
+    min-width: 0;
+    padding: 1.5em 1.8em 1.7em;
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1em;
+    margin-bottom: 1.2em;
+  }
+
+  .title {
+    font-size: 1.6em;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #1c2430;
+  }
+
+  .sub {
+    font-size: 0.88em;
+    color: #5d6876;
+  }
+
+  .refresh {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.5em 0.95em;
+    border: 1px solid #e3e8e6;
+    border-radius: 999px;
+    font-size: 0.85em;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .refresh :global(svg) {
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  .screens {
+    display: grid;
+  }
+
+  .screen {
+    grid-area: 1 / 1;
+    min-width: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(0.6em);
+    /* The outgoing screen leaves quickly so two screens never overlap for long */
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
+  }
+
+  .screen.on {
+    opacity: 1;
+    visibility: inherit;
+    transform: none;
+    transition: opacity 0.4s ease 0.12s, transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) 0.12s, visibility 0s;
+  }
+
+  /* Shared bits */
+  .lbl {
+    display: block;
+    font-size: 0.68em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5d6876;
+  }
+
+  .num {
+    display: block;
+    font-size: 1.6em;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hint {
+    display: block;
+    font-size: 0.8em;
+    color: #5d6876;
+  }
+
+  .red,
+  .muted-red {
+    color: #c23b30;
+  }
+
+  .amber {
+    color: #b4650c;
+  }
+
+  .green {
+    color: #2f8a57;
+  }
+
+  .muted {
+    color: #5d6876;
+  }
+
+  .strong {
+    font-weight: 700;
+  }
+
+  .r {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .t {
+    display: inline-block;
+    font-style: normal;
+    font-size: 0.74em;
+    font-weight: 650;
+    padding: 0.28em 0.65em;
+    border-radius: 0.5em;
+    white-space: nowrap;
+  }
+
+  .t-red {
+    background: #fdecea;
+    color: #c23b30;
+  }
+  .t-amber {
+    background: #fdf3e2;
+    color: #b4650c;
+  }
+  .t-purple {
+    background: #f1ebfc;
+    color: #6e3fc4;
+  }
+  .t-green {
+    background: #eaf6ee;
+    color: #2f8a57;
+  }
+  .t-blue {
+    background: #eaf1fd;
+    color: #2f5fc4;
+  }
+  .t-grey {
+    background: #eef1f4;
+    color: #5d6876;
+  }
+
+  /* Cockpit */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8em;
+  }
+
+  .kpis-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .app .kpi,
+  .app .move {
+    display: grid;
+    align-content: start;
+    gap: 0.3em;
+    padding: 0.95em 1.05em;
+    border: 1px solid #e7ecea;
+    border-radius: 0.9em;
+  }
+
+  .moves {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8em;
+    margin-top: 0.8em;
+  }
+
+  .app .move.green {
+    background: #f1faf4;
+    border-color: #bfe5cd;
+    color: inherit;
+  }
+  .app .move.red {
+    background: #fdf2f1;
+    border-color: #f2c6c1;
+    color: inherit;
+  }
+  .app .move.blue {
+    background: #f2f6fd;
+    border-color: #c9d8f4;
+  }
+
+  .app .aging-lbl {
+    margin: 1.1em 0 0.5em;
+  }
+
+  .aging {
+    display: flex;
+    gap: 2px;
+    height: 0.6em;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .aging span {
+    transform-origin: left;
+  }
+
+  .screen.on .aging span {
+    animation: grow 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .screen.on .aging span:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  .screen.on .aging span:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+  .screen.on .aging span:nth-child(4) {
+    animation-delay: 0.3s;
+  }
+  .screen.on .aging span:nth-child(5) {
+    animation-delay: 0.4s;
+  }
+
+  .app .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em 1.2em;
+    margin-top: 0.55em;
+    font-size: 0.75em;
+    color: #5d6876;
+  }
+
+  .legend i {
+    display: inline-block;
+    width: 0.65em;
+    height: 0.65em;
+    margin-right: 0.4em;
+    border-radius: 50%;
+  }
+
+  .legend b,
+  .overnight b {
+    color: #1c2430;
+    font-weight: 600;
+  }
+
+  .app .overnight {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em 1.4em;
+    margin-top: 1em;
+    padding: 0.7em 1em;
+    border-radius: 0.6em;
+    background: #f7f9fb;
+    font-size: 0.8em;
+    color: #5d6876;
+  }
+
+  .overnight b.red {
+    color: #c23b30;
+  }
+
+  /* Lists */
+  .app .pills,
+  .app .chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45em;
+    margin-bottom: 0.8em;
+    font-size: 0.82em;
+    font-weight: 600;
+    color: #5d6876;
+  }
+
+  .pills b,
+  .chips b {
+    font-weight: 600;
+    padding: 0.3em 0.8em;
+    border-radius: 999px;
+  }
+
+  .pills b.on {
+    background: #1c2430;
+    color: #fff;
+  }
+
+  .chips b {
+    border: 1px solid #e3e8e6;
+    background: #fff;
+  }
+
+  .chips b.on {
+    border-color: #2f8a57;
+    color: #2f8a57;
+    background: #eaf6ee;
+  }
+
+  .list {
+    border: 1px solid #e7ecea;
+    border-radius: 0.9em;
+    overflow: hidden;
+  }
+
+  .app .lrow {
+    display: grid;
+    align-items: center;
+    gap: 0.8em;
+    padding: 0.75em 1em;
+    font-size: 0.88em;
+  }
+
+  .lrow + .lrow {
+    border-top: 1px solid #eef1f0;
+  }
+
+  .app .lhead {
+    padding-block: 0.6em;
+    font-size: 0.66em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5d6876;
+    background: #f7f9fb;
+  }
+
+  .app .group {
+    grid-template-columns: 1fr auto;
+    background: #f7f9fb;
+  }
+
+  .count {
+    display: inline-block;
+    font-style: normal;
+    font-size: 0.85em;
+    font-weight: 700;
+    padding: 0 0.55em;
+    border-radius: 999px;
+    background: #e3e8ee;
+  }
+
+  .total {
+    font-weight: 700;
+  }
+
+  .screen.on .anim {
+    animation: rowIn 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(0.18s + var(--i) * 0.13s);
+  }
+
+  .app .trail-row {
+    grid-template-columns: 2.3fr 1.3fr 0.85fr 1.25fr 1.15fr 0.6fr;
+  }
+
+  .edge {
+    box-shadow: inset 3px 0 0 #c23b30;
+  }
+
+  .inv strong,
+  .inv small,
+  .vend strong,
+  .vend small {
+    display: block;
+  }
+
+  .inv small,
+  .vend small {
+    font-size: 0.85em;
+    color: #5d6876;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .btn-mini {
+    justify-self: start;
+    font-weight: 700;
+    font-size: 0.9em;
+  }
+
+  .b-green {
+    color: #2f8a57;
+  }
+  .b-amber {
+    color: #b4650c;
+  }
+
+  .b-green::before {
+    content: '● ';
+  }
+  .b-amber::before {
+    content: '▲ ';
+  }
+
+  /* Payments */
+  .banner {
+    display: flex;
+    gap: 0.8em;
+    margin-bottom: 0.9em;
+    padding: 0.95em 1.1em;
+    border: 1.5px solid #f0b85a;
+    border-left-width: 5px;
+    border-radius: 0.9em;
+    background: #fffaf0;
+  }
+
+  .screen.on .banner {
+    animation: drop 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both;
+  }
+
+  .bang {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.9em;
+    height: 1.9em;
+    border-radius: 50%;
+    background: #fbe7c2;
+    color: #b4650c;
+    font-weight: 700;
+  }
+
+  .banner strong {
+    display: block;
+    color: #7a3a07;
+  }
+
+  .banner small {
+    display: block;
+    margin: 0.25em 0 0.6em;
+    font-size: 0.85em;
+    color: #8a4a12;
+  }
+
+  .ghost-btn {
+    display: inline-block;
+    font-style: normal;
+    font-size: 0.82em;
+    font-weight: 600;
+    padding: 0.35em 0.9em;
+    border-radius: 999px;
+    border: 1px solid #ecd9b9;
+    background: #fff;
+  }
+
+  .app .pay-row {
+    grid-template-columns: 0.8fr 0.7fr 1.6fr 1fr 1.5fr 1fr;
+  }
+
+  .flagged {
+    background: #fffbf3;
+  }
+
+  /* Vendors */
+  .meter {
+    display: block;
+    height: 0.45em;
+    margin-top: 0.3em;
+    border-radius: 99px;
+    background: #eef1f0;
+    overflow: hidden;
+  }
+
+  .meter i {
+    display: block;
+    width: 67%;
+    height: 100%;
+    border-radius: inherit;
+    background: #2f8a57;
+    transform-origin: left;
+  }
+
+  .screen.on .meter i {
+    animation: grow 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both;
+  }
+
+  .app .kpis-3 + .chips {
+    margin-top: 0.8em;
+  }
+
+  .app .vend-row {
+    grid-template-columns: 2.6fr 0.6fr 1fr 1fr;
+  }
+
+  .vend strong {
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 0.55em;
+    height: 0.55em;
+    border-radius: 50%;
+  }
+
+  .d-red {
+    background: #c23b30;
+  }
+  .d-amber {
+    background: #e39a2d;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em;
+    margin-top: 0.35em;
+    padding-left: 1em;
+  }
+
+  /* Approvals */
+  .cards4 {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8em;
+    margin-bottom: 0.9em;
+  }
+
+  .app .sc {
+    display: grid;
+    gap: 0.2em;
+    padding: 0.95em 1.05em;
+    border-radius: 0.9em;
+    border: 1px solid;
+  }
+
+  .sc span {
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+
+  .sc strong {
+    display: inline-block;
+    justify-self: start;
+    font-size: 1.7em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .app .sc.amber {
+    background: #fff6ec;
+    border-color: #f6d9b2;
+    color: #b4650c;
+  }
+  .app .sc.green {
+    background: #f1faf4;
+    border-color: #bfe5cd;
+    color: #2f8a57;
+  }
+  .app .sc.blue {
+    background: #f2f6fd;
+    border-color: #c9d8f4;
+    color: #2f5fc4;
+  }
+  .app .sc.yellow {
+    background: #fffbea;
+    border-color: #f3e2a2;
+    color: #8a6d0b;
+  }
+
+  .bump {
+    animation: bump 0.45s ease;
+  }
+
+  .app .appr-row {
+    grid-template-columns: 2.2fr 1fr 0.9fr 1.5fr;
+  }
+
+  /* Bills and GST */
+  .app .bill-row {
+    grid-template-columns: 2fr 0.7fr 1fr 1.5fr 1.1fr;
+  }
+
+  .app .gst-row {
+    grid-template-columns: 0.55fr 2fr 1fr 1fr 1.4fr;
+  }
+
+  .p-ok {
+    display: none;
+  }
+
+  .flipped .p-wait {
+    display: none;
+  }
+
+  .flipped .p-ok {
+    display: inline-block;
+    animation: pop 0.4s ease;
+  }
+
+  /* Animated cursor that clicks the sidebar */
+  .cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+    transform: translate(70%, 40%);
+    transition: transform 0.85s cubic-bezier(0.45, 0.05, 0.25, 1);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+  }
+
+  .cursor.jump {
+    transition: none;
+  }
+
+  .cursor svg {
+    transition: transform 0.15s ease;
+  }
+
+  .cursor.click svg {
+    transform: scale(0.85);
+  }
+
+  .cursor::after {
+    content: '';
+    position: absolute;
+    left: -9px;
+    top: -9px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(34, 181, 115, 0.4);
+    opacity: 0;
+    transform: scale(0.2);
+  }
+
+  .cursor.click::after {
+    animation: ripple 0.45s ease-out;
+  }
+
+  /* Screen picker and pause */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: clamp(10px, 1.4vw, 16px);
+  }
+
+  .tab {
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .tab:hover {
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  .tab[aria-pressed='true'] {
+    background: #fff;
+    color: var(--brand);
+    box-shadow: 0 6px 16px -10px rgba(15, 51, 38, 0.6);
+  }
+
+  .pause {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .i-play,
+  .stage.is-paused .i-pause {
+    display: none;
+  }
+
+  .stage.is-paused .i-play {
+    display: block;
+  }
+
+  @keyframes grow {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes rowIn {
+    from {
+      opacity: 0;
+      transform: translateY(0.7em);
+    }
+  }
+
+  @keyframes drop {
+    from {
+      opacity: 0;
+      transform: translateY(-0.8em);
+    }
+  }
+
+  @keyframes bump {
+    40% {
+      transform: scale(1.18);
+    }
+  }
+
+  @keyframes pop {
+    from {
+      transform: scale(0.7);
+      opacity: 0;
+    }
+  }
+
+  @keyframes ripple {
+    from {
+      opacity: 1;
+      transform: scale(0.2);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.6);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor {
+      display: none;
+    }
+  }
+
+  /* Narrow windows: drop the sidebar and the secondary columns */
+  @container (max-width: 640px) {
+    .app-in {
+      grid-template-columns: minmax(0, 1fr);
+      font-size: clamp(10px, 3.1cqw, 12.5px);
+    }
+    .side,
+    .cursor,
+    .refresh span,
+    .c-client,
+    .c-act,
+    .c-btn,
+    .c-no,
+    .c-acct,
+    .c-bills,
+    .c-appr,
+    .c-due,
+    .c-inv {
+      display: none;
+    }
+    .main {
+      padding: 1.2em 1.1em 1.3em;
+    }
+    .kpis,
+    .cards4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .kpis-3,
+    .moves {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .app .move.blue,
+    .kpis-3 .kpi:nth-child(3),
+    .app .legend,
+    .app .overnight {
+      display: none;
+    }
+    .app .trail-row {
+      grid-template-columns: 2fr 1fr 1.2fr;
+    }
+    .app .pay-row {
+      grid-template-columns: 0.8fr 1.6fr 1.1fr 1fr;
+    }
+    .app .vend-row {
+      grid-template-columns: 2.2fr 1fr 1fr;
+    }
+    .app .appr-row {
+      grid-template-columns: 1.6fr 1fr 1.4fr;
+    }
+    .app .bill-row {
+      grid-template-columns: 1.7fr 1.1fr 1.4fr 1fr;
+    }
+    .app .gst-row {
+      grid-template-columns: 1.7fr 1fr 1fr 1.3fr;
+    }
+    .banner small {
+      display: none;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .stage {
+      border-radius: 22px;
+      min-height: 0;
+    }
+    .pause {
+      right: 10px;
+      bottom: 10px;
+    }
+  }
+</style>
