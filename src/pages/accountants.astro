@@ -1,10 +1,8 @@
 ---
-import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import ClientPortfolio from '../components/ClientPortfolio.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
-import practice from '../assets/img/practice.png';
 
 // Timings come from this page and the founding programme page. CONFIRM: audit length and access model (same as founding-programme.astro).
 const partnerSteps = [
@@ -12,6 +10,23 @@ const partnerSteps = [
   { time: '20 minutes', title: 'A call about your practice', body: 'Which clients, ledgers and inboxes you work with, and which two or three clients could try it.' },
   { time: 'Two weeks', title: 'Leakage audits for selected clients', body: `${site.name} runs on each client's real data, and you review what it finds together with us.` },
   { time: 'About an hour a month', title: 'Shape the product', body: 'Honest feedback on what helps your team, and a say in what we build next.' },
+];
+// The reconciliation sheet in the hero. Demo data, using the house names.
+const sheetLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
+const sheetHead = ['Invoice', 'Supplier', 'Books', 'Bank', 'Diff', 'Status'];
+const sheetRows = [
+  { c: ['PM-1190', 'Pinecrest', '12,480.00', '12,480.00', '—', 'Matched'] },
+  { c: ['PM-1191', 'Pinecrest', '3,215.50', '3,215.50', '—', 'Matched'] },
+  { c: ['KS-0442', 'Kestrel', '8,940.00', '8,040.00', '900.00', 'Check'], bad: [3, 4, 5] },
+  { c: ['HL-7781', 'Halden', '21,300.00', '21,300.00', '—', 'Matched'] },
+  { c: ['KS-0443', 'Kestrel', '1,775.25', '—', '1,775.25', 'Not in bank'], bad: [3, 4, 5] },
+  { c: ['PM-1192', 'Pinecrest', '6,420.00', '6,420.00', '—', 'Matched'] },
+  { c: ['HL-7782', 'Halden', '9,115.80', '9,115.80', '—', 'Matched'] },
+  { c: ['KS-0444', 'Kestrel', '14,260.00', '14,620.00', '-360.00', 'Check'], warn: [3, 4, 5] },
+  { c: ['PM-1193', 'Pinecrest', '2,980.00', '2,980.00', '—', 'Matched'] },
+  { c: ['HL-7783', 'Halden', '5,540.00', '—', '5,540.00', 'Not in bank'], bad: [3, 4, 5] },
+  { c: ['PM-1194', 'Pinecrest', '18,075.40', '18,075.40', '—', 'Matched'] },
+  { c: ['HL-7784', 'Halden', '11,902.65', '11,002.65', '900.00', 'Check'], warn: [3, 4, 5] },
 ];
 ---
 
@@ -27,10 +42,53 @@ const partnerSteps = [
       <div class="actions">
         <a class="btn btn-primary" href="/founding-programme?type=firm#apply">Apply as a design partner</a>
       </div>
+      <p class="head-live">Live today with <a href="/integrations">Xero, Zoho Books, ApprovalMax and Microsoft 365</a>.</p>
     </div>
-    <div class="head-visual">
-      <Image src={practice} alt="Two accountants at a shared desk reviewing a spreadsheet on two monitors, with box files on the shelves behind them" widths={[480, 800, 1200]} sizes="(min-width: 920px) 45vw, 100vw" class="photo" loading="eager" />
-    </div>
+
+    {/* The thing the headline is about: the reconciliation sheet, kept by hand, wrong in four places. */}
+    <figure class="head-sheets">
+      <div class="shot-frame">
+        <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="xl-bar" aria-hidden="true">
+          <span class="xl-ref">E7</span>
+          <span class="xl-fx">=D7-C7</span>
+        </div>
+        <table class="xl">
+          <caption class="sr-only">A bank reconciliation kept in a spreadsheet, with four rows that do not agree. Demo data.</caption>
+          <thead>
+            <tr class="xl-letters" aria-hidden="true">
+              <th class="xl-corner"></th>
+              {sheetLetters.map((l) => <th>{l}</th>)}
+            </tr>
+            <tr>
+              <th class="xl-no" aria-hidden="true">1</th>
+              {sheetHead.map((h, i) => <th class={i > 1 ? 'xl-num' : undefined}>{h}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              sheetRows.map((row, r) => (
+                <tr>
+                  <th class="xl-no" aria-hidden="true">{r + 2}</th>
+                  {row.c.map((cell, i) => (
+                    <td class:list={['xl-cell', i > 1 && 'xl-num', row.bad?.includes(i) && 'xl-bad', row.warn?.includes(i) && 'xl-warn']}>
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+        <div class="xl-tabs" aria-hidden="true">
+          <span class="xl-tab xl-tab--on">Nov recon</span>
+          <span class="xl-tab">Bank</span>
+          <span class="xl-tab">Vendors</span>
+          <span class="xl-tab">Oct recon</span>
+        </div>
+      </div>
+      <figcaption>Demo data.</figcaption>
+    </figure>
   </section>
 
   <section class="section band" aria-labelledby="change-title">
@@ -144,20 +202,161 @@ const partnerSteps = [
 
   @media (min-width: 920px) {
     .head-split {
-      grid-template-columns: 1fr 1fr;
-      gap: 64px;
+      grid-template-columns: 1fr 1.05fr;
+      gap: 56px;
     }
   }
 
   .head-text {
     display: grid;
     gap: 20px;
+    justify-items: start;
   }
 
-  .head-visual .photo {
-    border: 1px solid rgba(195, 214, 204, 0.22);
-    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
-    aspect-ratio: 3 / 2;
+  .head-live {
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+
+  /* The sheet, and the two more behind it that also need checking. */
+  .head-sheets {
+    position: relative;
+    isolation: isolate;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+    justify-items: end;
+  }
+
+  .head-sheets::before,
+  .head-sheets::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 32px;
+    z-index: -1;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+  }
+
+  .head-sheets::before {
+    transform: rotate(-3.4deg) translate(-22px, -16px);
+  }
+
+  .head-sheets::after {
+    transform: rotate(2.6deg) translate(22px, -8px);
+  }
+
+  .head-sheets .shot-frame {
+    position: relative;
+    width: 100%;
+  }
+
+  .head-sheets figcaption {
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+
+  /* Name box and formula bar, the strip every one of these sheets opens with */
+  .xl-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .xl-ref {
+    min-width: 46px;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--bg-soft);
+  }
+
+  .xl-fx {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xl th,
+  .xl td {
+    border: 1px solid var(--line);
+    padding: 6px 9px;
+    text-align: left;
+    white-space: nowrap;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  /* Column letters and row numbers: the grey furniture of the grid */
+  .xl-letters th,
+  .xl-no {
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    text-align: center;
+    font-size: 11px;
+  }
+
+  .xl-no {
+    width: 26px;
+  }
+
+  .xl-corner {
+    width: 26px;
+    background: var(--tint);
+  }
+
+  .xl thead tr:last-child th {
+    background: var(--tint);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .xl-num {
+    text-align: right;
+  }
+
+  .xl-bad {
+    background: rgba(194, 65, 45, 0.14);
+    color: var(--audit);
+  }
+
+  .xl-warn {
+    background: rgba(143, 84, 9, 0.16);
+    color: var(--amber);
+  }
+
+  .xl-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--line);
+    background: #fafcfb;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  .xl-tab {
+    padding: 4px 10px;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .xl-tab--on {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-bottom-color: var(--surface);
+    color: var(--ink);
   }
 
   .demo-note {
