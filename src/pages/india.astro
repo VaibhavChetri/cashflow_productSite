@@ -1,12 +1,10 @@
 ---
-import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import GstRecon from '../components/GstRecon.astro';
 import Icon from '../components/Icon.astro';
 import AgentLog from '../components/AgentLog.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site, integrations, statusLabel, type Status } from '../data/site';
-import indiaFinance from '../assets/img/india-finance.png';
 
 const indiaStack = integrations.filter((i) =>
   ['Zoho Books', 'Tally', 'SAP', 'ICICI Bank', 'RBL Bank', 'Razorpay', 'Gmail', 'Microsoft 365'].includes(i.name),
@@ -64,7 +62,115 @@ const gstFlow = [
         <a class="btn btn-primary" href="/founding-programme?country=India#apply">Apply for early access</a>
       </div>
     </div>
-    <Image src={indiaFinance} alt="Two members of a finance team working at desks with laptops and printed invoices in a bright office" widths={[480, 800, 1200]} sizes="(min-width: 920px) 45vw, 100vw" class="photo" loading="eager" />
+    {/* The page's own demo, drawn: GSTR-2B beside the books, every line matched but one. */}
+    <figure class="head-iso">
+      <svg viewBox="66 6 458 390" role="img" aria-labelledby="gst-title" focusable="false">
+        <title id="gst-title">
+          What your suppliers filed with GST, set line by line against the same bills in your books. Four lines match; one is short, and is marked
+          for you to chase.
+        </title>
+        <defs>
+          <pattern id="gst-grid" width="25" height="25" patternUnits="userSpaceOnUse">
+            <path class="g-grid" d="M25 0V25M0 25H25" fill="none" stroke-width="1" />
+          </pattern>
+        </defs>
+
+        <ellipse class="g-shade" cx="300" cy="348" rx="196" ry="24" />
+
+        <polygon class="g-edge" points="106.9,161.5 444.6,356.5 444.6,372.5 106.9,177.5" />
+        <polygon class="g-edge g-edge--r" points="444.6,356.5 513.9,316.5 513.9,332.5 444.6,372.5" />
+        <g transform="matrix(.866 .5 -.866 .5 300 225)">
+          <rect class="g-top" x="-175" y="-32" width="390" height="80" />
+          <rect x="-175" y="-32" width="390" height="80" fill="url(#gst-grid)" />
+          <g class="g-contact">
+            <rect x="-150" y="0" width="120" height="14" />
+            <rect x="50" y="0" width="140" height="14" />
+          </g>
+        </g>
+
+        <!-- The caps that give each panel its thickness -->
+        <g class="g-screen-top" transform="matrix(.866 .5 -.866 .5 300 97)">
+          <rect x="-150" y="-7" width="120" height="7" />
+        </g>
+        <g class="g-screen-top" transform="matrix(.866 .5 -.866 .5 300 75)">
+          <rect x="50" y="-7" width="140" height="7" />
+        </g>
+
+        <!-- Everything standing on the desk shares one plane, so it reads as a single comparison -->
+        <g transform="matrix(.866 .5 0 1 170.1 150)">
+          <!-- Your books -->
+          <rect class="g-screen" x="0" y="-128" width="120" height="128" rx="5" />
+          <rect class="g-screen-head" x="0" y="-128" width="120" height="20" />
+          <text class="g-label" x="12" y="-114">Your books</text>
+
+          <rect class="g-line" x="12" y="-104" width="62" height="9" rx="2" />
+          <rect class="g-line g-line--soft" x="92" y="-104" width="18" height="9" rx="2" />
+          <rect class="g-line" x="12" y="-82" width="54" height="9" rx="2" />
+          <rect class="g-line g-line--soft" x="92" y="-82" width="18" height="9" rx="2" />
+          <rect class="g-line" x="12" y="-60" width="66" height="9" rx="2" />
+          <rect class="g-flag" x="92" y="-60" width="18" height="9" rx="2" />
+          <rect class="g-line" x="12" y="-38" width="48" height="9" rx="2" />
+          <rect class="g-line g-line--soft" x="92" y="-38" width="18" height="9" rx="2" />
+          <rect class="g-line" x="12" y="-16" width="58" height="9" rx="2" />
+          <rect class="g-line g-line--soft" x="92" y="-16" width="18" height="9" rx="2" />
+
+          <!-- Line by line, what matched and what did not -->
+          <rect class="g-ok" x="120" y="-101" width="80" height="3" rx="1.5" />
+          <rect class="g-ok" x="120" y="-79" width="80" height="3" rx="1.5" />
+          <rect class="g-flag" x="120" y="-57" width="26" height="3" rx="1.5" />
+          <rect class="g-flag" x="174" y="-57" width="26" height="3" rx="1.5" />
+          <circle class="g-break" cx="160" cy="-55.5" r="6" />
+          <rect class="g-ok" x="120" y="-35" width="80" height="3" rx="1.5" />
+          <rect class="g-ok" x="120" y="-13" width="80" height="3" rx="1.5" />
+
+          <!-- GSTR-2B -->
+          <rect class="g-screen" x="200" y="-150" width="140" height="150" rx="5" />
+          <rect class="g-screen-head" x="200" y="-150" width="140" height="20" />
+          <text class="g-label" x="212" y="-136">GST</text>
+
+          <rect class="g-line" x="212" y="-104" width="74" height="9" rx="2" />
+          <rect class="g-ok" x="300" y="-104" width="28" height="9" rx="2" />
+          <rect class="g-line" x="212" y="-82" width="62" height="9" rx="2" />
+          <rect class="g-ok" x="300" y="-82" width="28" height="9" rx="2" />
+          <rect class="g-line" x="212" y="-60" width="78" height="9" rx="2" />
+          <rect class="g-flag" x="300" y="-60" width="28" height="9" rx="2" />
+          <rect class="g-line" x="212" y="-38" width="56" height="9" rx="2" />
+          <rect class="g-ok" x="300" y="-38" width="28" height="9" rx="2" />
+          <rect class="g-line" x="212" y="-16" width="70" height="9" rx="2" />
+          <rect class="g-ok" x="300" y="-16" width="28" height="9" rx="2" />
+        </g>
+
+        <!-- Two bills off the inbox, waiting their turn -->
+        <g transform="translate(0 -6)">
+          <g transform="matrix(.866 .5 -.866 .5 300 225)">
+            <rect class="g-doc" x="-160" y="10" width="62" height="36" rx="4" />
+            <rect class="g-doc-line" x="-152" y="18" width="36" height="4" rx="2" />
+            <rect class="g-doc-line" x="-152" y="27" width="44" height="4" rx="2" />
+            <rect class="g-doc-line" x="-152" y="36" width="28" height="4" rx="2" />
+
+            <rect class="g-doc" x="-88" y="10" width="62" height="36" rx="4" />
+            <rect class="g-doc-line" x="-80" y="18" width="42" height="4" rx="2" />
+            <rect class="g-doc-line" x="-80" y="27" width="32" height="4" rx="2" />
+            <rect class="g-doc-line g-doc-line--flag" x="-80" y="36" width="24" height="4" rx="2" />
+          </g>
+        </g>
+        <!-- Where the two sides come from -->
+        <g class="g-wire">
+          <path d="M107 169 L80 185 L80 212" fill="none" />
+          <path d="M165 203 L140 218 L140 246" fill="none" />
+          <circle cx="80" cy="218" r="7" />
+          <circle class="g-wire-on" cx="80" cy="218" r="3" />
+          <circle cx="140" cy="252" r="7" />
+          <circle class="g-wire-on" cx="140" cy="252" r="3" />
+        </g>
+
+        <!-- Every rupee accounted for -->
+        <g class="g-badge g-badge--rupee" transform="translate(462 168)">
+          <circle r="20" />
+          <text x="0" y="7">₹</text>
+        </g>
+      </svg>
+    </figure>
   </section>
 
   <section class="section" aria-labelledby="pain-title">
@@ -217,6 +323,16 @@ const gstFlow = [
   .head-text {
     display: grid;
     gap: 20px;
+  }
+
+  .head-iso {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .head-iso svg {
+    width: 100%;
+    height: auto;
   }
 
   /* Four checks: distinct titled cards, not a sequence */

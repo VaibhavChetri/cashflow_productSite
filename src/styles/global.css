@@ -704,3 +704,161 @@ ol {
     transition-delay: 0ms !important;
   }
 }
+
+/* Isometric scenes (the accountants desk, the India GST match). Geometry lives on each page;
+   this is the shared palette, so the two scenes stay one drawing language. */
+.g-shade {
+  fill: rgba(15, 51, 38, 0.2);
+  filter: blur(26px);
+}
+
+/* The desk reads as a surface only if it is a shade off the page behind it. */
+.g-top {
+  fill: var(--bg-soft);
+}
+
+.g-grid {
+  stroke: var(--line-strong);
+  opacity: 0.6;
+}
+
+.g-edge {
+  fill: var(--tint-2);
+}
+
+.g-edge--r {
+  fill: #c2e3d2;
+}
+
+.g-doc,
+.g-card {
+  fill: var(--surface);
+  stroke: var(--line-strong);
+}
+
+.g-doc-line,
+.g-dot,
+.g-line {
+  fill: var(--line-strong);
+}
+
+.g-line--soft {
+  fill: var(--line);
+}
+
+.g-doc-line--flag {
+  fill: var(--amber);
+}
+
+.g-contact {
+  fill: rgba(15, 51, 38, 0.3);
+  filter: blur(7px);
+}
+
+.g-screen-top,
+.g-card-top {
+  fill: var(--tint-2);
+}
+
+.g-night-top {
+  fill: #1d4536;
+}
+
+.g-screen {
+  fill: var(--surface);
+  stroke: var(--line-strong);
+}
+
+.g-screen-head {
+  fill: var(--tint-2);
+}
+
+.g-ok {
+  fill: var(--brand-bright);
+}
+
+.g-flag {
+  fill: var(--audit);
+}
+
+.g-night {
+  fill: var(--dark);
+}
+
+.g-night-line {
+  fill: rgba(195, 214, 204, 0.55);
+}
+
+.g-night-line--on {
+  fill: #5fd39a;
+}
+
+.g-area {
+  fill: var(--tint-2);
+}
+
+.g-spark {
+  stroke: var(--brand);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.g-badge circle {
+  fill: var(--brand);
+}
+
+.g-badge path {
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.g-wire path {
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+}
+
+.g-wire circle {
+  fill: var(--surface);
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+}
+
+.g-wire .g-wire-on {
+  fill: var(--brand-bright);
+  stroke: none;
+}
+
+/* The matrices that build the isometric view also skew stroke widths, so pin them. */
+[stroke],
+.g-doc,
+.g-card,
+.g-screen,
+.g-spark,
+.g-wire path,
+.g-wire circle,
+.g-grid {
+  vector-effect: non-scaling-stroke;
+}
+
+/* Labels and marks that only the GST scene uses; text inside the matrices shears with the plane, which is what makes it sit in the drawing. */
+.g-label {
+  fill: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.g-break {
+  fill: var(--surface);
+  stroke: var(--audit);
+  stroke-width: 2;
+}
+
+.g-badge--rupee text {
+  fill: #fff;
+  font-size: 22px;
+  font-weight: 500;
+  text-anchor: middle;
+}
